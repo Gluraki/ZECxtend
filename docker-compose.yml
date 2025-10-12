@@ -29,7 +29,7 @@ services:
       - MQTT_PORT=${MQTT_PORT}
       - MQTT_TOPIC=${MQTT_TOPIC}
       - BACKEND_HOST=http://backend:${BACKEND_PORT}
-  
+
   frontend:
     container_name: desktop-app-frontend
     build:
@@ -43,3 +43,14 @@ services:
       backend:
         condition: service_healthy
         restart: true
+
+  redis:
+    container_name: desktop-app-redis-db
+    image: redis:alpine
+    # --save = redis will not save data to disk
+    # --appendonly no = disables Append-Only files, no saves are persistant
+    command: [ "redis-server", "--save", "", "--appendonly", "no" ]
+    tmpfs:
+      - /data
+    ports:
+      - ${REDIS_PORT}:${REDIS_PORT}
