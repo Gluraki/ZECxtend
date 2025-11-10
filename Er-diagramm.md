@@ -48,15 +48,7 @@ erDiagram
         ENUM_CATEGORY category
         float best_time
         int points
-        bool pdf_exported
         datetime created_at
-    }
-
-    CONFIG_PARAMETERS {
-        int id PK
-        string key
-        text value
-        datetime updated_at
     }
 
     USERS ||--o{ TEAMS : "leitet"
@@ -66,3 +58,15 @@ erDiagram
 
 
 ```
+kommt in env
+    CONFIG_PARAMETERS {
+        int id PK
+        string key
+        text value
+        datetime updated_at
+    }
+
+
+
+
+    

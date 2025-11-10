@@ -1,11 +1,7 @@
 import warnings
 import secrets
 from typing import Literal
-
-
-# Token implentation will change once keykcloak is set up
 from pydantic import (
-    PostgresDsn,
     computed_field,
     model_validator,
 )
@@ -13,18 +9,16 @@ from typing_extensions import Self
 from pydantic_core import MultiHostUrl
 from pydantic import EmailStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
-
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file="../.env",
         env_ignore_empty=True,
         extra="ignore",
     )
-    API_V1_STR: str = "/api/v1"
+    
+    API_STR: str = "/api"
     ENVIRONMENT: Literal["local", "staging", "production"] = "local"
     SECRET_KEY: str = secrets.token_urlsafe(32)
-    # 60 minutes * 24 hours * 8 days = 8 days
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
 
     PROJECT_NAME: str
@@ -38,7 +32,13 @@ class Settings(BaseSettings):
     FIRST_SUPERUSER: str
     FIRST_SUPERUSER_PASSWORD: str
 
-    @computed_field  # type: ignore[prop-decorator]
+    KEYCLOAK_URL: str = "http://localhost:8090"
+    KEYCLOAK_REALM: str = "myapp"
+    KEYCLOAK_CLIENT_ID: str  
+    KEYCLOAK_CLIENT_SECRET: str = ""
+    KEYCLOAK_REDIRECT_URI: str = "http://127.0.0.1:8000/docs/oauth2-redirect"
+
+    @computed_field  
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> MultiHostUrl:
         return MultiHostUrl.build(
@@ -50,6 +50,10 @@ class Settings(BaseSettings):
             path=self.POSTGRES_DB,
         )
     
+    @computed_field
+    @property
+    def KEYCLOAK_REALM_URL(self) -> str:
+        return f"{self.KEYCLOAK_URL}/realms/{self.KEYCLOAK_REALM}"
     
     def _check_default_secret(self, var_name: str, value: str | None) -> None:
         if value == "changethis":
@@ -65,6 +69,7 @@ class Settings(BaseSettings):
     @model_validator(mode="after")
     def _enforce_non_default_secrets(self) -> Self:
         self._check_default_secret("POSTGRES_PASSWORD", self.POSTGRES_PASSWORD)
+        self._check_default_secret("KEYCLOAK_CLIENT_SECRET", self.KEYCLOAK_CLIENT_SECRET)
         return self
-    
+
 settings = Settings()
