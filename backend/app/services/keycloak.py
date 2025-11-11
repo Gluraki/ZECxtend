@@ -11,8 +11,22 @@ KC_TOKEN_URL = f"{KC_URL}/protocol/openid-connect/token"
 
 security = HTTPBearer(auto_error=False) 
 
+#Schmeißen alle http exceptions muss ich wahrscheinlich ändern
+
 def get_keycloak_public_key():
-    """Fetch Keycloak public keys for token verification"""
+    """ 
+    Fetch Keycloak's public keys for JWT token verification.
+    Theese are needed to validate the token signature so they cant be faked.
+
+    Args:
+        credentials: HTTPBearer credentials
+
+    Raises:
+        HTTPException: 503 if unable to fetch keys
+
+    Returns:
+        dict: JWKS with public keys
+    """
     jwks_url = f"{KC_URL}/protocol/openid-connect/certs"
     response = requests.get(jwks_url)
     if response.status_code != 200:
@@ -23,6 +37,19 @@ def get_keycloak_public_key():
     return response.json()
 
 def decode_keycloak_token(credentials = Depends(security)):
+    """ 
+    Validate and decode JWT token from Authorization header.
+    Use this as a dependency in protected routes.
+
+    Args:
+        credentials: HTTPBearer credentials
+
+    Raises:
+        HTTPException: 401 if token is invalid, expired, or malformed
+
+    Returns:
+        dict: decoded token payload
+    """
     if not credentials:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -85,8 +112,17 @@ def decode_keycloak_token(credentials = Depends(security)):
 
 def keycloak_login(username: str, password: str):
     """
-    Authenticate user with Keycloak using password grant
-    Returns tokens if successful
+    Authenticate user with Keycloak 
+
+    Args:
+        username: User's username
+        password: User's password
+
+    Raises:
+        HTTPException: 401 if authentication fails
+
+    Returns:
+        dict: Token response from Keycloak
     """
     payload = {
         "grant_type": "password",
@@ -104,9 +140,8 @@ def keycloak_login(username: str, password: str):
         try:
             error_data = response.json()
             print(f"Keycloak error response: {error_data}")
-        except:
+        except Exception:
             print(f"Raw response: {response.text}")
-        
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid username or password"
@@ -117,6 +152,15 @@ def keycloak_login(username: str, password: str):
 def keycloak_refresh(refresh_token: str):
     """
     Refresh access token using refresh token
+
+    Args:
+        refresh_token: Valid refresh token from previous authentication
+
+    Raises:
+        HTTPException: 401 if refresh token is invalid
+
+    Returns:
+        dict: new Token response from Keycloak
     """
     payload = {
         "grant_type": "refresh_token",
@@ -132,32 +176,4 @@ def keycloak_refresh(refresh_token: str):
             detail="Invalid refresh token"
         )
 
-    return response.json()
-
-async def exchange_authorization_code(code: str, redirect_uri: str):
-    payload = {
-        "grant_type": "authorization_code",
-        "client_id": KC_CLIENT_ID,
-        "client_secret": KC_CLIENT_SECRET,
-        "code": code,
-        "redirect_uri": redirect_uri,
-    }
-    
-    response = requests.post(KC_TOKEN_URL, data=payload)
-    
-    if response.status_code != 200:
-        print(f"Code exchange failed: {response.status_code} - {response.text}")
-        error_detail = "Failed to exchange authorization code"
-        try:
-            error_data = response.json()
-            if error_data.get('error') == 'invalid_grant':
-                error_detail = "Authorization code has already been used or is invalid"
-        except:
-            pass
-            
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=error_detail
-        )
-    
     return response.json()
