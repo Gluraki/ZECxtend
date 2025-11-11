@@ -11,7 +11,7 @@ tests und backend
 80% Test converage
 
 Prof Mock fragen:
-ob User in normaler db sein müssen oder keycloak reicht
+"muss" in beiden sein damit ich ez roles machen darf
 ob ich HTTP exceptions in nem service (keycloak) schmeißen darf oder das wie crud ist
 
 User Creation auf keycloak seite aufsetzen/möglich machen (gibt api endpoint dafür)
