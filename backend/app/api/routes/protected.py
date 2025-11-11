@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 from app.services.keycloak import decode_keycloak_token
 
 router = APIRouter()
+"""Protected route that requires Keycloak token authentication"""
 
 @router.get("/protected")
 async def protected_route(user_data = Depends(decode_keycloak_token)):
