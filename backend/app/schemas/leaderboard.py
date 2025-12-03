@@ -24,4 +24,4 @@ class LeaderboardResponse(LeaderboardBase):
     updated_at: Optional[datetime] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True

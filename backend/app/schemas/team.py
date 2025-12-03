@@ -1,4 +1,5 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from datetime import timezone
 from typing import Optional
 from datetime import datetime
 
@@ -10,10 +11,11 @@ class TeamBase(BaseModel):
 
 
 class TeamCreate(TeamBase):
-    pass
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class TeamUpdate(BaseModel):
+    id : int 
     name: Optional[str] = None
     vehicle_weight: Optional[float] = None
     rfid_identifier: Optional[str] = None
@@ -24,4 +26,4 @@ class TeamResponse(TeamBase):
     created_at: Optional[datetime] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
