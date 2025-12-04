@@ -9,8 +9,5 @@ def get_db() -> Generator[Session, None, None]:
     with Session(engine) as session:
         yield session
 
-def get_current_user(user_data = Depends(decode_keycloak_token)):
-    return user_data
-
 SessionDep = Annotated[Session, Depends(get_db)]
-CurrentUser = Annotated[dict, Depends(get_current_user)]
+CurrentUser = Annotated[dict, Depends(decode_keycloak_token)]
