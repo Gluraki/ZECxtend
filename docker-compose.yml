@@ -1,28 +1,72 @@
 services:
-  backend:
-    container_name: desktop-app-backend
-    build:
-      context: ./backend
+  zec-db:
+    container_name: zec-db
+    image: postgres
     restart: always
+    ports:
+      - ${POSTGRES_PORT}:${POSTGRES_PORT}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+    volumes:
+      - zec-db-data:/var/lib/postgresql
     env_file:
       - .env
-    ports:
-      - ${BACKEND_PORT}:${BACKEND_PORT}
     environment:
-      - FRONTEND_HOST=${FRONTEND_HOST}
-      - CORS=${CORS}
+      - PG_DATA=/var/lib/postgresql
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_DB=${POSTGRES_DB}
 
-  frontend:
-    container_name: desktop-app-frontend
-    build:
-      context: ./frontend
+  zec-adminer:
+    container_name: zec-adminer
+    image: adminer
     restart: always
-    env_file:
-      - .env
     ports:
-      - ${FRONTEND_PORT}:${FRONTEND_PORT}
+      - ${ADMINER_PORT}:${ADMINER_PORT}
     depends_on:
-      backend:
+      - zec-db
+    environment:
+      - ADMINER_DESIGN=pepa-linha-dark
+
+  zec-desktop-app-backend:
+    container_name: zec-desktop-app-backend
+    build: ./backend
+    restart: always
+    ports:
+      - ${BACKEND_PORT_DESKTOP_APP}:${FAST_API_PORT}
+    depends_on:
+      zec-db:
         condition: service_healthy
         restart: true
+    env_file:
+      - .env
+    environment:
+      - FRONTEND_HOST_DESKTOP_APP=${FRONTEND_HOST_DESKTOP_APP?Variable not set}
+      - BACKEND_CORS_ORIGINS_DESKTOP_APP=${BACKEND_CORS_ORIGINS_DESKTOP_APP}
+      - POSTGRES_SERVER=zec-db
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER?Variable not set}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD?Variable not set}
+      - DESKTOP_APP_STANDALONE=${DESKTOP_APP_STANDALONE?Variable not set}
 
+# zec-desktop-app-frontend:
+#   container_name: zec-desktop-app-frontend
+#   build:
+#     context: ./frontend
+#   restart: always
+#   env_file:
+#     - .env
+#   ports:
+#     - ${FRONTEND_PORT}:${FRONTEND_PORT}
+#   depends_on:
+#     zec-desktop-app-backend:
+#       condition: service_healthy
+#       restart: true
+
+volumes:
+  zec-db-data:
