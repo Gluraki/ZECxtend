@@ -73,6 +73,8 @@ services:
       zec-desktop-app-backend:
         condition: service_healthy
         restart: true
+    environment:
+      - ${DESKTOP_APP_API_URL}=${DESKTOP_APP_API_URL}
 
 volumes:
   zec-db-data:
