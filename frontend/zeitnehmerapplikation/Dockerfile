@@ -2,11 +2,11 @@ FROM oven/bun:latest
 
 WORKDIR /zeitnehmerapplikation/
 
-COPY zeitnehmerapplikation/package.json zeitnehmerapplikation/bun.lock ./
-
-COPY zeitnehmerapplikation/* ./
+COPY ./package.json ./bun.lock ./
 
 RUN bun install
+
+COPY . .
 
 ARG VITE_API_URL=${VITE_API_URL}
 

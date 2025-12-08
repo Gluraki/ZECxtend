@@ -63,7 +63,7 @@ services:
   zec-desktop-app-frontend:
     container_name: zec-desktop-app-frontend
     build:
-      context: ./frontend
+      context: ./frontend/zeitnehmerapplikation
     restart: always
     env_file:
       - .env
