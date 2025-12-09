@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from typing import Optional
 from datetime import datetime
 from app.models.user import UserRole
@@ -32,3 +32,15 @@ class UserResponse(UserBase):
 
     class Config:
         from_attributes = True
+
+class UserCredentials(BaseModel):
+    type: str = "password"
+    value: str
+    temporary: bool = False
+
+class CreateUserKC(BaseModel):
+    username: str
+    email: EmailStr
+    emailVerified: bool = True
+    enabled: bool = True
+    credentials: Optional[list[UserCredentials]] = None

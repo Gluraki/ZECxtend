@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.routes import auth, user, protected, team, driver, attempt, challenge
+from app.api.routes import auth, protected, team, driver, attempt, challenge, user
 
 api_router = APIRouter()
 

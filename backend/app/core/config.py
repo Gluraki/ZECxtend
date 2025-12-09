@@ -34,6 +34,7 @@ class Settings(BaseSettings):
     KEYCLOAK_REDIRECT_URI: str = ""
     KEYCLOAK_TOKEN_URL: str = ""
     KEYCLOAK_JWKS_URL: str = ""
+    KEYCLOAK_USER_URL: str = ""
 
     @computed_field  
     @property
