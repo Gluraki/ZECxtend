@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
 
@@ -33,3 +33,7 @@ class CreateUserKC(BaseModel):
     emailVerified: bool = True
     enabled: bool = True
     credentials: Optional[list[UserCredentials]] = None
+
+class UpdateUserKC(BaseModel):
+    username: Optional[str] = None
+    password: Optional[str] = None

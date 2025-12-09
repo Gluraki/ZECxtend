@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.schemas.user import CreateUserKC
+from app.schemas.user import CreateUserKC, UpdateUserKC
 from app.crud import user as crud
 from app.database.dependency import SessionDep
 
@@ -9,3 +9,17 @@ router = APIRouter()
 def create_user(db: SessionDep, request: CreateUserKC):
     response = crud.create_user(db=db, request=request)
     return response
+
+@router.get("/", response_model=dict)
+def get_user_by_username(username: str):
+    user = crud.get_user_by_username(username=username)
+    return user
+
+@router.put("/{user_id}")
+async def update_user_endpoint(
+    db: SessionDep,
+    user_id: str,
+    request: UpdateUserKC,
+):
+    updated_user = crud.update_user(db=db, user_id=user_id, request=request)
+    return updated_user

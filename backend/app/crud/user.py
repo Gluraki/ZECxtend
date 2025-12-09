@@ -1,6 +1,6 @@
 import requests
 from app.core.config import settings
-from app.schemas.user import CreateUserKC
+from app.schemas.user import CreateUserKC, UpdateUserKC
 from app.models.user import User
 from datetime import datetime, timezone
 from typing import Optional
@@ -10,7 +10,7 @@ from app.database.dependency import SessionDep
 KC_TOKEN_URL = settings.KEYCLOAK_TOKEN_URL
 KC_USER_URL = settings.KEYCLOAK_USER_URL
 KC_CLIENT_ID = "admin-cli"
-KC_CLIENT_SECRET = "iLNBNaJwfV2paV8jCtneGF2tM3IKH4Fj"
+KC_CLIENT_SECRET = "9BbafD8aoDywvuBPk0XBwjaOodfJblWM"
 
 def get_token():
     response = requests.post(
@@ -76,4 +76,29 @@ def create_user(db: SessionDep, request: CreateUserKC):
             db.commit()
             db.refresh(db_user)
             return db_user
+    
+def update_user(db: SessionDep, kc_user_id: str, request: UpdateUserKC) -> bool:
+    access_token = get_token()
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json",
+    }
+    
+    update_url = f"{KC_USER_URL}/{kc_user_id}"
+    
+    user_data = {}
+    
+    if request.username is not None:
+        user_data["username"] = request.username
+        
+    if request.password is not None:
+        user_data["credentials"] = [{
+            "type": "password",
+            "value": request.password,
+            "temporary": False
+        }]
+    
+        
+    requests.put(update_url, json=user_data, headers=headers)
+    return user_data
     
