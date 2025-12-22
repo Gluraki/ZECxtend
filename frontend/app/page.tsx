@@ -11,7 +11,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 
-import { Users, UserCog, Flag, Settings, Download, Trophy } from "lucide-react"
+import { User, Users, UserCog, Flag, Download, Trophy } from "lucide-react"
 
 import DriversTab from "@/components/tabs/DriversTab"
 import TeamsTab from "@/components/tabs/TeamsTab"
@@ -89,7 +89,7 @@ export default function AdminPage() {
               <SidebarMenuButton
                 isActive={activeTab === "teams"}
                 onClick={() => setActiveTab("teams")}
-                icon={<Flag className="h-4 w-4" />}
+                icon={<Users className="h-4 w-4" />}
               >
                 Teams
               </SidebarMenuButton>
@@ -99,7 +99,7 @@ export default function AdminPage() {
               <SidebarMenuButton
                 isActive={activeTab === "drivers"}
                 onClick={() => setActiveTab("drivers")}
-                icon={<UserCog className="h-4 w-4" />}
+                icon={<User className="h-4 w-4" />}
               >
                 Drivers
               </SidebarMenuButton>
@@ -109,7 +109,7 @@ export default function AdminPage() {
               <SidebarMenuButton
                 isActive={activeTab === "users"}
                 onClick={() => setActiveTab("users")}
-                icon={<Users className="h-4 w-4" />}
+                icon={<UserCog className="h-4 w-4" />}
               >
                 Users
               </SidebarMenuButton>
