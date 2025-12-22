@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, type ReactNode } from "react"
 import {
   Sidebar,
   SidebarHeader,
@@ -21,11 +21,12 @@ import LeaderboardTab from "@/components/tabs/LeaderboardTab"
 
 type AdminTab = "drivers" | "teams" | "users" | "config" | "export" | "leaderboard"
 
-export function AppSidebar({ children }: { children?: React.ReactNode }) {
+export function AppSidebar({ children }: { children?: ReactNode }) {
   const [open, setOpen] = useState(false)
 
   return <SidebarProvider open={open} onOpenChange={setOpen}>{children}</SidebarProvider>
 }
+
 
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<AdminTab>("drivers")
@@ -45,7 +46,6 @@ export default function AdminPage() {
   })
   const raceCategories = ["test1", "test2"]
   const [selectedCategory, setSelectedCategory] = useState(raceCategories[0])
-
   const mockLeaderboardData = {
     test1: [
       { position: 1, driver: "Pro One", team: "Gamma", bestTime: "1:11.999", points: 100 },
@@ -69,62 +69,70 @@ export default function AdminPage() {
 
   return (
     <AppSidebar>
-      <div className="flex min-h-screen">
-        <Sidebar className="w-64 border-r">
-          <SidebarHeader className="px-4 py-3 text-xl font-semibold">ZEC-Timing</SidebarHeader>
-          <SidebarMenu>
+      <Sidebar collapsible="icon" className="border-r">
+        <SidebarHeader className="px-4 py-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xl font-semibold group-data-[collapsible=icon]:hidden">ZEC-Timing</span>
+          </div>
+        </SidebarHeader>
 
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                isActive={activeTab === "leaderboard"}
-                onClick={() => setActiveTab("leaderboard")}
-                icon={<Trophy className="h-4 w-4" />}
-              >
-                Leaderboard
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              tooltip="Leaderboard"
+              isActive={activeTab === "leaderboard"}
+              onClick={() => setActiveTab("leaderboard")}
+            >
+              <Trophy />
+              <span>Leaderboard</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
 
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                isActive={activeTab === "teams"}
-                onClick={() => setActiveTab("teams")}
-                icon={<Users className="h-4 w-4" />}
-              >
-                Teams
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              tooltip="Teams"
+              isActive={activeTab === "teams"}
+              onClick={() => setActiveTab("teams")}
+            >
+              <Users />
+              <span>Teams</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
 
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                isActive={activeTab === "drivers"}
-                onClick={() => setActiveTab("drivers")}
-                icon={<User className="h-4 w-4" />}
-              >
-                Drivers
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              tooltip="Drivers"
+              isActive={activeTab === "drivers"}
+              onClick={() => setActiveTab("drivers")}
+            >
+              <User />
+              <span>Drivers</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
 
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                isActive={activeTab === "users"}
-                onClick={() => setActiveTab("users")}
-                icon={<UserCog className="h-4 w-4" />}
-              >
-                Users
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              tooltip="Users"
+              isActive={activeTab === "users"}
+              onClick={() => setActiveTab("users")}
+            >
+              <UserCog />
+              <span>Users</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
 
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                isActive={activeTab === "export"}
-                onClick={() => setActiveTab("export")}
-                icon={<Download className="h-4 w-4" />}
-              >
-                Export
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </Sidebar>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              tooltip="Export"
+              isActive={activeTab === "export"}
+              onClick={() => setActiveTab("export")}
+            >
+              <Download />
+              <span>Export</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </Sidebar>
 
         <main className="flex-1 p-6">
           <div className="mb-4 flex items-center justify-between">
@@ -175,8 +183,8 @@ export default function AdminPage() {
               handleExport={handleExport}
             />
           )}
+
         </main>
-      </div>
     </AppSidebar>
   )
 }
