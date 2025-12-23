@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, type ReactNode } from "react"
+import { useState, useEffect, type ReactNode } from "react"
+import Image from "next/image"
 import {
   Sidebar,
   SidebarHeader,
@@ -11,15 +12,16 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 
-import { User, Users, UserCog, Download, Trophy } from "lucide-react"
+import { User, Users, UserCog, Download, Trophy, Swords } from "lucide-react"
 
 import DriversTab from "@/components/tabs/DriversTab"
 import TeamsTab from "@/components/tabs/TeamsTab"
 import UsersTab from "@/components/tabs/UsersTab"
+import ChallengeTab from "@/components/tabs/ChallengeTab"
 import ExportTab from "@/components/tabs/ExportTab"
 import LeaderboardTab from "@/components/tabs/LeaderboardTab"
 
-type AdminTab = "drivers" | "teams" | "users" | "config" | "export" | "leaderboard"
+type AdminTab = "drivers" | "teams" | "challenges" | "users" | "config" | "export" | "leaderboard"
 
 export function AppSidebar({ children }: { children?: ReactNode }) {
   const [open, setOpen] = useState(false)
@@ -33,12 +35,15 @@ export default function AdminPage() {
   const [isAddDriverOpen, setIsAddDriverOpen] = useState(false)
   const [isAddTeamOpen, setIsAddTeamOpen] = useState(false)
   const [isAddUserOpen, setIsAddUserOpen] = useState(false)
+  const [isAddChallengeOpen, setIsAddChallengeOpen] = useState(false)
   const [editingDriver, setEditingDriver] = useState<any | null>(null)
   const [editingTeam, setEditingTeam] = useState<any | null>(null)
   const [editingUser, setEditingUser] = useState<any | null>(null)
+  const [editingChallenge, setEditingChallenge] = useState<any | null>(null)
   const [drivers, setDrivers] = useState<any[]>([])
   const [visibleTeams, setVisibleTeams] = useState<any[]>([])
   const [users, setUsers] = useState<any[]>([])
+  const [challenges, setChallenges] = useState<any[]>([])
   const [exportFormat, setExportFormat] = useState("csv")
   const [exportDateRange, setExportDateRange] = useState({
     from: new Date().toISOString(),
@@ -61,6 +66,13 @@ export default function AdminPage() {
   const handleEditUser = (user: any) => {
     setIsAddUserOpen(true)
     setEditingUser(user)
+  }
+  const deleteChallenge = (id: string | number) => {
+    setChallenges(challenges.filter((c) => c.id !== id))
+  }
+  const handleEditChallenge = (challenge: any) => {
+    setIsAddChallengeOpen(true)
+    setEditingChallenge(challenge)
   }
   const getTeamName = (id: string | number | undefined): string => {
     const team = visibleTeams.find((team) => team.id === id)
@@ -112,6 +124,17 @@ export default function AdminPage() {
 
           <SidebarMenuItem>
             <SidebarMenuButton
+              tooltip="Challenges"
+              isActive={activeTab === "challenges"}
+              onClick={() => setActiveTab("challenges")}
+            >
+              <Swords />
+              <span>Challenges</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+
+          <SidebarMenuItem>
+            <SidebarMenuButton
               tooltip="Users"
               isActive={activeTab === "users"}
               onClick={() => setActiveTab("users")}
@@ -133,13 +156,34 @@ export default function AdminPage() {
           </SidebarMenuItem>
         </SidebarMenu>
       </Sidebar>
+      <main className="flex-1 p-6">
+        <div className="mb-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <SidebarTrigger />
+          </div>
 
-        <main className="flex-1 p-6">
-          <div className="mb-4 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <SidebarTrigger />
+          <div className="flex items-center gap-4">
+            <div className="relative h-12 w-[100px]">
+              <Image
+                src="/Logo_HTL_100.png"
+                alt="Logo HTL"
+                fill
+                className="object-contain"
+                priority
+              />
+            </div>
+
+            <div className="relative h-14 w-[140px]">
+              <Image
+                src="/ZEC-Logo.png"
+                alt="ZEC Logo"
+                fill
+                className="object-contain"
+                priority
+              />
             </div>
           </div>
+        </div>
 
           {activeTab === "leaderboard" && (
             <LeaderboardTab
@@ -163,6 +207,14 @@ export default function AdminPage() {
               setIsAddTeamOpen={setIsAddTeamOpen}
               setEditingTeam={setEditingTeam}
               handleDeleteTeam={handleDeleteTeam}
+            />
+          )}
+          {activeTab === "challenges" && (
+            <ChallengeTab
+              challenges={challenges}
+              setIsAddChallengeOpen={setIsAddChallengeOpen}
+              setEditingChallenge={handleEditChallenge}
+              deleteChallenge={deleteChallenge}
             />
           )}
           {activeTab === "users" && (
