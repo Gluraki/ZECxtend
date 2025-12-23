@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Form, HTTPException, status
 from app.database.dependency import SessionDep
-from app.services.keycloak import keycloak_login, keycloak_refresh
+from app.crud.auth import keycloak_login, keycloak_refresh
 
 router = APIRouter()
 

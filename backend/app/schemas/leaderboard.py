@@ -7,4 +7,4 @@ class LeaderboardResponse(BaseModel):
     team: TeamResponse
 
     class Config:
-        orm_mode = True
+        from_attributes = True

@@ -14,53 +14,35 @@ security = HTTPBearer(auto_error=False)
 
 def get_keycloak_public_key():
     response = requests.get(KC_JWKS_URL)
-    if response.status_code != 200:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, 
-            detail="Cannot fetch Keycloak public keys"
-        )
     return response.json()
 
 def decode_keycloak_token(credentials = Depends(security)):
     if not credentials:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authorization header required"
-        )
+        pass
+        #throw authorization header required
     
     token = credentials.credentials
-    if token.startswith("Bearer "):
-        token = token[7:]
-    
     if not token or len(token.split('.')) != 3:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token format"
-        )
+        # throw invalid token format
+        pass
     
     jwks = get_keycloak_public_key()
     headers = jwt.get_unverified_header(token)
 
     if not headers or 'kid' not in headers:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, 
-            detail="Invalid token header"
-        )
+        # throw invalid token header
+        pass
 
     key_data = next((k for k in jwks['keys'] if k['kid'] == headers['kid']), None)
     if not key_data:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, 
-            detail="Public key not found"
-        )
+        # throw public key not found
+        pass
 
     try:
         public_key = jwk.construct(key_data).public_key()
     except Exception:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, 
-            detail="Invalid public key"
-        )
+        # throw invalid public key
+        pass
 
     try:
         payload = jwt.decode(
@@ -70,16 +52,11 @@ def decode_keycloak_token(credentials = Depends(security)):
             options={"verify_aud": False}  
         )
     except jwt.ExpiredSignatureError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, 
-            detail="Token expired"
-        )
+        # throw token expired
+        pass
     except jwt.JWTClaimsError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, 
-            detail="Invalid claims"
-        )
-            
+        # throw invalid claims
+        pass 
     return payload
 
 def keycloak_login(username: str, password: str):
@@ -93,19 +70,6 @@ def keycloak_login(username: str, password: str):
     }
 
     response = requests.post(KC_TOKEN_URL, data=payload)
-    
-    if response.status_code != 200:
-        print(f"Keycloak login failed with status: {response.status_code}")
-        try:
-            error_data = response.json()
-            print(f"Keycloak error response: {error_data}")
-        except Exception:
-            print(f"Raw response: {response.text}")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid username or password"
-        )
-
     return response.json()
 
 def keycloak_refresh(refresh_token: str):
@@ -117,12 +81,6 @@ def keycloak_refresh(refresh_token: str):
     }
 
     response = requests.post(KC_TOKEN_URL, data=payload)
-    if response.status_code != 200:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid refresh token"
-        )
-
     return response.json()
 
 def extract_roles_from_payload(payload: dict) -> list[str]:
