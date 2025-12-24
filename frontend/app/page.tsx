@@ -82,8 +82,11 @@ export default function AdminPage() {
   return (
     <AppSidebar>
       <Sidebar collapsible="icon" className="border-r">
-        <SidebarHeader className="px-4 py-3">
-          <div className="flex items-center gap-2">
+        <SidebarHeader className="px-4 py-3 group-data-[collapsible=icon]:pl-2">
+          <div className="flex items-center gap-2 group-data-[collapsible=icon]:pl-1">
+            <span className="size-4 shrink-0 hidden group-data-[collapsible=icon]:block">
+              <Image src="/ZEC-icon.png" alt="ZEC Icon" width={16} height={16} className="object-contain" priority />
+            </span>
             <span className="text-xl font-semibold group-data-[collapsible=icon]:hidden">ZEC-Timing</span>
           </div>
         </SidebarHeader>
