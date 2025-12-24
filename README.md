@@ -13,9 +13,9 @@ Web-App branch by Darnhofer
 | Auth service          | Error handling |
 
 ## Todo list
-- frontend pictures & challenge tab
 - user service clean up 
 - score service event based 
+- Api gateway
 - basic tests for all the services
 - create a proper keycloak realm import file
 
