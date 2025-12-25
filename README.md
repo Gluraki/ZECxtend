@@ -1,6 +1,6 @@
 # Zec-timing
 Repository for ZeroEmissionChallenge Timing by Darnhofer and Maderbacher
-Web-App branch by Darnhofer
+ZEC-API branch by Darnhofer
 
 ## Services Status
 | Service               | Status         |
@@ -13,7 +13,7 @@ Web-App branch by Darnhofer
 | Auth service          | Error handling |
 
 ## Todo list
-- user service clean up 
+- Split into services
 - score service event based 
 - Api gateway
 - basic tests for all the services
