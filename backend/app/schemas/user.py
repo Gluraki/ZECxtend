@@ -14,7 +14,6 @@ class UserUpdate(BaseModel):
     id: int
     username: Optional[str] = None
     email: Optional[str] = None
-    kc_id: Optional[str] = None
 
 class UserResponse(UserBase):
     id: int

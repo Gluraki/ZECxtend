@@ -15,4 +15,3 @@ class Team(Base):
     
     drivers = relationship("Driver", back_populates="team")
     attempts = relationship("Attempt", back_populates="team")
-    leaderboards = relationship("Leaderboard", back_populates="team")

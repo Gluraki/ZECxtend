@@ -2,7 +2,6 @@ from sqlalchemy import Column, Integer, DateTime, String
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from app.database.session import Base
-from app.models.leaderboard import Leaderboard  # noqa: F401 need for mapper
 
 class Challenge(Base):
     __tablename__ = 'challenges'
@@ -17,4 +16,3 @@ class Challenge(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     
     attempts = relationship("Attempt", back_populates="challenge")
-    leaderboards = relationship("Leaderboard", back_populates="challenge")
