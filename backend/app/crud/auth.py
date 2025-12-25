@@ -5,6 +5,8 @@ import requests
 from app.core.config import settings
 
 KC_URL = settings.KEYCLOAK_URL
+KC_ADMIN_CLIENT_ID = settings.KEYCLOAK_ADMIN_CLIENT_ID
+KC_ADMIN_CLIENT_SECRET = settings.KEYCLOAK_ADMIN_CLIENT_SECRET
 KC_CLIENT_ID = settings.KEYCLOAK_CLIENT_ID
 KC_CLIENT_SECRET = settings.KEYCLOAK_CLIENT_SECRET
 KC_TOKEN_URL = settings.KEYCLOAK_TOKEN_URL
@@ -99,3 +101,18 @@ def get_current_user(payload: dict = Depends(decode_keycloak_token)):
         "roles": roles,
         "token_payload": payload
     }
+
+def get_admin_token():
+    response = requests.post(
+        KC_TOKEN_URL,
+        data={
+            "client_id": KC_ADMIN_CLIENT_ID,
+            "client_secret": KC_ADMIN_CLIENT_SECRET,
+            "grant_type": "client_credentials",
+        },
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+        )
+    token_data = response.json()
+    access_token = token_data.get("access_token")
+    return access_token
+

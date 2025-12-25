@@ -29,6 +29,8 @@ class Settings(BaseSettings):
 
     KEYCLOAK_URL: str = ""
     KEYCLOAK_REALM: str = ""
+    KEYCLOAK_ADMIN_CLIENT_ID: str = ""
+    KEYCLOAK_ADMIN_CLIENT_SECRET: str = ""
     KEYCLOAK_CLIENT_ID: str = ""
     KEYCLOAK_CLIENT_SECRET: str = ""
     KEYCLOAK_REDIRECT_URI: str = ""
@@ -69,7 +71,6 @@ class Settings(BaseSettings):
     @model_validator(mode="after")
     def _enforce_non_default_secrets(self) -> Self:
         self._check_default_secret("POSTGRES_PASSWORD", self.POSTGRES_PASSWORD)
-        self._check_default_secret("KEYCLOAK_CLIENT_SECRET", self.KEYCLOAK_CLIENT_SECRET)
         return self
 
 settings = Settings()
