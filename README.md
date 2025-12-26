@@ -18,11 +18,9 @@ ZEC-API branch by Darnhofer
 - score service event based 
 - Api gateway
 - basic tests for all the services
-- create a proper keycloak realm import file
 
 ## Notes and future
 - needs 80% Test converage
 - Frontend is just a html page atm 
 - refrsh tocken blacklisting could be cool
 - limiter for login to "limit" :) spamming 
-- check if using crud in other crud limits the microservices in the future --> yes it does
