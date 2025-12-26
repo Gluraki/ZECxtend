@@ -14,6 +14,7 @@ ZEC-API branch by Darnhofer
 
 ## Todo list
 - Split into services
+- move average(mean) energy into team
 - score service event based 
 - Api gateway
 - basic tests for all the services
