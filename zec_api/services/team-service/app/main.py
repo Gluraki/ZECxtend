@@ -1,9 +1,7 @@
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
-from fastapi.middleware.cors import CORSMiddleware
 from app.api.main import api_router
 from app.core.config import settings
-from sqlalchemy.orm import Session
 from app.database.session import engine, Base
 
 def cstm_generate_unique_id(route: APIRoute) -> str:
