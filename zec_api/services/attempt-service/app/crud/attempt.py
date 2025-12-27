@@ -32,6 +32,9 @@ def get_attempt(*, db: SessionDep, attempt_id: int):
 def get_attempts(*, db: SessionDep):
     return db.query(Attempt).all()
 
+def get_attempts_for_challenge(*, db: SessionDep, challenge_id: int):
+    return db.query(Attempt).filter(Attempt.challenge_id == challenge_id).all()
+
 def get_fastest_attempt(*, db: SessionDep, challenge_id: int):
     return (db.query(Attempt)
               .filter(Attempt.challenge_id == challenge_id)
