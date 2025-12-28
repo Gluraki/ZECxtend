@@ -16,6 +16,7 @@ Repository for **Z**ero**E**mission**C**hallenge-Timing by Darnhofer and Maderba
 - score service event based 
 - Api gateway
 - basic tests for all the services
+- attempt number berechnen
 
 ## Notes and future
 - needs 80% Test converage
