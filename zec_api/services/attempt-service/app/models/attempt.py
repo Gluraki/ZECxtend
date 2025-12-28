@@ -12,6 +12,5 @@ class Attempt(Base):
     attempt_number = Column(Integer)
     start_time = Column(DateTime)
     end_time = Column(DateTime)
-    average_power = Column(Float)
     energy_used = Column(Float)
     created_at = Column(DateTime, default=datetime.utcnow)
