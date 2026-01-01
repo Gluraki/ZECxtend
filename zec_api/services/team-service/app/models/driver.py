@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, DateTime, ForeignKey, String
+from sqlalchemy import Column, Integer, DateTime, ForeignKey, String, Float
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from app.database.session import Base
@@ -9,7 +9,7 @@ class Driver(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
     team_id = Column(Integer, ForeignKey('teams.id'))
-    weight = Column(Integer)
+    weight = Column(Float)
     created_at = Column(DateTime, default=datetime.utcnow)
     
     team = relationship("Team", back_populates="drivers")
