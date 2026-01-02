@@ -30,7 +30,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: userdb
       KEYCLOAK_USER_URL: http://keycloak:8080/admin/realms/zec-realm/users
-      AUTH_SERVICE_URL: http://auth-service:8000
+      AUTH_SERVICE_URL: http://auth-service:8002
 
   auth-service:
     build:
@@ -91,7 +91,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: attemptdb
-      SCORE_SERVICE_URL: http://score-service:8000
+      SCORE_SERVICE_URL: http://score-service:8005
 
   score-service:
     build:
