@@ -13,11 +13,13 @@ Repository for **Z**ero**E**mission**C**hallenge-Timing by Darnhofer and Maderba
 | Auth service          | Error handling|
 
 ## Todo list
+- api endpoint documentation
 - attempt number calculation
 - fix score calculation
 - basic tests for all the services
 
 ## Notes and future
+- internalise auth endpoints
 - needs 80% Test converage
 - Frontend is just a html page atm 
 - refrsh tocken blacklisting could be cool
