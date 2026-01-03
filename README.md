@@ -15,10 +15,9 @@ Repository for **Z**ero**E**mission**C**hallenge-Timing by Darnhofer and Maderba
 ## Todo list
 - api endpoint documentation (user and leaderboard missing)
 - change challenge get by name to use query
-- make a crud to delete score
-- fix score calculation
-- basic tests for all the services
 - attempt number calculation
+- basic tests for all the services
+- fix score calculation
 
 ## Notes and future
 - internalise auth endpoints

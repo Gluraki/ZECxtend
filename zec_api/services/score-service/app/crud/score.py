@@ -97,6 +97,12 @@ def update_score(*, db: SessionDep, score_update: ScoreUpdate):
     db.refresh(db_score)
     return db_score
 
+def delete_score(*, db: SessionDep, score_id: int):
+    db_score = get_score(db=db, score_id=score_id)
+    db.delete(db_score)
+    db.commit()
+    return db_score
+
 def get_score(*, db: SessionDep, score_id: int):
     return db.query(Score).filter(Score.id == score_id).first()
 
