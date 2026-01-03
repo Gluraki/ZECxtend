@@ -1,27 +1,11 @@
 # Zec-timing
 Repository for ZeroEmissionChallenge Timing by Darnhofer and Maderbacher
-Web-App branch by Darnhofer
-
-## Services Status
-| Service               | Status         |
-|-----------------------|----------------|
-| User service          | needs cleanup  |
-| Attempt service       | Error handling           |
-| Score service         | logic done needs event based running & Error handling          |
-| Challenge service     | Error handling           |
-| Team/Driver service   | Error handling          |
-| Auth service          | Error handling |
+- Web-App branch by Darnhofer
 
 ## Todo list
-- user service clean up 
-- score service event based 
-- Api gateway
-- basic tests for all the services
-- create a proper keycloak realm import file
+- Add attempt page
+- refactor pages for API changes
 
 ## Notes and future
-- needs 80% Test converage
+- Playwright for testing
 - Frontend is just a html page atm 
-- refrsh tocken blacklisting could be cool
-- limiter for login to "limit" :) spamming 
-- check if using crud in other crud limits the microservices in the future
