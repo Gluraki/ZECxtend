@@ -9,11 +9,12 @@ from app.database.session import engine, Base
 from typing import Callable
 from app.exceptions.exceptions import (
     AuthenticationFailed,
-    AttemptserviceApiError,
+    ChallengeserviceApiError,
     EntityDoesNotExistError,
     InvalidOperationError,
     InvalidTokenError,
     ServiceError,
+    EntityAlreadyExistsError,
 )
 
 def cstm_generate_unique_id(route: APIRoute) -> str:
@@ -40,9 +41,9 @@ def startup_event():
 
 def create_exception_handler(
     status_code: int, initial_detail: str
-) -> Callable[[Request, AttemptserviceApiError], JSONResponse]:
+) -> Callable[[Request, ChallengeserviceApiError], JSONResponse]:
     detail = {"message": initial_detail}
-    async def exception_handler(_: Request, exc: AttemptserviceApiError) -> JSONResponse:
+    async def exception_handler(_: Request, exc: ChallengeserviceApiError) -> JSONResponse:
         if exc.message:
             detail["message"] = exc.message
         if exc.name:
@@ -78,6 +79,13 @@ app.add_exception_handler(
     exc_class_or_status_code=InvalidTokenError,
     handler=create_exception_handler(
         status.HTTP_401_UNAUTHORIZED, "Invalid token, please re-authenticate again."
+    ),
+)
+
+app.add_exception_handler(
+    exc_class_or_status_code=EntityAlreadyExistsError,
+    handler=create_exception_handler(
+        status.HTTP_409_CONFLICT, "Entity already exists."
     ),
 )
 
