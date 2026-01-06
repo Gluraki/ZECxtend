@@ -9,7 +9,7 @@ from app.database.dependency import SessionDep
 KC_USER_URL = settings.KEYCLOAK_USER_URL
 
 def get_admin_token() -> str:
-    access_token = requests.get(f"{settings.AUTH_SERVICE_URL}/api/auth/get-admin-token").json()
+    access_token = requests.get(f"{settings.AUTH_SERVICE_URL}/api/auth/internal/get-admin-token").json()
     return access_token
 
 def get_user_by_username(username: str) -> Optional[dict]:
@@ -53,13 +53,15 @@ def create_user(db: SessionDep, request: CreateUserKC):
         "firstName": "placeholder",
         "lastName": "placeholder",
         "email": placeholder_email,
-        "emailVerified": request.emailVerified,
-        "enabled": request.enabled,
+        "emailVerified": True,
+        "enabled": True,
     }
-
-    if request.credentials:
-        user_data["credentials"] = [cred.dict() for cred in request.credentials]
-
+    user_data["credentials"] = [{
+        "type": "password",
+        "value": request.password,
+        "temporary": False
+    }]
+    
     headers = {
         "Authorization": bearer_token,
         "Content-Type": "application/json",

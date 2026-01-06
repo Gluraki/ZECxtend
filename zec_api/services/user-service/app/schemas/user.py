@@ -18,20 +18,12 @@ class UserUpdate(BaseModel):
 class UserResponse(UserBase):
     id: int
     created_at: Optional[datetime] = None
-
     class Config:
         from_attributes = True
 
-class UserCredentials(BaseModel):
-    type: str = "password"
-    value: str
-    temporary: bool = False
-
 class CreateUserKC(BaseModel):
     username: str
-    emailVerified: bool = True
-    enabled: bool = True
-    credentials: Optional[list[UserCredentials]] = None
+    password: str
 
 class UpdateUserKC(BaseModel):
     username: Optional[str] = None
