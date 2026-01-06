@@ -6,17 +6,16 @@ Repository for **Z**ero**E**mission**C**hallenge-Timing by Darnhofer and Maderba
 | Service               | Status         |
 |-----------------------|----------------|
 | User service          |done|
-| Attempt service       |Error handling|
-| Score service         |Error handling|
+| Attempt service       |done|
+| Score service         |calculation and refresh(acceleration) needs fixes|
 | Challenge service     |done|
 | Team/Driver service   |done|
 | Auth service          |slight auth hardening|
 
 ## Todo list for before 07.01
-- error handling for all
 - basic tests for all the services
 
-## Todo future
+## Todo
 - fix get stuff (url)
 - attempt number calculation
 - fix score calculation
