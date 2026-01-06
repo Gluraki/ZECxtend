@@ -46,7 +46,7 @@ def create_user(db: SessionDep, request: CreateUserKC):
     if response.status_code in (401, 403):
         raise AuthenticationFailed("Authentication failed")
     if response.status_code != 201:
-        raise ServiceError(f"Keycloak error: {response.text}")
+        raise ServiceError("Keycloak error")
     kc_user = get_user_by_username(request.username)
     if not kc_user:
         raise ServiceError("User created but not retrievable")
@@ -81,7 +81,7 @@ def update_user(db: SessionDep, user_id: str, request: UpdateUserKC) -> Optional
     if response.status_code in (401, 403):
         raise AuthenticationFailed("Authentication failed")
     if response.status_code != 204:
-        raise InvalidOperationError(response.text)
+        raise InvalidOperationError("Failed to update user")
     db_user = get_user_by_id_db(db=db, user_id=user_id)
     if not db_user:
         raise EntityDoesNotExistError("User not found in database")
@@ -129,7 +129,7 @@ def add_roles_to_user(user_id: str, roles: list[str]) -> None:
         if role_resp.status_code == 404:
             raise EntityDoesNotExistError(f"Role {role_name} does not exist")
         if role_resp.status_code != 200:
-            raise ServiceError(role_resp.text)
+            raise ServiceError("Failed to assign Roles")
         role_representations.append(role_resp.json())
 
     assign_resp = requests.post(
@@ -171,7 +171,7 @@ def remove_roles_from_user(user_id: str, roles: list[str]) -> None:
 def get_user_by_id_db(db: SessionDep, user_id: str):
     db_user = db.query(User).filter(User.kc_id == user_id).first()
     if not db_user:
-        raise EntityDoesNotExistError
+        raise EntityDoesNotExistError(f"No user for id: {user_id}")
     return db_user
 
 def get_admin_token() -> str:
@@ -190,7 +190,7 @@ def get_user_by_username(username: str) -> Optional[dict]:
     users = response.json()
     user = users[0]
     if not user:
-        raise EntityDoesNotExistError
+        raise EntityDoesNotExistError(f"No user for name: {username}")
     return {
         "id": user["id"],
         "username": user["username"],
@@ -207,7 +207,7 @@ def get_user_by_id(user_id: str) -> dict:
         raise AuthenticationFailed("Authentication failed")
     user = response.json()
     if not user:
-        raise EntityDoesNotExistError
+        raise EntityDoesNotExistError(f"No user for id: {user_id}")
     return {
         "id": user["id"],
         "username": user["username"],
