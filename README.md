@@ -5,7 +5,7 @@ Repository for **Z**ero**E**mission**C**hallenge-Timing by Darnhofer and Maderba
 ## Services Status
 | Service               | Status         |
 |-----------------------|----------------|
-| User service          |Error Handling|
+| User service          |done|
 | Attempt service       |Error handling|
 | Score service         |Error handling|
 | Challenge service     |done|

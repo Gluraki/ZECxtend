@@ -5,6 +5,13 @@ from app.models.user import User
 from datetime import datetime, timezone
 from typing import Optional
 from app.database.dependency import SessionDep
+from app.exceptions.exceptions import (
+    AuthenticationFailed,
+    EntityDoesNotExistError,
+    InvalidOperationError,
+    ServiceError,
+    EntityAlreadyExistsError,
+)
 
 KC_USER_URL = settings.KEYCLOAK_USER_URL
 KC_CLIENTS_URL = settings.KC_CLIENTS_URL
@@ -14,7 +21,6 @@ def create_user(db: SessionDep, request: CreateUserKC):
     access_token = get_admin_token()
     bearer_token = f"Bearer {access_token}"
     placeholder_email = f"{request.username}@placeholder.local"
-
     user_data = {
         "username": request.username,
         #needed due to a bug in Keycloak
@@ -34,21 +40,25 @@ def create_user(db: SessionDep, request: CreateUserKC):
         "Authorization": bearer_token,
         "Content-Type": "application/json",
     }
-
     response = requests.post(KC_USER_URL, json=user_data, headers=headers)
-    if response.status_code == 201:
-        kcuser = get_user_by_username(request.username)
-        if kcuser:
-            kc_id = kcuser.get("id")
-            db_user = User(
-                username=request.username,
-                kc_id=kc_id,
-                created_at=datetime.now(timezone.utc)
-            )
-            db.add(db_user)
-            db.commit()
-            db.refresh(db_user)
-            return db_user
+    if response.status_code == 409:
+        raise EntityAlreadyExistsError("User already exists")
+    if response.status_code in (401, 403):
+        raise AuthenticationFailed("Authentication failed")
+    if response.status_code != 201:
+        raise ServiceError(f"Keycloak error: {response.text}")
+    kc_user = get_user_by_username(request.username)
+    if not kc_user:
+        raise ServiceError("User created but not retrievable")
+    db_user = User(
+        username=request.username,
+        kc_id=kc_user["id"],
+        created_at=datetime.now(timezone.utc),
+    )
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
     
 def update_user(db: SessionDep, user_id: str, request: UpdateUserKC) -> Optional[dict]:
     access_token = get_admin_token()
@@ -56,7 +66,6 @@ def update_user(db: SessionDep, user_id: str, request: UpdateUserKC) -> Optional
         "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json",
     }
-    update_url = f"{KC_USER_URL}/{user_id}"
     user_data = {}
     if request.username is not None:
         user_data["username"] = request.username
@@ -66,8 +75,16 @@ def update_user(db: SessionDep, user_id: str, request: UpdateUserKC) -> Optional
             "value": request.password,
             "temporary": False
         }]
-    response = requests.put(update_url, json=user_data, headers=headers)
+    response = requests.put(f"{KC_USER_URL}/{user_id}", json=user_data, headers=headers)
+    if response.status_code == 404:
+        raise EntityDoesNotExistError("User does not exist")
+    if response.status_code in (401, 403):
+        raise AuthenticationFailed("Authentication failed")
+    if response.status_code != 204:
+        raise InvalidOperationError(response.text)
     db_user = get_user_by_id_db(db=db, user_id=user_id)
+    if not db_user:
+        raise EntityDoesNotExistError("User not found in database")
     if request.username is not None:
         db_user.username = request.username
         db.commit()
@@ -81,10 +98,18 @@ def delete_user(db: SessionDep, user_id: str) -> None:
         "Content-Type": "application/json",
     }
     db_user = get_user_by_id_db(db=db, user_id=user_id)
+    if not db_user:
+        raise EntityDoesNotExistError("User not found")
+    response = requests.delete(f"{KC_USER_URL}/{user_id}",headers=headers)
+    if response.status_code == 404:
+        raise EntityDoesNotExistError("User does not exist in Keycloak")
+    if response.status_code in (401, 403):
+        raise AuthenticationFailed("Authentication failed")
+    if response.status_code != 204:
+        raise ServiceError(response.text)
     db.delete(db_user)
-    db.commit()
-    user_url = f"{KC_USER_URL}/{user_id}"
-    response = requests.delete(user_url, headers=headers)
+    db.commit()   
+    return db_user
 
 def add_roles_to_user(user_id: str, roles: list[str]) -> None:
     access_token = get_admin_token()
@@ -92,29 +117,28 @@ def add_roles_to_user(user_id: str, roles: list[str]) -> None:
         "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json",
     }
-
-    client_search_url = f"{KC_CLIENTS_URL}?clientId={KC_ADMIN_CLIENT_ID}"
-    client_resp = requests.get(client_search_url, headers=headers)
-    client_resp.raise_for_status()
+    client_resp = requests.get(f"{KC_CLIENTS_URL}?clientId={KC_ADMIN_CLIENT_ID}", headers=headers)
+    if client_resp.status_code != 200:
+        raise ServiceError("Unable to resolve client")
     clients = client_resp.json()
     client_uuid = clients[0]["id"]
 
     role_representations = []
     for role_name in roles:
-        role_url = f"{KC_CLIENTS_URL}/{client_uuid}/roles/{role_name}"
-        role_resp = requests.get(role_url, headers=headers)
-        role_resp.raise_for_status()
+        role_resp = requests.get(f"{KC_CLIENTS_URL}/{client_uuid}/roles/{role_name}", headers=headers)
+        if role_resp.status_code == 404:
+            raise EntityDoesNotExistError(f"Role {role_name} does not exist")
+        if role_resp.status_code != 200:
+            raise ServiceError(role_resp.text)
         role_representations.append(role_resp.json())
 
-    role_mapping_url = (
-        f"{KC_USER_URL}/{user_id}/role-mappings/clients/{client_uuid}"
-    )
     assign_resp = requests.post(
-        role_mapping_url,
+        f"{KC_USER_URL}/{user_id}/role-mappings/clients/{client_uuid}",
         json=role_representations,
         headers=headers,
     )
-    assign_resp.raise_for_status()
+    if assign_resp.status_code != 204:
+        raise InvalidOperationError("Failed to assign roles: {roles}")
 
 def remove_roles_from_user(user_id: str, roles: list[str]) -> None:
     access_token = get_admin_token()
@@ -122,32 +146,32 @@ def remove_roles_from_user(user_id: str, roles: list[str]) -> None:
         "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json",
     }
-    client_search_url = f"{KC_CLIENTS_URL}?clientId={KC_ADMIN_CLIENT_ID}"
-    client_resp = requests.get(client_search_url, headers=headers)
-    client_resp.raise_for_status()
-
-    clients = client_resp.json()
-    client_uuid = clients[0]["id"]
+    client_resp = requests.get(f"{KC_CLIENTS_URL}?clientId={KC_ADMIN_CLIENT_ID}", headers=headers)
+    if client_resp.status_code != 200:
+        raise ServiceError("Unable to resolve client")
+    client_uuid = client_resp.json()[0]["id"]
 
     role_representations = []
     for role_name in roles:
-        role_url = f"{KC_CLIENTS_URL}/{client_uuid}/roles/{role_name}"
-        role_resp = requests.get(role_url, headers=headers)
-        role_resp.raise_for_status()
+        role_resp = requests.get(f"{KC_CLIENTS_URL}/{client_uuid}/roles/{role_name}", headers=headers)
+        if role_resp.status_code == 404:
+            raise EntityDoesNotExistError(f"Role {role_name} does not exist")
+        if role_resp.status_code != 200:
+            raise ServiceError(role_resp.text)
         role_representations.append(role_resp.json())
 
-    role_mapping_url = (
-        f"{KC_USER_URL}/{user_id}/role-mappings/clients/{client_uuid}"
-    )
     remove_resp = requests.delete(
-        role_mapping_url,
+        f"{KC_USER_URL}/{user_id}/role-mappings/clients/{client_uuid}",
         json=role_representations,
         headers=headers,
     )
-    remove_resp.raise_for_status()
+    if remove_resp.status_code != 204:
+        raise InvalidOperationError("Failed to remove roles: {roles}")
 
 def get_user_by_id_db(db: SessionDep, user_id: str):
     db_user = db.query(User).filter(User.kc_id == user_id).first()
+    if not db_user:
+        raise EntityDoesNotExistError
     return db_user
 
 def get_admin_token() -> str:
@@ -160,10 +184,13 @@ def get_user_by_username(username: str) -> Optional[dict]:
         "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json",
     }
-    search_url = f"{KC_USER_URL}?exact=true&username={username}"
-    response = requests.get(search_url, headers=headers)
+    response = requests.get(f"{KC_USER_URL}?exact=true&username={username}", headers=headers)
+    if response.status_code in (401, 403):
+        raise AuthenticationFailed("Authentication failed")
     users = response.json()
     user = users[0]
+    if not user:
+        raise EntityDoesNotExistError
     return {
         "id": user["id"],
         "username": user["username"],
@@ -175,9 +202,12 @@ def get_user_by_id(user_id: str) -> dict:
         "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json",
     }
-    user_url = f"{KC_USER_URL}/{user_id}"
-    response = requests.get(user_url, headers=headers)
+    response = requests.get(f"{KC_USER_URL}/{user_id}", headers=headers)
+    if response.status_code in (401, 403):
+        raise AuthenticationFailed("Authentication failed")
     user = response.json()
+    if not user:
+        raise EntityDoesNotExistError
     return {
         "id": user["id"],
         "username": user["username"],
