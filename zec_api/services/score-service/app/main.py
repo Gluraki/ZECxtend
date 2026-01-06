@@ -7,7 +7,7 @@ from app.database.session import engine, Base
 from typing import Callable
 from app.exceptions.exceptions import (
     AuthenticationFailed,
-    AttemptserviceApiError,
+    ScoreserviceApiError,
     EntityDoesNotExistError,
     InvalidOperationError,
     InvalidTokenError,
@@ -32,9 +32,9 @@ Base.metadata.create_all(bind=engine)
 
 def create_exception_handler(
     status_code: int, initial_detail: str
-) -> Callable[[Request, AttemptserviceApiError], JSONResponse]:
+) -> Callable[[Request, ScoreserviceApiError], JSONResponse]:
     detail = {"message": initial_detail}
-    async def exception_handler(_: Request, exc: AttemptserviceApiError) -> JSONResponse:
+    async def exception_handler(_: Request, exc: ScoreserviceApiError) -> JSONResponse:
         if exc.message:
             detail["message"] = exc.message
         if exc.name:

@@ -8,7 +8,7 @@ Repository for **Z**ero**E**mission**C**hallenge-Timing by Darnhofer and Maderba
 | User service          |Error Handling|
 | Attempt service       |Error handling|
 | Score service         |Error handling|
-| Challenge service     |Error handling|
+| Challenge service     |done|
 | Team/Driver service   |done|
 | Auth service          |slight auth hardening|
 
