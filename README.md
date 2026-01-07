@@ -12,9 +12,6 @@ Repository for **Z**ero**E**mission**C**hallenge-Timing by Darnhofer and Maderba
 | Team/Driver service   |done|
 | Auth service          |slight auth hardening|
 
-## Todo list for before 07.01
-- basic tests for all the services
-
 ## Todo
 - fix get stuff (url)
 - attempt number calculation
