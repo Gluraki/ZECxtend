@@ -30,7 +30,8 @@ app = FastAPI(
 )
 
 app.include_router(api_router, prefix=settings.API_STR)
-Base.metadata.create_all(bind=engine)
+if settings.ENVIRONMENT != "testing":
+    Base.metadata.create_all(bind=engine)
 
 @app.on_event("startup")
 def startup_event():

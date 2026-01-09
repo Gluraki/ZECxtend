@@ -4,6 +4,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+os.environ.setdefault("ENVIRONMENT", "testing")
 os.environ.setdefault("PROJECT_NAME", "test")
 os.environ.setdefault("POSTGRES_SERVER", "localhost")
 os.environ.setdefault("POSTGRES_USER", "test")
