@@ -5,8 +5,19 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime, timedelta
 
+os.environ.setdefault("ENVIRONMENT", "testing")
+os.environ.setdefault("PROJECT_NAME", "test")
+os.environ.setdefault("POSTGRES_SERVER", "localhost")
+os.environ.setdefault("POSTGRES_USER", "test")
+os.environ.setdefault("POSTGRES_PASSWORD", "test")
+os.environ.setdefault("POSTGRES_DB", "test")
+os.environ.setdefault("SCORE_SERVICE_URL", "http://score")
+os.environ.setdefault("TEAM_SERVICE_URL", "http://team")
+os.environ.setdefault("CHALLENGE_SERVICE_URL", "http://challenge")
+
 from app.main import app
-from app.database.session import Base, get_db
+from app.database.session import Base
+from app.database.dependency import get_db
 from app.models.attempt import Attempt
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
