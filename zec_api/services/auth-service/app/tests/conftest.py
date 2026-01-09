@@ -5,7 +5,12 @@ from fastapi.testclient import TestClient
 os.environ.setdefault("KEYCLOAK_URL", "http://keycloak")
 os.environ.setdefault("KEYCLOAK_TOKEN_URL", "http://keycloak/token")
 os.environ.setdefault("KEYCLOAK_JWKS_URL", "http://keycloak/jwks")
-
+os.environ.setdefault("ENVIRONMENT", "testing")
+os.environ.setdefault("PROJECT_NAME", "test")
+os.environ.setdefault("POSTGRES_SERVER", "localhost")
+os.environ.setdefault("POSTGRES_USER", "test")
+os.environ.setdefault("POSTGRES_PASSWORD", "test")
+os.environ.setdefault("POSTGRES_DB", "test")
 os.environ.setdefault("KEYCLOAK_CLIENT_ID", "client")
 os.environ.setdefault("KEYCLOAK_CLIENT_SECRET", "secret")
 os.environ.setdefault("KEYCLOAK_ADMIN_CLIENT_ID", "admin-client")
