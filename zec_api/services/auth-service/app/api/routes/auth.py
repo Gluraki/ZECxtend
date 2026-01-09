@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Form, HTTPException, status
 import app.crud.auth as crud
+from app.database.dependency import ViewerUser, TeamLeadUser, AdminUser
 from fastapi import Depends
 
 router = APIRouter()
@@ -35,6 +36,51 @@ def verify_token(current_user: dict = Depends(crud.get_current_user)):
             detail="Invalid or missing token"
         )
 
+    return {
+        "active": True,
+        "sub": current_user["sub"],
+        "username": current_user["username"],
+        "email": current_user["email"],
+        "roles": current_user["roles"],
+    }
+
+@router.get("/internal/verify/admin", status_code=status.HTTP_200_OK)
+def verify_admin(current_user: AdminUser):
+    if not current_user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or missing token"
+        )
+    return {
+        "active": True,
+        "sub": current_user["sub"],
+        "username": current_user["username"],
+        "email": current_user["email"],
+        "roles": current_user["roles"],
+    }
+
+@router.get("/internal/verify/teamlead", status_code=status.HTTP_200_OK)
+def verify_teamlead(current_user: TeamLeadUser):
+    if not current_user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or missing token"
+        )
+    return {
+        "active": True,
+        "sub": current_user["sub"],
+        "username": current_user["username"],
+        "email": current_user["email"],
+        "roles": current_user["roles"],
+    }
+
+@router.get("/internal/verify/viewer", status_code=status.HTTP_200_OK)
+def verify_viewer(current_user: ViewerUser):
+    if not current_user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or missing token"
+        )
     return {
         "active": True,
         "sub": current_user["sub"],
