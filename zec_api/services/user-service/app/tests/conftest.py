@@ -5,16 +5,23 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from unittest.mock import patch, MagicMock
 
-from app.main import app
-from app.database.session import Base
-from app.database.dependency import get_db
-from app.models.user import User
+os.environ.setdefault("ENVIRONMENT", "testing")
+os.environ.setdefault("PROJECT_NAME", "test")
+os.environ.setdefault("POSTGRES_SERVER", "localhost")
+os.environ.setdefault("POSTGRES_USER", "test")
+os.environ.setdefault("POSTGRES_PASSWORD", "test")
+os.environ.setdefault("POSTGRES_DB", "test")
 
 os.environ.setdefault("PROJECT_NAME", "test")
 os.environ.setdefault("KEYCLOAK_USER_URL", "http://keycloak/users")
 os.environ.setdefault("KC_CLIENTS_URL", "http://keycloak/clients")
 os.environ.setdefault("KC_ADMIN_CLIENT_ID", "admin-cli")
 os.environ.setdefault("AUTH_SERVICE_URL", "http://auth")
+
+from app.main import app
+from app.database.session import Base
+from app.database.dependency import get_db
+from app.models.user import User
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test_user.db"
 
