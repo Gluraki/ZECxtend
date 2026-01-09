@@ -16,7 +16,8 @@ Repository for **Z**ero**E**mission**C**hallenge-Timing by Darnhofer and Maderba
 - fix get stuff (url)
 - attempt number calculation
 - fix score calculation
-- use rbac at gateway level
+- internalise auth endpoints
+- rbac at gateway level (needs more verify endpoints (depends exists))
 
 ## Notes and future
 - needs 80% Test converage
