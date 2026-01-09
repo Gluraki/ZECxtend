@@ -1,5 +1,5 @@
 # ZEC-API Table of Contents
-### [Notes](#notes)
+### [README](#notes)
 - ## 1. Attempts
   - 1.1 [Create Attempt](#create-attempt)
   - 1.2 [Update Attempt](#update-attempt)
