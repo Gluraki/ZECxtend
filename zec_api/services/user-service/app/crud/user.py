@@ -112,6 +112,7 @@ def delete_user(db: SessionDep, user_id: str) -> None:
     return db_user
 
 def add_roles_to_user(user_id: str, roles: list[str]) -> None:
+    get_user_by_id(user_id)
     access_token = get_admin_token()
     headers = {
         "Authorization": f"Bearer {access_token}",
@@ -141,6 +142,7 @@ def add_roles_to_user(user_id: str, roles: list[str]) -> None:
         raise InvalidOperationError("Failed to assign roles: {roles}")
 
 def remove_roles_from_user(user_id: str, roles: list[str]) -> None:
+    get_user_by_id(user_id)
     access_token = get_admin_token()
     headers = {
         "Authorization": f"Bearer {access_token}",
@@ -150,7 +152,6 @@ def remove_roles_from_user(user_id: str, roles: list[str]) -> None:
     if client_resp.status_code != 200:
         raise ServiceError("Unable to resolve client")
     client_uuid = client_resp.json()[0]["id"]
-
     role_representations = []
     for role_name in roles:
         role_resp = requests.get(f"{KC_CLIENTS_URL}/{client_uuid}/roles/{role_name}", headers=headers)
@@ -187,10 +188,10 @@ def get_user_by_username(username: str) -> Optional[dict]:
     response = requests.get(f"{KC_USER_URL}?exact=true&username={username}", headers=headers)
     if response.status_code in (401, 403):
         raise AuthenticationFailed("Authentication failed")
+    if response.status_code == 404:
+        raise EntityDoesNotExistError(f"No user for id: {username}")
     users = response.json()
     user = users[0]
-    if not user:
-        raise EntityDoesNotExistError(f"No user for name: {username}")
     return {
         "id": user["id"],
         "username": user["username"],
@@ -205,9 +206,9 @@ def get_user_by_id(user_id: str) -> dict:
     response = requests.get(f"{KC_USER_URL}/{user_id}", headers=headers)
     if response.status_code in (401, 403):
         raise AuthenticationFailed("Authentication failed")
-    user = response.json()
-    if not user:
+    if response.status_code == 404:
         raise EntityDoesNotExistError(f"No user for id: {user_id}")
+    user = response.json()
     return {
         "id": user["id"],
         "username": user["username"],
