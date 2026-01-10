@@ -17,11 +17,7 @@ Repository for **Z**ero**E**mission**C**hallenge-Timing by Darnhofer and Maderba
 - Attempt endpoints for energy are missing
 - attempt number calculation
 - fix score calculation
-- use rbac at gateway level
 - Upgrades for auth services regarding security
 - fix tests and warnings
 - add more tests to get 80% coverage
-
-## Notes and future
-- refresh tocken blacklisting could be cool
-- limiter for login to "limit" :) spamming 
+- make delete user say something (API)

@@ -49,7 +49,7 @@
 When talking about access_token in this document i am referring to the token gotten by [Login](#login)
 ### Attempt
 #### Create Attempt
-Needs Bearer authorization header containing `access_token`  
+Needs Bearer authorization header containing `access_token` from a user with admin role  
 `POST`
 
 **URL** http://hostname/attempts/
@@ -67,7 +67,7 @@ Needs Bearer authorization header containing `access_token`
 }
 ```
 #### Update Attempt
-Needs Bearer authorization header containing `access_token`  
+Needs Bearer authorization header containing `access_token` from a user with admin role  
 `PUT`
 
 **URL** http://hostname/attempts/{attempt_id}
@@ -86,32 +86,32 @@ All fields are optional depending on what needs to be updated.
 }
 ```
 #### Delete Attempt
-Needs Bearer authorization header containing `access_token`  
+Needs Bearer authorization header containing `access_token` from a user with admin role  
 `DEL`
 
 **URL** http://hostname/attempts/{attempt_id}
 #### Get Attempt
-Needs Bearer authorization header containing `access_token`  
+Needs Bearer authorization header containing `access_token` from a user with admin role  
 `GET`
  
 **URL** http://hostname/attempts/{attempt_id}
 #### Get Attempts (all)
-Needs Bearer authorization header containing `access_token`  
+Needs Bearer authorization header containing `access_token` from a user with admin role  
 `GET`
  
 **URL** http://hostname/attempts/
 #### Get Attempts per Challenge
-Needs Bearer authorization header containing `access_token`  
+Needs Bearer authorization header containing `access_token` from a user with admin role  
 `GET`
 
 **URL** http://hostname/attempts/challenges/{challenge_id}
 #### Get Fastest Attempt for a Challenge
-Needs Bearer authorization header containing `access_token`  
+Needs Bearer authorization header containing `access_token` from a user with admin role  
 `GET`
 
 **URL** http://hostname/attempts/fastest/{challenge_id}
 #### Get Fastest Attempt for a Team in a Challenge
-Needs Bearer authorization header containing `access_token`  
+Needs Bearer authorization header containing `access_token` from a user with admin role  
 `GET`
  
 **URL** http://hostname/attempts/fastest/per-team/?challenge_id={challenge_id}&team_id={team_id}
@@ -143,7 +143,7 @@ Content-Type: `application/x-www-form-urlencoded`
 - `refresh_token` (string, required)
 ### Challenge
 #### Update Challenge
-Needs Bearer authorization header containing `access_token`  
+Needs Bearer authorization header containing `access_token` from a user with admin role  
 `PUT`
  
 **URL** http://hostname/challenges/{challenge_id}
@@ -162,23 +162,23 @@ All fields are optional depending on what needs to be updated.
 }
 ```
 #### Get Challenge by ID
-Needs Bearer authorization header containing `access_token`  
+Needs Bearer authorization header containing `access_token` from a user with admin role  
 `GET`
   
 **URL** http://hostname/challenges/{challenge_id}
 #### Get Challenge by Name
-Needs Bearer authorization header containing `access_token`  
+Needs Bearer authorization header containing `access_token` from a user with admin role  
 `GET`
   
 **URL** http://hostname/challenges/name/{challenge_name}
 #### Get Challenges (all)
-Needs Bearer authorization header containing `access_token`  
+Needs Bearer authorization header containing `access_token` from a user with admin role  
 `GET`
 
 **URL** http://hostname/challenges/
 ### Score
 #### Create Score
-Needs Bearer authorization header containing acces_token
+Needs Bearer authorization header containing `access_token` from a user with admin role  
 
 `POST`
 
@@ -191,7 +191,7 @@ Needs Bearer authorization header containing acces_token
 }
 ```
 #### Update Score
-Needs Bearer authorization header containing acces_token
+Needs Bearer authorization header containing `access_token` from a user with admin role  
 `PUT`
 
 **URL** http://hostname/scores/{score_id}
@@ -203,28 +203,28 @@ Needs Bearer authorization header containing acces_token
 }
 ```
 #### Delete Score
-Needs Bearer authorization header containing acces_token
+Needs Bearer authorization header containing `access_token` from a user with admin role  
 `DEL`
 
 **URL** http://hostname/scores/{score_id}
 #### Get Score
-Needs Bearer authorization header containing acces_token
+Needs Bearer authorization header containing `access_token` from a user with admin role  
 `GET`
 
 **URL** http://hostname/scores/{score_id}
 #### Get Scores (all)
-Needs Bearer authorization header containing acces_token
+Needs Bearer authorization header containing `access_token` from a user with admin role  
 `GET`
 
 **URL** http://hostname/scores/
 #### Get leaderboard
-Needs Bearer authorization header containing acces_token
+Needs Bearer authorization header containing `access_token` from a user with admin role  
 `GET`
 
 **URL** http://hostname/leaderboard/{challenge_id}
 ### Team
 #### Create Team
-Needs Bearer authorization header containing acces_token
+Needs Bearer authorization header containing `access_token` from a user with admin role  
 `POST`
 
 **URL** http://hostname/teams/
@@ -239,7 +239,7 @@ Needs Bearer authorization header containing acces_token
 }
 ```
 #### Update Team
-Needs Bearer authorization header containing acces_token
+Needs Bearer authorization header containing `access_token` from a user with team_lead role  
 `PUT`
 
 **URL** http://hostname/teams/{team_id}
@@ -256,29 +256,29 @@ Everything is optional depending on what needs to be updated
 }
 ```
 #### Delete Team
-Needs Bearer authorization header containing acces_token
+Needs Bearer authorization header containing `access_token` from a user with admin role  
 `DEL`
 
 **URL** http://hostname/teams/{team_id}
 #### Get Team
-Needs Bearer authorization header containing acces_token
+Needs Bearer authorization header containing `access_token` from a user with admin role  
 `GET`
 
 **URL** http://hostname/teams/{team_id}
 #### Get Teams (all)
-Needs Bearer authorization header containing acces_token
+Needs Bearer authorization header containing `access_token` from a user with admin role  
 `GET`
 
 **URL** http://hostname/teams/
 #### Get teams with ids
-Needs Bearer authorization header containing acces_token
+Needs Bearer authorization header containing `access_token` from a user with admin role  
 `GET`
 
 **URL** http://hostname/teams/by-ids/?team_ids=1&team_ids=2 etc..
 pass ids as parameters
 ### Driver
 #### Create Driver
-Needs Bearer authorization header containing acces_token
+Needs Bearer authorization header containing `access_token` from a user with admin role  
 `POST`
 
 **URL**http://hostname/drivers/
@@ -292,7 +292,7 @@ Needs Bearer authorization header containing acces_token
 }
 ```
 #### Update Driver
-Needs Bearer authorization header containing acces_token
+Needs Bearer authorization header containing `access_token` from a user with teamlead role  
 `PUT`
 
 **URL** http://hostname/teams/{driver_id}
@@ -309,23 +309,23 @@ Everything is optional depending on what needs to be updated
 }
 ```
 #### Delete Driver
-Needs Bearer authorization header containing acces_token
+Needs Bearer authorization header containing `access_token` from a user with admin role  
 `DEL`
 
 **URL** http://hostname/drivers/{driver_id}
 #### Get Driver
-Needs Bearer authorization header containing acces_token
+Needs Bearer authorization header containing `access_token` from a user with admin role  
 `GET`
 
 **URL** http://hostname/drivers/{driver_id}
 #### Get Drivers (all)
-Needs Bearer authorization header containing acces_token
+Needs Bearer authorization header containing `access_token` from a user with admin role  
 `GET`
 
 **URL** http://hostname/drivers/
 ### User
 #### Create User
-Needs Bearer authorization header containing `access_token`  
+Needs Bearer authorization header containing `access_token` from a user with admin role  
 `POST`
  
 **URL** http://hostname/users/
@@ -339,7 +339,7 @@ Needs Bearer authorization header containing `access_token`
 }
 ```
 #### Get User by Username
-Needs Bearer authorization header containing `access_token`  
+Needs Bearer authorization header containing `access_token` from a user with admin role  
 `GET`
 
 **URL** http://hostname/users/username/{username}
@@ -348,7 +348,7 @@ Needs Bearer authorization header containing `access_token`
 
 - `username` (string): Username of the user
 #### Get User by ID
-Needs Bearer authorization header containing `access_token`  
+Needs Bearer authorization header containing `access_token` from a user with admin role  
 `GET`
 
 **URL** http://hostname/users/id/{id}
@@ -356,7 +356,7 @@ Needs Bearer authorization header containing `access_token`
 **Path Parameters**
 - `id` (string): Keycloak user ID
 #### Update User
-Needs Bearer authorization header containing `access_token`  
+Needs Bearer authorization header containing `access_token` from a user with admin role  
 `PUT`
 
 **URL** http://hostname/users/{user_id}
@@ -373,7 +373,7 @@ Needs Bearer authorization header containing `access_token`
 }
 ```
 #### Delete User
-Needs Bearer authorization header containing `access_token`  
+Needs Bearer authorization header containing `access_token` from a user with admin role  
 `DEL`
 
 **URL** http://hostname/users/{user_id}
