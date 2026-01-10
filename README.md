@@ -20,4 +20,3 @@ Repository for **Z**ero**E**mission**C**hallenge-Timing by Darnhofer and Maderba
 - Upgrades for auth services regarding security
 - fix tests and warnings
 - add more tests to get 80% coverage
-- make delete user say something (API)
