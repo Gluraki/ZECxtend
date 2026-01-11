@@ -45,3 +45,13 @@ def fastest_attempt(db: SessionDep, challenge_id: int):
 def fastest_attempts_per_team(db: SessionDep, challenge_id: int, team_id: int):
     attempts = crud.get_fastest_attempt_for_team(db=db, challenge_id=challenge_id, team_id=team_id)
     return attempts
+
+@router.get("/least-energy/{challenge_id}", response_model=AttemptResponse)
+def least_energy_attempt(db: SessionDep, challenge_id: int):
+    attempts = crud.get_least_energy_attempt(db=db, challenge_id=challenge_id)
+    return attempts
+
+@router.get("/least-energy/per-team/", response_model=AttemptResponse)
+def least_energy_attempts_per_team(db: SessionDep, challenge_id: int, team_id: int):
+    attempts = crud.get_least_energy_attempt_for_team(db=db, challenge_id=challenge_id, team_id=team_id)
+    return attempts

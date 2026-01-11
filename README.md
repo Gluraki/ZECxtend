@@ -14,7 +14,6 @@ Repository for **Z**ero**E**mission**C**hallenge-Timing by Darnhofer and Maderba
 
 ## Todo
 - category for challenges (close to series, advanced class, professional class)
-- Attempt endpoints for energy are missing
 - attempt number calculation
 - fix score calculation
 - Upgrades for auth services regarding security

@@ -9,6 +9,8 @@
   - 1.6 [Get Attempts per Challenge](#get-attempts-per-challenge)
   - 1.7 [Get Fastest Attempt for a Challenge](#get-fastest-attempt-for-a-challenge)
   - 1.8 [Get Fastest Attempt for a Team in a Challenge](#get-fastest-attempt-for-a-team-in-a-challenge)
+  - 1.8 [Get Least Energy Attempt for a Challenge](#get-least-energy-attempt-for-a-challenge)
+  - 1.9 [Get Least Energy Attempt for a Team in a Challenge](#get-least-energy-attempt-for-a-team-in-a-challenge)
 - ## 2. Auth
   - 2.1 [Login](#login)
   - 2.2 [Refresh Token](#refresh-token)
@@ -115,6 +117,20 @@ Needs Bearer authorization header containing `access_token` from a user with adm
 `GET`
  
 **URL** http://hostname/attempts/fastest/per-team/?challenge_id={challenge_id}&team_id={team_id}
+
+**Query Parameters**
+- `challenge_id` (int): ID of the challenge  
+- `team_id` (int): ID of the team
+#### Get Least Energy Attempt for a Challenge
+Needs Bearer authorization header containing `access_token` from a user with admin role  
+`GET`
+
+**URL** http://hostname/attempts/least-energy/{challenge_id}
+#### Get Least Energy Attempt for a Team in a Challenge
+Needs Bearer authorization header containing `access_token` from a user with admin role  
+`GET`
+ 
+**URL** http://hostname/attempts/least-energy/per-team/?challenge_id={challenge_id}&team_id={team_id}
 
 **Query Parameters**
 - `challenge_id` (int): ID of the challenge  
