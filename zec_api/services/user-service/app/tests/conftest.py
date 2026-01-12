@@ -66,10 +66,20 @@ def mock_admin_token():
 @pytest.fixture(autouse=True)
 def mock_requests():
     with patch("app.crud.user.requests") as mock_requests:
-        mock_requests.get.return_value = MagicMock(
-            status_code=200,
-            json=lambda: [{"id": "kc-123", "username": "testuser"}],
-        )
+        def _get_side_effect(url, *args, **kwargs):
+            if "username=newuser" in url or "username=apiuser" in url:
+                return MagicMock(
+                    status_code=200,
+                    json=lambda: [{"id": "kc-12345", "username": url.split("username=")[-1]}],
+                )
+            if "username=testuser" in url:
+                return MagicMock(
+                    status_code=200,
+                    json=lambda: [{"id": "kc-123", "username": "testuser"}],
+                )
+            return MagicMock(status_code=200, json=lambda: {})
+
+        mock_requests.get.side_effect = _get_side_effect
         mock_requests.post.return_value = MagicMock(status_code=201)
         mock_requests.put.return_value = MagicMock(status_code=204)
         mock_requests.delete.return_value = MagicMock(status_code=204)

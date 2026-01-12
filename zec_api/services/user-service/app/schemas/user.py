@@ -18,7 +18,7 @@ class UserUpdate(BaseModel):
 class UserResponse(UserBase):
     id: int
     created_at: Optional[datetime] = None
-    class Config:
+    class ConfigDict:
         from_attributes = True
 
 class CreateUserKC(BaseModel):
