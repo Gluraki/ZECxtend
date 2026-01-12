@@ -45,11 +45,11 @@ def seeded_challenges(db):
     challenges = [
         Challenge(
             name="challenge-one",
-            description="First challenge",
+            max_attempts=3,
         ),
         Challenge(
             name="challenge-two",
-            description="Second challenge",
+            max_attempts=5,
         ),
     ]
 

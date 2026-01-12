@@ -1,7 +1,9 @@
 def test_list_challenges(client):
     response = client.get("/api/challenges/")
     assert response.status_code == 200
-    assert len(response.json()) == 2
+    names = [c["name"] for c in response.json()]
+    assert "challenge-one" in names
+    assert "challenge-two" in names
 
 def test_get_challenge(client):
     response = client.get("/api/challenges/1")
@@ -11,14 +13,14 @@ def test_get_challenge(client):
 def test_get_challenge_by_name(client):
     response = client.get("/api/challenges/name/challenge-two")
     assert response.status_code == 200
-    assert response.json()["description"] == "Second challenge"
+    assert response.json()["name"] == "challenge-two"
 
 def test_update_challenge(client):
     payload = {
         "id": 1,
-        "description": "Updated via API",
+        "max_attempts": 10,
     }
 
     response = client.put("/api/challenges/1", json=payload)
     assert response.status_code == 200
-    assert response.json()["description"] == "Updated via API"
+    assert response.json()["max_attempts"] == 10

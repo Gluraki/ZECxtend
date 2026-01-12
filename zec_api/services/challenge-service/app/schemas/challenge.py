@@ -25,5 +25,5 @@ class ChallengeResponse(ChallengeBase):
     id: int
     created_at: Optional[datetime] = None
 
-    class Config:
+    class ConfigDict:
         from_attributes = True
