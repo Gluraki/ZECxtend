@@ -1,4 +1,4 @@
-def test_leaderboard_endpoint(client, mock_requests):
+def test_leaderboard_category_endpoint(client, mock_requests):
     mock_requests.get.side_effect = [
         type("Resp", (), {
             "status_code": 200,
@@ -7,16 +7,16 @@ def test_leaderboard_endpoint(client, mock_requests):
                 {"id": 2, "team_id": 20},
             ],
         })(),
-        # teams
         type("Resp", (), {
             "status_code": 200,
             "json": lambda: [
-                {"id": 10, "name": "Team A"},
-                {"id": 20, "name": "Team B"},
+                {"id": 10, "name": "Team A", "category": "close_to_series"},
+                {"id": 20, "name": "Team B", "category": "advanced_class"},
             ],
         })(),
     ]
-
-    resp = client.get("/api/leaderboard/1")
+    resp = client.get("/api/leaderboard/1/category/close_to_series")
     assert resp.status_code == 200
-    assert len(resp.json()) == 2
+    data = resp.json()
+    assert len(data) == 1
+    assert data[0]["team"]["id"] == 10

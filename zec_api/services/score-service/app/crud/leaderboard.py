@@ -12,7 +12,7 @@ from app.exceptions.exceptions import (
 ATTEMPT_URL = settings.ATTEMPT_SERVICE_URL
 TEAM_URL = settings.TEAM_SERVICE_URL
 
-def get_leaderboard(db: SessionDep, challenge_id: int):
+def get_leaderboard(db: SessionDep, challenge_id: int, category: str | None = None):
     attempts_resp = requests.get(f"{ATTEMPT_URL}/api/attempts/challenges/{challenge_id}")
     if attempts_resp.status_code == 404:
         raise EntityDoesNotExistError("No attempts found for this challenge")
@@ -55,5 +55,12 @@ def get_leaderboard(db: SessionDep, challenge_id: int):
         team = team_by_id.get(team_id)
         if not team:
             raise EntityDoesNotExistError(f"Team data missing for team_id {team_id}")
+        if category is not None and team.get("category") != category:
+            continue
         leaderboard.append(LeaderboardResponse(score=score, team=team))
+    if not leaderboard:
+        if category is not None:
+            raise EntityDoesNotExistError(f"No teams found for category {category} with scores")
+        raise EntityDoesNotExistError("No teams with scores found")
+    leaderboard.sort(key=lambda x: x.score.value, reverse=True)
     return leaderboard

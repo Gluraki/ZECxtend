@@ -238,7 +238,7 @@ Needs Bearer authorization header containing `access_token` from a user with adm
 Needs Bearer authorization header containing `access_token` from a user with admin role  
 `GET`
 
-**URL** http://hostname/leaderboard/{challenge_id}
+**URL** http://hostname/leaderboard/{challenge_id}/category{category}
 ### Team
 #### Create Team
 Needs Bearer authorization header containing `access_token` from a user with admin role  
