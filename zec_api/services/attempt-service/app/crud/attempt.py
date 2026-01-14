@@ -92,7 +92,7 @@ def get_attempts(*, db: SessionDep):
     return db.query(Attempt).all()
 
 def get_attempts_for_challenge(*, db: SessionDep, challenge_id: int):
-    db_attempt = db.query(Attempt).filter(Attempt.challenge_id == challenge_id, Attempt.is_valid == True).all()
+    db_attempt = db.query(Attempt).filter(Attempt.challenge_id == challenge_id, Attempt.is_valid).all()
     if not db_attempt:
         raise EntityDoesNotExistError("Attempt does not exist")
     return db_attempt
@@ -102,7 +102,7 @@ def get_fastest_attempt(*, db: SessionDep, challenge_id: int):
         db.query(Attempt)
         .filter(
             Attempt.challenge_id == challenge_id, 
-            Attempt.is_valid == True)
+            Attempt.is_valid)
         .all()
     )
     if not db_attempts:
@@ -116,7 +116,8 @@ def get_fastest_attempt_for_team(*, db: SessionDep, team_id: int, challenge_id: 
         .filter(
             Attempt.team_id == team_id,
             Attempt.challenge_id == challenge_id,
-            Attempt.is_valid == True
+            Attempt.is_valid
+
         )
         .all()
     )
@@ -128,7 +129,7 @@ def get_fastest_attempt_for_team(*, db: SessionDep, team_id: int, challenge_id: 
 def get_least_energy_attempt(*, db: SessionDep, challenge_id: int):
     db_attempt = (
         db.query(Attempt)
-        .filter(Attempt.challenge_id == challenge_id, Attempt.is_valid == True)
+        .filter(Attempt.challenge_id == challenge_id, Attempt.is_valid)
         .order_by(Attempt.energy_used)
         .first()
     )
@@ -142,7 +143,7 @@ def get_least_energy_attempt_for_team(*, db: SessionDep, team_id: int, challenge
         .filter(
             Attempt.team_id == team_id,
             Attempt.challenge_id == challenge_id,
-            Attempt.is_valid == True
+            Attempt.is_valid
         )
         .order_by(Attempt.energy_used)
         .first()
@@ -157,7 +158,7 @@ def get_attempts_for_team_per_challenge(*, db: SessionDep, team_id: int, challen
         .filter(
             Attempt.team_id == team_id,
             Attempt.challenge_id == challenge_id,
-            Attempt.is_valid == True
+            Attempt.is_valid
         )
         .all()
     )
