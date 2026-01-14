@@ -5,8 +5,7 @@ from app.schemas.team import TeamResponse
 class LeaderboardResponse(BaseModel):
     score: ScoreResponse
     team: TeamResponse
-
-    class Config:
+    class ConfigDict:
         from_attributes = True
 
 

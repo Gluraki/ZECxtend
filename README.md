@@ -13,4 +13,5 @@ Repository for **Z**ero**E**mission**C**hallenge-Timing by Darnhofer and Maderba
 | Auth service          |done|
 
 ## Todo
-- fix score calculation PENALTY
+- fix score calculation
+- trigger score reload when penalty is added

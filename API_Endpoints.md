@@ -47,6 +47,13 @@
   - 7.5 [Delete User](#delete-user)
   - 7.6 [Assign Roles](#assign-roles)
   - 7.7 [Remove Roles](#remove-roles)
+- ## 8. Penalty
+  - 8.1 [Create Penalty](#create-penalty)
+  - 8.2 [Update Penalty](#update-penalty)
+  - 8.3 [Delete Penalty](#delete-penalty)
+  - 8.4 [Get Penalty](#get-penalty)
+  - 8.5 [Get Penalties (all)](#get-penalties-all)
+  - 8.6 [Get Penalties for Attempt](#get-penalties-for-attempt)
 ### Notes
 - When talking about access_token in this document i am referring to the token gotten by [Login](#login)
 - Also users with the role admin have acces to teamlead endpoints
@@ -431,3 +438,54 @@ Needs Bearer authorization header containing `access_token`
     "roles": [list]
 }
 ```
+### Penalty
+#### Create Penalty
+Needs Bearer authorization header containing `access_token` from a user with admin role  
+`POST`
+
+**URL**http://hostname/penalties/
+
+**Request Body Format**
+```json
+{
+  "attempt_id" : int,
+  "penalty_amount": float,
+  "type": penalty_type
+}
+```
+#### Update Penalty
+Needs Bearer authorization header containing `access_token` from a user with teamlead role  
+`PUT`
+
+**URL** http://hostname/penalties/{penalty_id}
+
+**Request Body Format**
+
+Everything is optional depending on what needs to be updated
+```json
+{
+  "attempt_id" : int,
+  "penalty_amount": float,
+  "type": penalty_type
+}
+```
+#### Delete Penalty
+Needs Bearer authorization header containing `access_token` from a user with admin role  
+`DEL`
+
+**URL** http://hostname/penalties/{penalty_id}
+#### Get Penalty
+Needs Bearer authorization header containing `access_token` from a user with admin role  
+`GET`
+
+**URL** http://hostname/penalties/{penalty_id}
+#### Get Penalties (all)
+Needs Bearer authorization header containing `access_token` from a user with admin role  
+`GET`
+
+**URL** http://hostname/penalties/
+#### Get Penalties for Attempt
+Needs Bearer authorization header containing `access_token` from a user with admin role  
+`GET`
+
+**URL** http://hostname/penalties/attempt/{attempt_id}

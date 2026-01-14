@@ -9,5 +9,5 @@ class TeamResponse(BaseModel):
     rfid_identifier: Optional[str] = None
     created_at: Optional[datetime] = None
 
-    class Config:
+    class ConfigDict:
         from_attributes = True

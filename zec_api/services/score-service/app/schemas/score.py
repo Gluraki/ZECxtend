@@ -16,6 +16,5 @@ class ScoreUpdate(BaseModel):
 class ScoreResponse(ScoreBase):
     id: int
     created_at: datetime
-
-    class Config:
+    class ConfigDict:
         from_attributes = True
