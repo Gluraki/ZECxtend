@@ -27,5 +27,5 @@ class AttemptResponse(AttemptBase):
     created_at: datetime
     is_valid: bool
 
-    class Config:
+    class ConfigDict:
         from_attributes = True

@@ -3,24 +3,23 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from unittest.mock import patch, Mock
 from datetime import datetime, timedelta
-
 os.environ.setdefault("ENVIRONMENT", "testing")
 os.environ.setdefault("PROJECT_NAME", "test")
 os.environ.setdefault("POSTGRES_SERVER", "localhost")
 os.environ.setdefault("POSTGRES_USER", "test")
 os.environ.setdefault("POSTGRES_PASSWORD", "test")
 os.environ.setdefault("POSTGRES_DB", "test")
-os.environ.setdefault("SCORE_SERVICE_URL", "http://score")
-os.environ.setdefault("TEAM_SERVICE_URL", "http://team")
-os.environ.setdefault("CHALLENGE_SERVICE_URL", "http://challenge")
-
+os.environ.setdefault("TEAM_SERVICE_URL", "http://team-service")
+os.environ.setdefault("CHALLENGE_SERVICE_URL", "http://challenge-service")
+os.environ.setdefault("SCORE_SERVICE_URL", "http://score-service")
 from app.main import app
 from app.database.session import Base
 from app.database.dependency import get_db
 from app.models.attempt import Attempt
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
+SQLALCHEMY_DATABASE_URL = "sqlite:///./test_attempt.db"
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
@@ -35,11 +34,8 @@ TestingSessionLocal = sessionmaker(
 
 @pytest.fixture(scope="function")
 def db():
-    Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
-    
     session = TestingSessionLocal()
-
     try:
         yield session
     finally:
@@ -48,53 +44,69 @@ def db():
         Base.metadata.drop_all(bind=engine)
 
 @pytest.fixture(scope="function")
-def seeded_data(db):
-    now = datetime.utcnow()
-
+def seeded_attempts(db):
+    base = datetime.utcnow()
     attempts = [
         Attempt(
             team_id=1,
             driver_id=1,
             challenge_id=1,
-            start_time=now,
-            end_time=now + timedelta(seconds=10),
+            start_time=base,
+            end_time=base + timedelta(seconds=10),
             energy_used=50,
+            is_valid=True,
         ),
         Attempt(
             team_id=1,
             driver_id=2,
             challenge_id=1,
-            start_time=now,
-            end_time=now + timedelta(seconds=8),
+            start_time=base + timedelta(seconds=1),
+            end_time=base + timedelta(seconds=10),
             energy_used=40,
+            is_valid=True,
         ),
     ]
-
     db.add_all(attempts)
     db.commit()
-
-    return {
-        "attempts": attempts,
-    }
+    return attempts
 
 @pytest.fixture(scope="function")
-def client(db, seeded_data):
+def mock_requests():
+    with patch("app.crud.attempt.requests") as mock_requests:
+        def mock_get(url, *args, **kwargs):
+            response = Mock()
+            response.status_code = 200
+
+            if "/api/challenges/" in url:
+                response.json.return_value = {
+                    "id": 1,
+                    "max_attempts": 3,
+                }
+            elif "/api/teams/" in url:
+                response.json.return_value = {"id": 1}
+            elif "/api/drivers/" in url:
+                response.json.return_value = {"id": 1}
+            else:
+                response.json.return_value = {}
+            return response
+        def mock_post(*args, **kwargs):
+            response = Mock()
+            response.status_code = 200
+            return response
+        def mock_delete(*args, **kwargs):
+            response = Mock()
+            response.status_code = 200
+            return response
+        mock_requests.get.side_effect = mock_get
+        mock_requests.post.side_effect = mock_post
+        mock_requests.delete.side_effect = mock_delete
+        yield mock_requests
+
+@pytest.fixture(scope="function")
+def client(db, seeded_attempts, mock_requests):
     def override_get_db():
-        try:
-            yield db
-        finally:
-            pass
-
+        yield db
     app.dependency_overrides[get_db] = override_get_db
-
     with TestClient(app) as c:
         yield c
-
     app.dependency_overrides.clear()
-
-@pytest.fixture(scope="session", autouse=True)
-def cleanup_test_db():
-    """Clean up test database file after all tests run"""
-    yield
-    if os.path.exists("test.db"):
-        os.remove("test.db")

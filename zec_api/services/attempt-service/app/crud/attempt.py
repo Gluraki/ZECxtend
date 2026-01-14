@@ -98,30 +98,32 @@ def get_attempts_for_challenge(*, db: SessionDep, challenge_id: int):
     return db_attempt
 
 def get_fastest_attempt(*, db: SessionDep, challenge_id: int):
-    db_attempt = (
+    db_attempts = (
         db.query(Attempt)
-        .filter(Attempt.challenge_id == challenge_id, Attempt.is_valid == True)
-        .order_by(Attempt.end_time - Attempt.start_time)
-        .first()
+        .filter(
+            Attempt.challenge_id == challenge_id, 
+            Attempt.is_valid == True)
+        .all()
     )
-    if not db_attempt:
+    if not db_attempts:
         raise EntityDoesNotExistError("Attempt does not exist")
-    return db_attempt
+    fastest = min(db_attempts, key=lambda a: (a.end_time - a.start_time))
+    return fastest
 
 def get_fastest_attempt_for_team(*, db: SessionDep, team_id: int, challenge_id: int):
-    db_attempt = (
+    db_attempts = (
         db.query(Attempt)
         .filter(
             Attempt.team_id == team_id,
             Attempt.challenge_id == challenge_id,
             Attempt.is_valid == True
         )
-        .order_by(Attempt.end_time - Attempt.start_time)
-        .first()
+        .all()
     )
-    if not db_attempt:
+    if not db_attempts:
         raise EntityDoesNotExistError("Attempt does not exist")
-    return db_attempt
+    fastest = min(db_attempts, key=lambda a: (a.end_time - a.start_time))
+    return fastest
 
 def get_least_energy_attempt(*, db: SessionDep, challenge_id: int):
     db_attempt = (

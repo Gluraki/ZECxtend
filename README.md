@@ -14,5 +14,4 @@ Repository for **Z**ero**E**mission**C**hallenge-Timing by Darnhofer and Maderba
 
 ## Todo
 - fix == true in attempt (ruff)
-- attempt tests
 - fix score calculation PENALTY
