@@ -39,6 +39,7 @@
   - 6.3 [Delete Driver](#delete-driver)
   - 6.4 [Get Driver](#get-driver)
   - 6.5 [Get Drivers (all)](#get-drivers-all)
+  - 6.6 [Get Drivers for a Team](#get-drivers-for-team)
 - ## 7. Users
   - 7.1 [Create User](#create-user)
   - 7.2 [Get User by Username](#get-user-by-username)
@@ -350,6 +351,11 @@ Needs Bearer authorization header containing `access_token` from a user with adm
 `GET`
 
 **URL** http://hostname/drivers/
+#### Get Drivers for Team
+Needs Bearer authorization header containing `access_token` from a user with admin role  
+`GET`
+
+**URL** http://hostname/drivers/team/{team_id}
 ### User
 #### Create User
 Needs Bearer authorization header containing `access_token` from a user with admin role  

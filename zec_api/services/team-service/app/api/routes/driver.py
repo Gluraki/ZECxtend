@@ -30,3 +30,8 @@ def get_driver(db: SessionDep, driver_id: int):
 def list_drivers(db: SessionDep):
     drivers = crud.get_drivers(db=db)
     return drivers
+
+@router.get("/team/{team_id}", response_model=List[DriverResponse])
+def list_drivers_by_team(db: SessionDep, team_id: int):
+    drivers = crud.get_drivers_by_team(db=db, team_id=team_id)
+    return drivers
