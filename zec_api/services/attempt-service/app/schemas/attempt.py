@@ -12,6 +12,8 @@ class AttemptBase(BaseModel):
 
 class AttemptCreate(AttemptBase):
     is_valid: Optional[bool] = True
+    penalty_count: Optional[int] = 0
+    penalty_type: Optional[int] = None
 
 class AttemptUpdate(BaseModel):
     team_id: Optional[int] = None

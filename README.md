@@ -7,11 +7,11 @@ Repository for **Z**ero**E**mission**C**hallenge-Timing by Darnhofer and Maderba
 |-----------------------|----------------|
 | User service          |done|
 | Attempt service       |done|
-| Score service         |calculation and refresh(acceleration) needs fixes|
+| Score service         |see #Todo|
 | Challenge service     |done|
 | Team/Driver service   |done|
 | Auth service          |done|
 
 ## Todo
-- trigger score reload when penalty is added
 - score reload when a new best attempt is added
+- calculate scores with penalties

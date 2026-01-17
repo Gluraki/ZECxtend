@@ -1,6 +1,7 @@
 from app.database.dependency import SessionDep
 from app.schemas.penalty import PenaltyCreate, PenaltyUpdate
 from app.models.penalty import Penalty
+from app.models.penalty_type import PenaltyType
 from app.exceptions.exceptions import EntityDoesNotExistError, ServiceError
 from app.core.config import settings
 import requests
@@ -81,3 +82,7 @@ def get_penalties_by_attempt(*, db: SessionDep, attempt_id: int):
             message=f"No penalties found for attempt id {attempt_id}"
         )
     return db_penalties
+
+def get_all_penalty_types(*, db: SessionDep):
+    types = db.query(PenaltyType).all()
+    return types

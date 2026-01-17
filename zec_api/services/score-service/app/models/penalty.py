@@ -1,17 +1,15 @@
-from sqlalchemy import Column, Integer, Float, DateTime
-from enum import Enum
-from sqlalchemy import Enum as SQLEnum
+from sqlalchemy import Column, Integer, DateTime, ForeignKey
 from datetime import datetime
 from app.database.session import Base
-
-class PenaltyType(Enum):
-    time_penalty = "TIME_PENALTY"
+from sqlalchemy.orm import relationship
 
 class Penalty(Base):
     __tablename__ = 'penalties'
 
     id = Column(Integer, primary_key=True)
     attempt_id = Column(Integer)
-    penalty_amount = Column(Float)
-    type = Column(SQLEnum(PenaltyType))
+    penalty_type_id = Column(Integer, ForeignKey('penalty_types.id'))
+    count = Column(Integer)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+    penalty_type = relationship('PenaltyType', back_populates='penalties')

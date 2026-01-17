@@ -75,7 +75,9 @@ Needs Bearer authorization header containing `access_token` from a user with adm
   "is_valid": bool, (optional) if you want to create a invalid attempt
   "start_time": datetime, (with milliseconds)
   "end_time": datetime, (with milliseconds)
-  "energy_used": float
+  "energy_used": float,
+  "penalty_count": int,
+  "penalty_type": int
 }
 ```
 #### Update Attempt
@@ -456,8 +458,8 @@ Needs Bearer authorization header containing `access_token` from a user with adm
 ```json
 {
   "attempt_id" : int,
-  "penalty_amount": float,
-  "type": penalty_type
+  "count": int,
+  "penalty_type_id": int
 }
 ```
 #### Update Penalty
@@ -472,8 +474,8 @@ Everything is optional depending on what needs to be updated
 ```json
 {
   "attempt_id" : int,
-  "penalty_amount": float,
-  "type": penalty_type
+  "count": int,
+  "penalty_type_id": int
 }
 ```
 #### Delete Penalty
@@ -496,3 +498,9 @@ Needs Bearer authorization header containing `access_token` from a user with adm
 `GET`
 
 **URL** http://hostname/penalties/attempt/{attempt_id}
+
+#### Get Penalty Types
+Needs Bearer authorization header containing `access_token` from a user with admin role  
+`GET`
+
+**URL** http://hostname/penalties/types/

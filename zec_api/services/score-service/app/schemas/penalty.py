@@ -1,20 +1,22 @@
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
-from app.models.penalty import PenaltyType
 
+class PenaltyTypeResponse(BaseModel):
+    type: str
+    amount: int
 class PenaltyBase(BaseModel):
     attempt_id: int
-    penalty_amount: float
-    type: PenaltyType
+    count: int
+    penalty_type_id: int
 
 class PenaltyCreate(PenaltyBase):
     pass
 
 class PenaltyUpdate(BaseModel):
     attempt_id: Optional[int] = None
-    penalty_amount: Optional[float] = None
-    type: Optional[PenaltyType] = None
+    count: Optional[int] = None
+    penalty_type_id: Optional[int] = None
 
 class PenaltyResponse(PenaltyBase):
     id: int

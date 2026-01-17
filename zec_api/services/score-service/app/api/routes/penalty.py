@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from typing import List
 from app.database.dependency import SessionDep
-from app.schemas.penalty import PenaltyCreate, PenaltyUpdate, PenaltyResponse
+from app.schemas.penalty import PenaltyCreate, PenaltyUpdate, PenaltyResponse, PenaltyTypeResponse
 from app.crud import penalty as crud
 
 router = APIRouter()
@@ -35,3 +35,7 @@ def list_penalties(db: SessionDep):
 def list_penalties_by_attempt(db: SessionDep, attempt_id: int):
     penalties = crud.get_penalties_by_attempt(db=db, attempt_id=attempt_id)
     return penalties
+
+@router.get("/types/", response_model=List[PenaltyTypeResponse])
+def get_penalty_types(db: SessionDep):
+    return crud.get_all_penalty_types(db=db)

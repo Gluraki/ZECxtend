@@ -48,17 +48,34 @@ def create_attempt(*, db: SessionDep, attempt: AttemptCreate):
     attempt_count = get_attempts_for_team_per_challenge(db=db, team_id=attempt.team_id, challenge_id=attempt.challenge_id)
     if len(attempt_count) >= db_challenge["max_attempts"]:
         raise ServiceError("Maximum attempts reached for this challenge")
-    attempt_data = attempt.model_dump(exclude_unset=True)
-    db_attempt = Attempt(**attempt_data)
+    db_attempt = Attempt(
+        team_id = attempt.team_id,
+        driver_id = attempt.driver_id,
+        challenge_id = attempt.challenge_id,
+        is_valid = attempt.is_valid,
+        start_time = attempt.start_time,
+        end_time = attempt.end_time,
+        energy_used = attempt.energy_used,
+    )
     db.add(db_attempt)
     db.commit()
     db.refresh(db_attempt)
-    payload = {"attempt_id": db_attempt.id}
-    resp = requests.post(f"{SCORE_URL}/api/scores/", json=payload)
-    if resp.status_code in (401, 403):
+    penalty_payload = {
+        "attempt_id": db_attempt.id,
+        "count": attempt.penalty_count,
+        "penalty_type_id": attempt.penalty_type,
+    }
+    pen_resp = requests.post(f"{SCORE_URL}/api/penalties/", json=penalty_payload)
+    if pen_resp.status_code in (401, 403):
+        raise AuthenticationFailed("Unauthorized to create penalty")
+    if pen_resp.status_code != 200:
+        raise ServiceError(f"Failed to create penalty for attempt {db_attempt.id}")
+    score_payload = {"attempt_id": db_attempt.id}
+    score_resp = requests.post(f"{SCORE_URL}/api/scores/", json=score_payload)
+    if score_resp.status_code in (401, 403):
         raise AuthenticationFailed("Unauthorized to create score")
-    if resp.status_code != 200:
-        raise ServiceError(f"Failed to create score for attempt {db_attempt.id}: {resp.text}")
+    if score_resp.status_code != 200:
+        raise ServiceError(f"Failed to create score for attempt {db_attempt.id}")
     return db_attempt
 
 def update_attempt(*, db: SessionDep, attempt_id: int, attempt_update: AttemptUpdate):
