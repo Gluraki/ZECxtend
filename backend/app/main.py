@@ -18,15 +18,15 @@ timestamps = {
 }
 
 drivers = {
-    1: {"id": 1, "name": "Driver One"},
-    2: {"id": 2, "name": "Driver Two"},
+    1: [{"id": 1, "name": "Niklas Maderbacher"}],
+    2: [{"id": 2, "name": "Driver Two"}],
 }
 
 @app.route('/api/teams/', methods=['GET'])
 def get_teams():
     # Dummy data for teams
     teams = [
-        {"id": 1, "name": "Team A"},
+        {"id": 1, "name": "ZEC Team"},
         {"id": 2, "name": "Team B"},
     ]
     return jsonify(teams)
@@ -35,7 +35,7 @@ def get_teams():
 def get_challenges():
     # Dummy data for challenges
     challenges = [
-        {"id": 1, "name": "Challenge A", "esp_mac_start1": "00-11-22-33-44-55", "esp_mac_start2": "00-11-22-33-44-56", "esp_mac_finish1": "00-11-22-33-44-57", "esp_mac_finish2": "00-11-22-33-44-58"},
+        {"id": 1, "name": "Slalom", "esp_mac_start1": "00-11-22-33-44-55", "esp_mac_start2": "00-11-22-33-44-56", "esp_mac_finish1": "00-11-22-33-44-57", "esp_mac_finish2": "00-11-22-33-44-58"},
         {"id": 2, "name": "Challenge B", "esp_mac_start1": "00-11-22-33-44-A5", "esp_mac_start2": "00-11-22-33-44-A6", "esp_mac_finish1": "00-11-22-33-44-A7", "esp_mac_finish2": "00-11-22-33-44-A8"},
     ]
     return jsonify(challenges)
@@ -51,9 +51,8 @@ def get_penalties():
 
 @app.route("/api/drivers/<team_id>", methods=["GET"])
 def get_drivers(team_id):
-    driver = drivers[int(team_id)]
-    
-    return jsonify(driver)
+    team_drivers = drivers.get(int(team_id), [])
+    return jsonify(team_drivers)
 
 @app.route("/api/timestamps/<mac_address>", methods=["GET"])
 def get_timestamps(mac_address):

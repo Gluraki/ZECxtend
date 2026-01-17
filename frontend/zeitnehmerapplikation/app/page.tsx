@@ -15,6 +15,7 @@ import {
 
 import { SERVER_API_URL, MQTT_WORKER_API_URL } from "@/next.config";
 import { DropdownMenuCheckboxItem, DropdownMenuLabel } from "@radix-ui/react-dropdown-menu";
+import { ChevronDown } from "lucide-react";
 
 interface Team {
   id: number;
@@ -30,19 +31,19 @@ interface Challenge {
   esp_mac_finish2: string;
 }
 
-interface Pentalty {
+interface Penalty {
   id: number;
   amount: number;
-  type: String | null;
+  type: string | null;
 }
 
 interface ConnectionStatus {
   is_active: boolean;
 }
 
-interface Drivers {
+interface Driver {
   id: number;
-  name: String;
+  name: string;
 }
 
 interface Attempt {
@@ -53,6 +54,8 @@ interface Attempt {
   start_time: Date;
   end_time: Date;
   energy_used: number;
+  penalty_id: number;
+  penalty_count: number;
 }
 
 export default function Page() {
@@ -67,44 +70,37 @@ export default function Page() {
   const [espFinish1Input, setEspFinish1Input] = useState("");
   const [espFinish2Input, setEspFinish2Input] = useState("");
 
-  const [penalties, setPenalties] = useState<Pentalty[]>([]);
-  const [selectedPenalty, setSelectedPenalty] = useState<Pentalty | null>(null);
+  const [penalties, setPenalties] = useState<Penalty[]>([]);
+  const [selectedPenalty, setSelectedPenalty] = useState<Penalty | null>(null);
 
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>({
     is_active: false,
   });
 
-  const [drivers, setDrivers] = useState<Drivers[]>([]);
-  const [selectedDriver, setSelectedDriver] = useState<Drivers | null>(null);
+  const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
 
   const [attemptNr, setAttemptNr] = useState<number | null>(null);
-  const [penaltyAmount, setPenaltyAmount] = useState<number | null>(null);
+  const [penaltyCount, setpenaltyCount] = useState<number | null>(null);
   const [energyConsumption, setEnergyConsumption] = useState<number | null>(null);
 
-  const [startTimestamps, setStartTimestamps] = useState<String[] | null>([]);
-  const [endTimestamps, setEndTimestamps] = useState<String[] | null>([]);
+  const [startTimestamps, setStartTimestamps] = useState<string[]>([]);
+  const [endTimestamps, setEndTimestamps] = useState<string[]>([]);
 
-  const [attempt, setAttempt] = useState<Attempt | null>(null);
+  const [selectedStartTimestamps, setSelectedStartTimestamps] = useState<string[]>([]);
+  const [selectedEndTimestamps, setSelectedEndTimestamps] = useState<string[]>([]);
 
-  const [selectedStartTimestamps, setSelectedStartTimestamps] = useState<String[] | null>(null);
-  const [selectedEndTimestamps, setSelectedEndTimestamps] = useState<String[] | null>(null);
+  const [manualStartTime, setManualStartTime] = useState<string>(""); // ISO string
+  const [manualEndTime, setManualEndTime] = useState<string>("");
 
-  const [medianStartTimestamp, setMedianStartTimestamp] = useState<String | null>(null);
-  const [medianEndTimestamp, setMedianEndTimestamp] = useState<String | null>(null);
-
-  const [attemptTime, setAttemptTime] = useState<string | null>(null);
-  const [attemptTimeWithPenalty, setAttemptTimeWithPenalty] = useState<string | null>(null);
-
+  const HOUR_IN_MS = 3600000; // 1 hour offset correction
 
   // Fetch Teams
   const fetchTeams = async () => {
     try {
-      const response = await axios.get(`${SERVER_API_URL}/teams/`);
+      const response = await axios.get<Team[]>(`${SERVER_API_URL}/teams/`);
       setTeams(response.data);
-
-      if (response.data.length > 0) {
-        setSelectedTeam(response.data[0]); // default first team
-      }
+      if (response.data.length > 0) setSelectedTeam(response.data[0]);
     } catch (error) {
       console.error("Failed to fetch teams", error);
     }
@@ -113,99 +109,189 @@ export default function Page() {
   // Fetch Challenges
   const fetchChallenges = async () => {
     try {
-      const response = await axios.get(`${SERVER_API_URL}/challenges/`);
+      const response = await axios.get<Challenge[]>(`${SERVER_API_URL}/challenges/`);
       setChallenges(response.data);
-
-      if (response.data.length > 0) {
-        setSelectedChallenge(response.data[0]); // default first challenge
-      }
+      if (response.data.length > 0) setSelectedChallenge(response.data[0]);
     } catch (error) {
       console.error("Failed to fetch challenges", error);
     }
   };
 
+  // Fetch Penalties
   const fetchPenalties = async () => {
     try {
-      const response = await axios.get(`${SERVER_API_URL}/penalties/`);
+      const response = await axios.get<Penalty[]>(`${SERVER_API_URL}/penalties/`);
       setPenalties(response.data);
-
-      if (response.data.length > 0) {
-        setSelectedPenalty(response.data[0]);
-      }
+      if (response.data.length > 0) setSelectedPenalty(response.data[0]);
     } catch (error) {
       console.error("Failed to fetch penalties", error);
-    }
-  }
-
-  const fetchDriversForTeam = async () => {
-    try {
-      const response = await axios.get(`${SERVER_API_URL}/drivers/${selectedTeam?.id}`)
-      setDrivers(response.data)
-
-      if (response.data.length > 0) {
-        setSelectedDriver(response.data[0]);
-      }
-    } catch (error) {
-      console.error("Failed to fetch penalties", error);
-    }
-  }
-
-  const fetchStartTimestamps = async () => {
-    try {
-      const start_1 = await axios.get(`${MQTT_WORKER_API_URL}/timestamps/${selectedChallenge?.esp_mac_start1}`)
-      const start_2 = await axios.get(`${MQTT_WORKER_API_URL}/timestamps/${selectedChallenge?.esp_mac_start2}`)
-
-      const start_timestamps = [
-        ...(start_1.data.timestamp || []),
-        ...(start_2.data.timestamp || []),
-      ];
-
-      setStartTimestamps(start_timestamps);
-    } catch (error) {
-      console.error("Failed to fetch penalties", error);
-    }
-  }
-
-  const fetchEndTimestamps = async () => {
-    try {
-      const end_1 = await axios.get(`${MQTT_WORKER_API_URL}/timestamps/${selectedChallenge?.esp_mac_finish1}`)
-      const end_2 = await axios.get(`${MQTT_WORKER_API_URL}/timestamps/${selectedChallenge?.esp_mac_finish2}`)
-
-      const end_timestamps = [
-        ...(end_1.data.timestamp || []),
-        ...(end_2.data.timestamp || []),
-      ];
-
-      setEndTimestamps(end_timestamps);
-    } catch (error) {
-      console.error("Failed to fetch penalties", error);
-    }
-  }
-
-  // Remove setState from medianTimestamp
-  const medianTimestamp = (timestamps: string[] | null): string | null => {
-    if (!timestamps || timestamps.length === 0) return null;
-
-    const sorted = timestamps.slice().sort();
-    const midIndex = Math.floor(sorted.length / 2);
-
-    if (sorted.length % 2 === 0) {
-      const mid1 = new Date(sorted[midIndex - 1]).getTime();
-      const mid2 = new Date(sorted[midIndex]).getTime();
-      return new Date((mid1 + mid2) / 2).toISOString();
-    } else {
-      return sorted[midIndex];
     }
   };
 
-  // Use useEffect to update medianStartTimestamp when selection changes
-  useEffect(() => {
-    setMedianStartTimestamp(medianTimestamp(selectedStartTimestamps || []));
-  }, [selectedStartTimestamps]);
+  // Fetch Drivers for selected team
+  const fetchDriversForTeam = async (teamId: number | undefined) => {
+    if (!teamId) return;
+    try {
+      const response = await axios.get<Driver[]>(`${SERVER_API_URL}/drivers/${teamId}`);
+      setDrivers(response.data);
+      if (response.data.length > 0) setSelectedDriver(response.data[0]);
+    } catch (error) {
+      console.error("Failed to fetch drivers", error);
+    }
+  };
 
-  useEffect(() => {
-    setMedianEndTimestamp(medianTimestamp(selectedEndTimestamps || []));
-  }, [selectedEndTimestamps]);
+  // Fetch timestamps
+  const fetchStartTimestamps = async () => {
+    if (!selectedChallenge) return;
+    try {
+      const start_1 = await axios.get<{ timestamp: string[] }>(`${MQTT_WORKER_API_URL}/timestamps/${selectedChallenge.esp_mac_start1}`);
+      const start_2 = await axios.get<{ timestamp: string[] }>(`${MQTT_WORKER_API_URL}/timestamps/${selectedChallenge.esp_mac_start2}`);
+      const combined = [...(start_1.data.timestamp || []), ...(start_2.data.timestamp || [])];
+      setStartTimestamps(combined);
+    } catch (error) {
+      console.error("Failed to fetch start timestamps", error);
+    }
+  };
+
+  const fetchEndTimestamps = async () => {
+    if (!selectedChallenge) return;
+    try {
+      const end_1 = await axios.get<{ timestamp: string[] }>(`${MQTT_WORKER_API_URL}/timestamps/${selectedChallenge.esp_mac_finish1}`);
+      const end_2 = await axios.get<{ timestamp: string[] }>(`${MQTT_WORKER_API_URL}/timestamps/${selectedChallenge.esp_mac_finish2}`);
+      const combined = [...(end_1.data.timestamp || []), ...(end_2.data.timestamp || [])];
+      setEndTimestamps(combined);
+    } catch (error) {
+      console.error("Failed to fetch end timestamps", error);
+    }
+  };
+
+  const medianTimestampISO = (timestamps: string[]): string => {
+    if (!timestamps || timestamps.length === 0) return "";
+
+    // Sort timestamps
+    const sorted = timestamps.slice().sort();
+    const mid = Math.floor(sorted.length / 2);
+
+    let medianMs: number;
+
+    if (sorted.length % 2 === 0) {
+      const mid1 = new Date(sorted[mid - 1]).getTime() - HOUR_IN_MS;
+      const mid2 = new Date(sorted[mid]).getTime() - HOUR_IN_MS;
+      medianMs = (mid1 + mid2) / 2;
+    } else {
+      medianMs = new Date(sorted[mid]).getTime() - HOUR_IN_MS;
+    }
+
+    return new Date(medianMs).toISOString(); // <- ISO format
+  };
+
+  const formatTimestampHH_MM_SS_MMMM = (input: string | number | Date): string => {
+    const date = typeof input === "string" || typeof input === "number" ? new Date(input) : input;
+
+    // USE LOCAL TIME
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    const seconds = String(date.getSeconds()).padStart(2, "0");
+    const milliseconds = String(date.getMilliseconds()).padStart(3, "0"); // 3 digits is enough
+
+    return `${hours}:${minutes}:${seconds}:${milliseconds}`;
+  };
+
+  const medianTimestamp = (timestamps: string[]): number => {
+    if (!timestamps || timestamps.length === 0) return 0;
+    const sorted = timestamps.slice().sort();
+    const mid = Math.floor(sorted.length / 2);
+    if (sorted.length % 2 === 0) {
+      const mid1 = new Date(sorted[mid - 1]).getTime() - HOUR_IN_MS;
+      const mid2 = new Date(sorted[mid]).getTime() - HOUR_IN_MS;
+      return (mid1 + mid2) / 2;
+    }
+    return new Date(sorted[mid]).getTime() - HOUR_IN_MS;
+  };
+
+  const addTodayDateToTime = (time: string): string => {
+    const now = new Date();
+    const [hh, mm, ss = "00"] = time.split(":");
+    return `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, "0")}-${now
+      .getDate()
+      .toString()
+      .padStart(2, "0")}T${hh.padStart(2, "0")}:${mm.padStart(2, "0")}:${ss.padStart(2, "0")}.000`;
+  };
+
+
+  const calcAttemptTime = (): string => {
+    const startMs = medianTimestamp(selectedStartTimestamps ?? []);
+    const endMs = medianTimestamp(selectedEndTimestamps ?? []);
+    const penaltyMs = ((penaltyCount ?? 0) * (selectedPenalty?.amount ?? 0)) * 1000; // convert to ms
+
+    const attemptMs = endMs - startMs + penaltyMs;
+
+    // Format duration directly from milliseconds
+    const hours = Math.floor(attemptMs / 3600000);
+    const minutes = Math.floor((attemptMs % 3600000) / 60000);
+    const seconds = Math.floor((attemptMs % 60000) / 1000);
+    const milliseconds = attemptMs % 1000;
+
+    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}:${String(milliseconds).padStart(3, "0")}`;
+  };
+
+  const createAttempt = () => {
+    if (!selectedTeam?.id) {
+      alert("Please select a team!");
+      return null;
+    }
+    if (!selectedDriver?.id) {
+      alert("Please select a driver!");
+      return null;
+    }
+    if (!selectedChallenge?.id) {
+      alert("Please select a challenge!");
+      return null;
+    }
+    if (!attemptNr || attemptNr <= 0) {
+      alert("Please enter a valid attempt number!");
+      return null;
+    }
+    if (!selectedStartTimestamps?.length) {
+      alert("Please select at least one start timestamp!");
+      return null;
+    }
+    if (!selectedEndTimestamps?.length) {
+      alert("Please select at least one end timestamp!");
+      return null;
+    }
+    if (!energyConsumption || energyConsumption <= 0) {
+      alert("Please enter energy consumption!");
+      return null;
+    }
+
+    if (!selectedPenalty?.type) {
+      alert("Please select a penalty!");
+      return null;
+    }
+
+    // Create the Attempt object
+    const attempt: Attempt = {
+      team_id: selectedTeam.id,
+      driver_id: selectedDriver.id,
+      challenge_id: selectedChallenge.id,
+      attempt_number: attemptNr,
+      start_time: new Date(medianTimestamp(selectedStartTimestamps)), // convert ms → Date
+      end_time: new Date(medianTimestamp(selectedEndTimestamps)),     // convert ms → Date
+      energy_used: energyConsumption,
+      penalty_id: selectedPenalty?.id,
+      penalty_count: penaltyCount ?? 0,
+    };
+
+    axios.post(`${SERVER_API_URL}/attempts/`, attempt)
+      .then(() => {
+        alert("Attempt submitted successfully!");
+      })
+      .catch((error) => {
+        console.error("Failed to submit attempt", error);
+        alert("Failed to submit attempt!");
+      });
+  }
 
 
   // Fetch on mount
@@ -216,20 +302,23 @@ export default function Page() {
   }, []);
 
   useEffect(() => {
+    if (!selectedTeam) return;
+    fetchDriversForTeam(selectedTeam.id);
+  }, [selectedTeam]);
+
+  useEffect(() => {
     if (!connectionStatus.is_active) return;
 
     fetchStartTimestamps();
     fetchEndTimestamps();
 
-    const inverval = setInterval(() => {
+    const interval = setInterval(() => {
       fetchStartTimestamps();
       fetchEndTimestamps();
-    }, 3000); // every 3 second
+    }, 3000);
 
-    return () => clearInterval(inverval);
-  }, [connectionStatus.is_active]);
-
-
+    return () => clearInterval(interval);
+  }, [connectionStatus.is_active, selectedChallenge]);
 
   return (
     <div>
@@ -262,8 +351,9 @@ export default function Page() {
           <CardContent className="space-y-4">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline">
+                <Button variant="outline" className="flex items-center justify-between gap-2">
                   {selectedChallenge ? selectedChallenge.name : "Select Challenge"}
+                  <ChevronDown className="w-4 h-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
@@ -298,6 +388,7 @@ export default function Page() {
               <DropdownMenuTrigger asChild>
                 <Button variant="outline">
                   {selectedTeam ? selectedTeam.name : "Select Team"}
+                  <ChevronDown className="w-4 h-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
@@ -306,7 +397,7 @@ export default function Page() {
                   onValueChange={(value) => {
                     const team = teams.find((t) => t.id.toString() === value) || null;
                     setSelectedTeam(team);
-                    fetchDriversForTeam();
+                    fetchDriversForTeam(selectedTeam?.id);
                   }}
                 >
                   {teams.map((team) => (
@@ -323,7 +414,7 @@ export default function Page() {
         {/*Pairing*/}
         <Card className="md:row-span-2">
           <CardHeader>
-            <CardTitle>Penalty</CardTitle>
+            <CardTitle>Pairing</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {/*Start 1*/}
@@ -418,11 +509,12 @@ export default function Page() {
           <CardHeader>
             <CardTitle>Penalty</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="flex items-center gap-4">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline">
                   {selectedPenalty ? selectedPenalty.type : "Select Penalty"}
+                  <ChevronDown className="w-4 h-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
@@ -441,6 +533,7 @@ export default function Page() {
                 </DropdownMenuRadioGroup>
               </DropdownMenuContent>
             </DropdownMenu>
+            <p> = {selectedPenalty?.amount} seconds</p>
           </CardContent>
         </Card>
 
@@ -497,16 +590,16 @@ export default function Page() {
         <Card>
           <CardHeader>
             <CardTitle>
-              Penalty Amount
+              Penalty Count
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 space-x-3">
             <Input
               type="number"
-              value={penaltyAmount ?? ""}
+              value={penaltyCount ?? ""}
               onChange={(e) => {
                 const value = e.target.value;
-                setPenaltyAmount(value === "" ? null : Number(value));
+                setpenaltyCount(value === "" ? null : Number(value));
               }}
               placeholder="Amount of Penalties"
             />
@@ -522,6 +615,7 @@ export default function Page() {
               <DropdownMenuTrigger asChild>
                 <Button variant="outline">
                   {selectedDriver ? selectedDriver.name : "Select Driver"}
+                  <ChevronDown className="w-4 h-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
@@ -563,8 +657,8 @@ export default function Page() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 mb-4 gap-6">
-        <Card>
+      <div className="grid grid-cols-1 md:grid-cols-4 mb-4 gap-6">
+        <Card className="md:col-span-1">
           <CardHeader>
             <CardTitle>Timestamps</CardTitle>
           </CardHeader>
@@ -575,8 +669,9 @@ export default function Page() {
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline">
                     {selectedStartTimestamps?.length
-                      ? medianTimestamp(selectedStartTimestamps)
+                      ? medianTimestampISO(selectedStartTimestamps)
                       : "Select Start Timestamps"}
+                    <ChevronDown className="w-4 h-4" />
                   </Button>
                 </DropdownMenuTrigger>
 
@@ -600,7 +695,7 @@ export default function Page() {
                             );
                           } else {
                             setSelectedStartTimestamps((prev) =>
-                              prev ? prev.filter((t) => t !== timestamp) : null
+                              prev ? prev.filter((t) => t !== timestamp) : []
                             );
                           }
                         }}
@@ -622,8 +717,9 @@ export default function Page() {
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline">
                     {selectedEndTimestamps?.length
-                      ? medianTimestamp(selectedEndTimestamps)
+                      ? medianTimestampISO(selectedEndTimestamps)
                       : "Select End Timestamps"}
+                    <ChevronDown className="w-4 h-4" />
                   </Button>
                 </DropdownMenuTrigger>
 
@@ -647,7 +743,7 @@ export default function Page() {
                             );
                           } else {
                             setSelectedEndTimestamps((prev) =>
-                              prev ? prev.filter((t) => t !== timestamp) : null
+                              prev ? prev.filter((t) => t !== timestamp) : []
                             );
                           }
                         }}
@@ -665,9 +761,78 @@ export default function Page() {
           </CardContent>
         </Card>
 
+        <Card className="md:col-span-2">
+          <CardHeader>
+            <CardTitle>
+              Formula
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>
+              Attempt time formula = end time - start time + (amount of penalties * time penalty)
+            </p>
 
+            <p>
+              Attempt time formula ={" "}
+              {formatTimestampHH_MM_SS_MMMM(medianTimestamp(selectedEndTimestamps ?? []))} -
+              {formatTimestampHH_MM_SS_MMMM(medianTimestamp(selectedStartTimestamps ?? []))} + ( {penaltyCount ?? 0} * {(selectedPenalty?.amount ?? 0)})
+            </p>
 
+            <div className="flex flex-col gap-2 mt-4">
+              {/* Manual Start Time */}
+              <label className="flex items-center gap-2">
+                <span>Manual Start Time:</span>
+                <input
+                  type="time"
+                  step={1}
+                  value={medianTimestamp(selectedStartTimestamps)}
+                  onChange={(e) => {
+                    const fullTimestamp = addTodayDateToTime(e.target.value)
+                    setSelectedStartTimestamps([fullTimestamp])
+                  }}
+                  className="border rounded p-1 w-56"
+                />
+              </label>
+
+              {/* Manual End Time */}
+              <label className="flex items-center gap-2">
+                <span>Manual End Time:</span>
+                <input
+                  type="time"
+                  step={1}
+                  value={medianTimestamp(selectedEndTimestamps)}
+                  onChange={(e) => {
+                    const fullTimestamp = addTodayDateToTime(e.target.value)
+                    setSelectedEndTimestamps([fullTimestamp])
+                  }}
+                  className="border rounded p-1 w-56"
+                />
+              </label>
+            </div>
+
+          </CardContent>
+        </Card>
+
+        <Card className="md:col-span-1">
+          <CardHeader>
+            <CardTitle>
+              Result
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>
+              Result = {calcAttemptTime()}
+            </p>
+
+            <Button variant={"outline"} onClick={
+              () => createAttempt()
+            }>
+              Submit
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
 }
+
