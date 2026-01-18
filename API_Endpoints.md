@@ -23,9 +23,10 @@
   - 4.1 [Create Score](#create-score)
   - 4.2 [Update Score](#update-score)
   - 4.3 [Delete Score](#delete-score)
-  - 4.4 [Get Score](#get-score)
-  - 4.5 [Get Scores (all)](#get-scores-all)
-  - 4.6 [Get Leaderboard](#get-leaderboard)
+  - 4.4 [Delete Scores for a Attempt](#delete-scores-for-attempt)
+  - 4.5 [Get Score](#get-score)
+  - 4.6 [Get Scores (all)](#get-scores-all)
+  - 4.7 [Get Leaderboard](#get-leaderboard)
 - ## 5. Teams
   - 5.1 [Create Team](#create-team)
   - 5.2 [Update Team](#update-team)
@@ -52,9 +53,10 @@
   - 8.1 [Create Penalty](#create-penalty)
   - 8.2 [Update Penalty](#update-penalty)
   - 8.3 [Delete Penalty](#delete-penalty)
-  - 8.4 [Get Penalty](#get-penalty)
-  - 8.5 [Get Penalties (all)](#get-penalties-all)
-  - 8.6 [Get Penalties for Attempt](#get-penalties-for-attempt)
+  - 8.4 [Delete Penalties for a Attempt](#delete-penalties-for-attempt)
+  - 8.5 [Get Penalty](#get-penalty)
+  - 8.6 [Get Penalties (all)](#get-penalties-all)
+  - 8.7 [Get Penalties for Attempt](#get-penalties-for-attempt)
 ### Notes
 - When talking about access_token in this document i am referring to the token gotten by [Login](#login)
 - Also users with the role admin have acces to teamlead endpoints
@@ -235,6 +237,11 @@ Needs Bearer authorization header containing `access_token` from a user with adm
 `DEL`
 
 **URL** http://hostname/scores/{score_id}
+#### Delete Scores for Attempt
+Needs Bearer authorization header containing `access_token` from a user with admin role  
+`DEL`
+
+**URL** http://hostname/scores/attempt/{attempt_id}
 #### Get Score
 Needs Bearer authorization header containing `access_token` from a user with admin role  
 `GET`
@@ -483,6 +490,11 @@ Needs Bearer authorization header containing `access_token` from a user with adm
 `DEL`
 
 **URL** http://hostname/penalties/{penalty_id}
+#### Delete Penalties for Attempt
+Needs Bearer authorization header containing `access_token` from a user with admin role  
+`DEL`
+
+**URL** http://hostname/penalties/attempt/{attempt_id}
 #### Get Penalty
 Needs Bearer authorization header containing `access_token` from a user with admin role  
 `GET`

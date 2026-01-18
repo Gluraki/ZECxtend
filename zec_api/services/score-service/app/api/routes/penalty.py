@@ -21,6 +21,11 @@ def delete_penalty(db: SessionDep, penalty_id: int):
     penalty = crud.delete_penalty(db=db, penalty_id=penalty_id)
     return penalty
 
+@router.delete("/attempt/{attempt_id}", response_model=List[PenaltyResponse])
+def delete_penalties_by_attempt(db: SessionDep, attempt_id: int):
+    penalties = crud.delete_penalties_by_attempt(db=db, attempt_id=attempt_id)
+    return penalties
+
 @router.get("/{penalty_id}", response_model=PenaltyResponse)
 def get_penalty(db: SessionDep, penalty_id: int):
     penalty = crud.get_penalty(db=db, penalty_id=penalty_id)

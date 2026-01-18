@@ -177,6 +177,15 @@ def delete_score(*, db: SessionDep, score_id: int):
     db.commit()
     return db_score
 
+def delete_scores_for_attempt(*, db: SessionDep, attempt_id: int):
+    db_scores = db.query(Score).filter(Score.attempt_id == attempt_id).all()
+    if not db_scores:
+        raise EntityDoesNotExistError("No scores found for the given attempt")
+    for db_score in db_scores:
+        db.delete(db_score)
+    db.commit()
+    return db_scores
+
 def get_score(*, db: SessionDep, score_id: int):
     db_score = db.query(Score).filter(Score.id == score_id).first()
     if not db_score:

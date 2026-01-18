@@ -98,6 +98,16 @@ def delete_attempt(*, db: SessionDep, attempt_id: int):
     db_attempt = get_attempt(db=db, attempt_id=attempt_id)
     db.delete(db_attempt)
     db.commit()
+    score_resp = requests.delete(f"{SCORE_URL}/api/scores/attempt/{attempt_id}")
+    if score_resp.status_code in (401, 403):
+        raise AuthenticationFailed("Unauthorized to delete score for attempt")
+    if score_resp.status_code not in (200, 404):
+        raise ServiceError(f"Failed to delete score for attempt {attempt_id}: {score_resp.text}")
+    pen_resp = requests.delete(f"{SCORE_URL}/api/penalties/attempt/{attempt_id}")
+    if pen_resp.status_code in (401, 403):
+        raise AuthenticationFailed("Unauthorized to delete penalties for attempt")
+    if pen_resp.status_code not in (200, 404):
+        raise ServiceError(f"Failed to delete penalties for attempt {attempt_id}: {pen_resp.text}")
     return db_attempt
 
 def get_attempt(*, db: SessionDep, attempt_id: int):

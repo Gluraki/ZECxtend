@@ -26,10 +26,6 @@ def create_penalty(*, db: SessionDep, penalty: PenaltyCreate):
 def update_penalty(*, db: SessionDep, penalty_id: int, penalty_update: PenaltyUpdate):
     try:
         db_penalty = get_penalty(db=db, penalty_id=penalty_id)
-        if not db_penalty:
-            raise EntityDoesNotExistError(
-                message=f"Penalty with id {penalty_id} does not exist"
-            )
         update_data = penalty_update.model_dump(
             exclude_unset=True,
             exclude={"id"},
@@ -50,13 +46,23 @@ def update_penalty(*, db: SessionDep, penalty_id: int, penalty_update: PenaltyUp
 def delete_penalty(*, db: SessionDep, penalty_id: int):
     try:
         db_penalty = get_penalty(db=db, penalty_id=penalty_id)
-        if not db_penalty:
-            raise EntityDoesNotExistError(
-                message=f"Penalty with id {penalty_id} does not exist"
-            )
         db.delete(db_penalty)
         db.commit()
         return db_penalty
+    except EntityDoesNotExistError:
+        db.rollback()
+        raise
+    except Exception as exc:
+        db.rollback()
+        raise ServiceError() from exc
+    
+def delete_penalties_by_attempt(*, db: SessionDep, attempt_id: int):
+    try:
+        db_penalties = get_penalties_by_attempt(db=db, attempt_id=attempt_id)
+        for penalty in db_penalties:
+            db.delete(penalty)
+        db.commit()
+        return db_penalties
     except EntityDoesNotExistError:
         db.rollback()
         raise

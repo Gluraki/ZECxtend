@@ -21,6 +21,11 @@ def delete_score(db: SessionDep, score_id: int):
     score = crud.delete_score(db=db, score_id=score_id)
     return score
 
+@router.delete("/attempt/{attempt_id}", response_model=List[ScoreResponse])
+def delete_scores_for_attempt(db: SessionDep, attempt_id: int):
+    scores = crud.delete_scores_for_attempt(db=db, attempt_id=attempt_id)
+    return scores
+
 @router.get("/{score_id}", response_model=ScoreResponse)
 def get_score(db: SessionDep, score_id: int):
     score = crud.get_score(db=db, score_id=score_id)
