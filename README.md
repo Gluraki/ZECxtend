@@ -15,3 +15,4 @@ Repository for **Z**ero**E**mission**C**hallenge-Timing by Darnhofer and Maderba
 ## Todo
 - score reload when a new best attempt is added
 - calculate scores with penalties
+- score service tests 
