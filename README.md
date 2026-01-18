@@ -1,11 +1,15 @@
 # Zec-timing
-Repository for ZeroEmissionChallenge Timing by Darnhofer and Maderbacher
+Repository for **Z**ero**E**mission**C**hallenge Timing by Darnhofer and Maderbacher
 - Web-App branch by Darnhofer
 
 ## Todo list
-- Add attempt page
-- refactor pages for API changes
-
-## Notes and future
-- Playwright for testing
-- Frontend is just a html page atm 
+- somehow make driver and team "one" thing
+- Add attempt tab
+- map footer to bottom
+- make own footer
+- rework the tabs
+- add some sort of mobile version
+- Test with Playwright
+- login and account overview
+- different versions for what you see
+- fix how data is gotten on the main page
