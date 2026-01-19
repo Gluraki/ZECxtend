@@ -2,7 +2,7 @@
 
 import axios from "axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input"
 import {
@@ -16,6 +16,7 @@ import {
 import { SERVER_API_URL, MQTT_WORKER_API_URL } from "@/next.config";
 import { DropdownMenuCheckboxItem, DropdownMenuLabel } from "@radix-ui/react-dropdown-menu";
 import { ChevronDown } from "lucide-react";
+import { TimeSplitInput } from "@/components/TimesplitInput";
 
 interface Team {
   id: number;
@@ -192,7 +193,7 @@ export default function Page() {
     const hours = String(date.getHours()).padStart(2, "0");
     const minutes = String(date.getMinutes()).padStart(2, "0");
     const seconds = String(date.getSeconds()).padStart(2, "0");
-    const milliseconds = String(date.getMilliseconds()).padStart(3, "0"); // 3 digits is enough
+    const milliseconds = String(date.getMilliseconds()).padStart(4, "0");
 
     return `${hours}:${minutes}:${seconds}:${milliseconds}`;
   };
@@ -209,19 +210,17 @@ export default function Page() {
     return new Date(sorted[mid]).getTime() - HOUR_IN_MS;
   };
 
-  const addTodayDateToTime = (time: string): string => {
-    const now = new Date();
-    const [hh, mm, ss = "00"] = time.split(":");
-    return `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, "0")}-${now
-      .getDate()
-      .toString()
-      .padStart(2, "0")}T${hh.padStart(2, "0")}:${mm.padStart(2, "0")}:${ss.padStart(2, "0")}.000`;
-  };
-
-
   const calcAttemptTime = (): string => {
-    const startMs = medianTimestamp(selectedStartTimestamps ?? []);
-    const endMs = medianTimestamp(selectedEndTimestamps ?? []);
+    if (medianTimestamp(selectedStartTimestamps) === 0) {
+      return `00:00:0000` // return default time, if no timestamps are selected
+    }
+
+    if (medianTimestamp(selectedEndTimestamps) === 0) {
+      return `00:00:0000` // return default time, if no timestamps are selected
+    }
+
+    const startMs = medianTimestamp(selectedStartTimestamps);
+    const endMs = medianTimestamp(selectedEndTimestamps);
     const penaltyMs = ((penaltyCount ?? 0) * (selectedPenalty?.amount ?? 0)) * 1000; // convert to ms
 
     const attemptMs = endMs - startMs + penaltyMs;
@@ -232,7 +231,7 @@ export default function Page() {
     const seconds = Math.floor((attemptMs % 60000) / 1000);
     const milliseconds = attemptMs % 1000;
 
-    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}:${String(milliseconds).padStart(3, "0")}`;
+    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}:${String(milliseconds).padStart(4, "0")}`;
   };
 
   const createAttempt = () => {
@@ -292,7 +291,6 @@ export default function Page() {
         alert("Failed to submit attempt!");
       });
   }
-
 
   // Fetch on mount
   useEffect(() => {
@@ -665,6 +663,9 @@ export default function Page() {
           <CardContent className="space-y-4">
             {/* Start Timestamps */}
             <div>
+              <p>
+                Start timestamp:
+              </p>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline">
@@ -713,6 +714,9 @@ export default function Page() {
 
             {/* End Timestamps */}
             <div>
+              <p>
+                End timestamp:
+              </p>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline">
@@ -782,32 +786,22 @@ export default function Page() {
               {/* Manual Start Time */}
               <label className="flex items-center gap-2">
                 <span>Manual Start Time:</span>
-                <input
-                  type="time"
-                  step={1}
-                  value={medianTimestamp(selectedStartTimestamps)}
-                  onChange={(e) => {
-                    const fullTimestamp = addTodayDateToTime(e.target.value)
-                    setSelectedStartTimestamps([fullTimestamp])
-                  }}
-                  className="border rounded p-1 w-56"
+
+                <TimeSplitInput
+                  initialTime={medianTimestamp(selectedStartTimestamps)}
+                  onChange={(fullTimestamp) => setSelectedStartTimestamps([fullTimestamp])}
                 />
               </label>
 
-              {/* Manual End Time */}
               <label className="flex items-center gap-2">
                 <span>Manual End Time:</span>
-                <input
-                  type="time"
-                  step={1}
-                  value={medianTimestamp(selectedEndTimestamps)}
-                  onChange={(e) => {
-                    const fullTimestamp = addTodayDateToTime(e.target.value)
-                    setSelectedEndTimestamps([fullTimestamp])
-                  }}
-                  className="border rounded p-1 w-56"
+
+                <TimeSplitInput
+                  initialTime={medianTimestamp(selectedEndTimestamps)}
+                  onChange={(fullTimestamp) => setSelectedEndTimestamps([fullTimestamp])}
                 />
               </label>
+
             </div>
 
           </CardContent>
