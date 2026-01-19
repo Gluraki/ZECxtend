@@ -9,6 +9,7 @@ export const Box = styled.div`
     @media (max-width: 1000px) {
         /* padding: 70px 30px; */
     }
+    border-top: 1px solid #a3a3a3;
 `;
 
 export const FooterContainer = styled.div`
@@ -54,4 +55,11 @@ export const Heading = styled.p`
     color: #000000;
     margin-bottom: 40px;
     font-weight: bold;
+`;
+
+export const FooterDivider = styled.div`
+    width: 100%;
+    height: 1px;
+    background-color: #444;
+    margin-bottom: 40px;
 `;
