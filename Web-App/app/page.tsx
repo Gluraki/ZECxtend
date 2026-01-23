@@ -9,6 +9,7 @@ import LeaderboardTab from "@/components/tabs/LeaderboardTab"
 import LoginTab from "@/components/tabs/LoginTab"
 import {SideBarLayout, type Tabs} from "@/components/layout/sidebarlayout"
 import { AuthService } from "@/lib/auth"
+import { getPermissions, getDefaultTab, canAccessTab } from "@/lib/permissions"
 
 interface User {
   id: string
@@ -54,6 +55,7 @@ export default function Webapp() {
       { position: 1, driver: "Am One", team: "Delta", bestTime: "1:15.123", points: 80 },
     ],
   }
+  const permissions = getPermissions(currentUser?.role || null)
 
   useEffect(() => {
     if (AuthService.isLoggedIn()) {
@@ -63,12 +65,14 @@ export default function Webapp() {
         const role = AuthService.getUserRole(token)
         
         if (username && role) {
-          setCurrentUser({
+          const user = {
             id: username,
             username,
             role,
-          })
+          }
+          setCurrentUser(user)
           setIsLoggedIn(true)
+          setActiveTab(getDefaultTab(role))
         }
       }
     }
@@ -80,13 +84,14 @@ export default function Webapp() {
       const role = AuthService.getUserRole(tokenData.access_token)
       const userUsername = AuthService.getUsername(tokenData.access_token)
       
-      setCurrentUser({
+      const user = {
         id: userUsername || username,
         username: userUsername || username,
-        role: role || "user",
-      })
+        role: role || "viewer",
+      }
+      setCurrentUser(user)
       setIsLoggedIn(true)
-      setActiveTab("leaderboard")
+      setActiveTab(getDefaultTab(user.role))
     } catch (error) {
       console.error("Login failed:", error)
       throw error 
@@ -100,27 +105,72 @@ export default function Webapp() {
     setActiveTab("login")
   }
 
-  const handleDeleteTeam = (id: string | number) => {}
-  const handleExport = () => {}
-  const toggleUserStatus = (id: string | number) => {}
+  const handleTabChange = (tab: Tabs) => {
+    if (canAccessTab(currentUser?.role || null, tab)) {
+      setActiveTab(tab)
+    } else {
+      console.warn(`Access denied to tab: ${tab}`)
+    }
+  }
+
+  const handleDeleteTeam = (id: string | number) => {
+    if (!permissions.canEditTeams) {
+      alert("You don't have permission to delete teams")
+      return
+    }
+  }
+  
+  const handleExport = () => {
+    if (!permissions.canExport) {
+      alert("You don't have permission to export data")
+      return
+    }
+  }
+  
+  const toggleUserStatus = (id: string | number) => {
+    if (!permissions.canEditUsers) {
+      alert("You don't have permission to edit users")
+      return
+    }
+  }
+  
   const handleEditUser = (user: any) => {
+    if (!permissions.canEditUsers) {
+      alert("You don't have permission to edit users")
+      return
+    }
     setIsAddUserOpen(true)
     setEditingUser(user)
   }
+  
   const deleteChallenge = (id: string | number) => {
+    if (!permissions.canEditChallenges) {
+      alert("You don't have permission to delete challenges")
+      return
+    }
     setChallenges(challenges.filter((c) => c.id !== id))
   }
+  
   const handleEditChallenge = (challenge: any) => {
+    if (!permissions.canEditChallenges) {
+      alert("You don't have permission to edit challenges")
+      return
+    }
     setIsAddChallengeOpen(true)
     setEditingChallenge(challenge)
   }
+  
   const getTeamName = (id: string | number | undefined): string => {
     const team = visibleTeams.find((team) => team.id === id)
     return team ? team.name : "N/A"
   }
 
   return (
-    <SideBarLayout activeTab={activeTab} setActiveTab={setActiveTab}>
+    <SideBarLayout 
+      activeTab={activeTab} 
+      setActiveTab={handleTabChange}
+      userRole={currentUser?.role}
+    >
       {activeTab === "leaderboard" && (
         <LeaderboardTab
           raceCategories={raceCategories}
@@ -129,7 +179,7 @@ export default function Webapp() {
           mockLeaderboardData={mockLeaderboardData}
         />
       )}
-      {activeTab === "drivers" && (
+      {activeTab === "drivers" && permissions.canEditDrivers && (
         <DriversTab
           drivers={drivers}
           setDrivers={setDrivers}
@@ -143,9 +193,10 @@ export default function Webapp() {
           setIsAddTeamOpen={setIsAddTeamOpen}
           setEditingTeam={setEditingTeam}
           handleDeleteTeam={handleDeleteTeam}
+          canEdit={permissions.canEditTeams}
         />
       )}
-      {activeTab === "challenges" && (
+      {activeTab === "challenges" && permissions.canEditChallenges && (
         <ChallengeTab
           challenges={challenges}
           setIsAddChallengeOpen={setIsAddChallengeOpen}
@@ -153,7 +204,7 @@ export default function Webapp() {
           deleteChallenge={deleteChallenge}
         />
       )}
-      {activeTab === "users" && (
+      {activeTab === "users" && permissions.canEditUsers && (
         <UsersTab
           users={users}
           setIsAddUserOpen={setIsAddUserOpen}
@@ -162,7 +213,7 @@ export default function Webapp() {
           getTeamName={getTeamName}
         />
       )}
-      {activeTab === "export" && (
+      {activeTab === "export" && permissions.canExport && (
         <ExportTab
           exportFormat={exportFormat}
           setExportFormat={setExportFormat}

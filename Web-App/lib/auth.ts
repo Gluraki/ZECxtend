@@ -77,8 +77,7 @@ export class AuthService {
   static saveTokens(tokenData: TokenData): void {
     localStorage.setItem(this.ACCESS_TOKEN_KEY, tokenData.access_token);
     localStorage.setItem(this.REFRESH_TOKEN_KEY, tokenData.refresh_token);
-    
-    const expiryTime = Date.now() + tokenData.expires_in * 1000;
+    const expiryTime = Date.now() + 300;
     localStorage.setItem(this.TOKEN_EXPIRY_KEY, expiryTime.toString());
   }
 
@@ -131,15 +130,6 @@ export class AuthService {
 
     const decoded = this.decodeToken(accessToken);
     if (!decoded) return null;
-
-    if (decoded.realm_access?.roles) {
-      const commonRoles = ['admin', 'manager', 'user', 'driver'];
-      const foundRole = decoded.realm_access.roles.find(role => 
-        commonRoles.includes(role.toLowerCase())
-      );
-      if (foundRole) return foundRole.toLowerCase();
-      return decoded.realm_access.roles[0]?.toLowerCase();
-    }
     if (decoded.resource_access) {
       for (const resource of Object.values(decoded.resource_access)) {
         if (resource.roles && resource.roles.length > 0) {

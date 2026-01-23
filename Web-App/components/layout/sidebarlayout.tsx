@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/sidebar"
 import { User, Users, UserCog, Download, Trophy, Swords, CircleUser } from "lucide-react"
 import Footer from "@/components/footer/footer"
+import { canAccessTab } from "@/lib/permissions"
 
 export type Tabs =
   | "leaderboard"
@@ -20,17 +21,36 @@ export type Tabs =
   | "challenges"
   | "users"
   | "export"
-  | "config"
   | "login"
+
+interface TabConfig {
+  id: Tabs
+  label: string
+  icon: any
+  tooltip: string
+}
+
+const allTabs: TabConfig[] = [
+  { id: "leaderboard", label: "Leaderboard", icon: Trophy, tooltip: "Leaderboard" },
+  { id: "teams", label: "Teams", icon: Users, tooltip: "Teams" },
+  { id: "drivers", label: "Drivers", icon: User, tooltip: "Drivers" },
+  { id: "challenges", label: "Challenges", icon: Swords, tooltip: "Challenges" },
+  { id: "users", label: "Users", icon: UserCog, tooltip: "Users" },
+  { id: "export", label: "Export", icon: Download, tooltip: "Export" },
+  { id: "login", label: "Account", icon: CircleUser, tooltip: "Account" },
+]
 
 interface MainLayoutProps {
   activeTab: Tabs
   setActiveTab: (tab: Tabs) => void
   children: ReactNode
+  userRole?: string | null
 }
 
-export function SideBarLayout({ activeTab, setActiveTab, children }: MainLayoutProps) {
+export function SideBarLayout({ activeTab, setActiveTab, children, userRole }: MainLayoutProps) {
   const [open, setOpen] = useState(false)
+  const visibleTabs = allTabs.filter(tab => canAccessTab(userRole, tab.id))
+
   return (
     <SidebarProvider open={open} onOpenChange={setOpen}>
       <div className="flex min-h-screen w-full flex-col">
@@ -45,83 +65,21 @@ export function SideBarLayout({ activeTab, setActiveTab, children }: MainLayoutP
               </div>
             </SidebarHeader>
             <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  tooltip="Leaderboard"
-                  isActive={activeTab === "leaderboard"}
-                  onClick={() => setActiveTab("leaderboard")}
-                >
-                  <Trophy />
-                  <span>Leaderboard</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  tooltip="Teams"
-                  isActive={activeTab === "teams"}
-                  onClick={() => setActiveTab("teams")}
-                >
-                  <Users />
-                  <span>Teams</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  tooltip="Drivers"
-                  isActive={activeTab === "drivers"}
-                  onClick={() => setActiveTab("drivers")}
-                >
-                  <User />
-                  <span>Drivers</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  tooltip="Challenges"
-                  isActive={activeTab === "challenges"}
-                  onClick={() => setActiveTab("challenges")}
-                >
-                  <Swords />
-                  <span>Challenges</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  tooltip="Users"
-                  isActive={activeTab === "users"}
-                  onClick={() => setActiveTab("users")}
-                >
-                  <UserCog />
-                  <span>Users</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  tooltip="Export"
-                  isActive={activeTab === "export"}
-                  onClick={() => setActiveTab("export")}
-                >
-                  <Download />
-                  <span>Export</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  tooltip="Login"
-                  isActive={activeTab === "login"}
-                  onClick={() => setActiveTab("login")}
-                >
-                  <CircleUser />
-                  <span>Login</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
+              {visibleTabs.map((tab) => {
+                const Icon = tab.icon
+                return (
+                  <SidebarMenuItem key={tab.id}>
+                    <SidebarMenuButton
+                      tooltip={tab.tooltip}
+                      isActive={activeTab === tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                    >
+                      <Icon />
+                      <span>{tab.label}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )
+              })}
             </SidebarMenu>
           </Sidebar>
 

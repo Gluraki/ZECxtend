@@ -40,9 +40,8 @@ export default function LoginTab({ isLoggedIn, user, onLogin, onLogout }: LoginT
         <Card>
           <CardHeader>
             <CardTitle>Account Information</CardTitle>
-            <CardDescription>You are currently logged in</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3">
             <div>
               <Label className="text-sm font-medium">Username</Label>
               <p className="text-lg">{user.username}</p>
