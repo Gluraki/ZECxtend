@@ -8,10 +8,17 @@ import ExportTab from "@/components/tabs/ExportTab"
 import LeaderboardTab from "@/components/tabs/LeaderboardTab"
 import LoginTab from "@/components/tabs/LoginTab"
 import {SideBarLayout, type Tabs} from "@/components/layout/sidebarlayout"
+import { AuthService } from "@/lib/auth"
+
+interface User {
+  id: string
+  username: string
+  role: string
+}
 
 export default function Webapp() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [currentUser, setCurrentUser] = useState<any | null>(null)
+  const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [activeTab, setActiveTab] = useState<Tabs>("leaderboard")
   const [isAddDriverOpen, setIsAddDriverOpen] = useState(false)
   const [isAddTeamOpen, setIsAddTeamOpen] = useState(false)
@@ -47,6 +54,52 @@ export default function Webapp() {
       { position: 1, driver: "Am One", team: "Delta", bestTime: "1:15.123", points: 80 },
     ],
   }
+
+  useEffect(() => {
+    if (AuthService.isLoggedIn()) {
+      const token = AuthService.getAccessToken()
+      if (token) {
+        const username = AuthService.getUsername(token)
+        const role = AuthService.getUserRole(token)
+        
+        if (username && role) {
+          setCurrentUser({
+            id: username,
+            username,
+            role,
+          })
+          setIsLoggedIn(true)
+        }
+      }
+    }
+  }, [])
+
+  const handleLogin = async (username: string, password: string) => {
+    try {
+      const tokenData = await AuthService.login(username, password)
+      const role = AuthService.getUserRole(tokenData.access_token)
+      const userUsername = AuthService.getUsername(tokenData.access_token)
+      
+      setCurrentUser({
+        id: userUsername || username,
+        username: userUsername || username,
+        role: role || "user",
+      })
+      setIsLoggedIn(true)
+      setActiveTab("leaderboard")
+    } catch (error) {
+      console.error("Login failed:", error)
+      throw error 
+    }
+  }
+
+  const handleLogout = () => {
+    AuthService.clearTokens()
+    setCurrentUser(null)
+    setIsLoggedIn(false)
+    setActiveTab("login")
+  }
+
   const handleDeleteTeam = (id: string | number) => {}
   const handleExport = () => {}
   const toggleUserStatus = (id: string | number) => {}
@@ -64,19 +117,6 @@ export default function Webapp() {
   const getTeamName = (id: string | number | undefined): string => {
     const team = visibleTeams.find((team) => team.id === id)
     return team ? team.name : "N/A"
-  }
-  const handleLogin = (username: string, password: string) => {
-    setCurrentUser({
-      id: 1,
-      username,
-      role: "admin",
-    })
-    setIsLoggedIn(true)
-  }
-
-  const handleLogout = () => {
-    setCurrentUser(null)
-    setIsLoggedIn(false)
   }
 
   return (
