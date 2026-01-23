@@ -1,2 +1,5 @@
-To many requests on timestamp
-Fix Drivers
+Fix timestamp timezone
+
+Default in formula shows +1 hour time offset
+Manual input has -1 hour offset
+When selecting timestamps, there is no offset

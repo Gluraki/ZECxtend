@@ -16,48 +16,15 @@ import {
 import { SERVER_API_URL, MQTT_WORKER_API_URL } from "@/next.config";
 import { DropdownMenuCheckboxItem, DropdownMenuLabel } from "@radix-ui/react-dropdown-menu";
 import { ChevronDown } from "lucide-react";
-import { TimeSplitInput } from "@/components/TimesplitInput";
-
-interface Team {
-  id: number;
-  name: string;
-}
-
-interface Challenge {
-  id: number;
-  name: string;
-  esp_mac_start1: string;
-  esp_mac_start2: string;
-  esp_mac_finish1: string;
-  esp_mac_finish2: string;
-}
-
-interface Penalty {
-  id: number;
-  amount: number;
-  type: string | null;
-}
-
-interface ConnectionStatus {
-  is_active: boolean;
-}
-
-interface Driver {
-  id: number;
-  name: string;
-}
-
-interface Attempt {
-  team_id: number;
-  driver_id: number;
-  challenge_id: number;
-  attempt_number: number;
-  start_time: Date;
-  end_time: Date;
-  energy_used: number;
-  penalty_id: number;
-  penalty_count: number;
-}
+import { FormulaCard } from "@/components/FormulaCard";
+import { SelectionCard } from "@/components/SelectionCard";
+import { MacInputRow } from "@/components/MacInputRow";
+import { ZECHeader } from "@/components/ZECHeader";
+import { NumberInputCard } from "@/components/NumberInputCard";
+import { ConnectionStatusCard } from "@/components/ConnectionStatusCard";
+import { TimestampSelector } from "@/components/TimestampSelector";
+import { AttemptResultCard } from "@/components/AttemptResultCard";
+import { Team, Challenge, Penalty, ConnectionStatus, Driver } from "@/components/types"
 
 export default function Page() {
   const [teams, setTeams] = useState<Team[]>([]);
@@ -81,20 +48,15 @@ export default function Page() {
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
 
-  const [attemptNr, setAttemptNr] = useState<number | null>(null);
-  const [penaltyCount, setpenaltyCount] = useState<number | null>(null);
-  const [energyConsumption, setEnergyConsumption] = useState<number | null>(null);
+  const [attemptNr, setAttemptNr] = useState<number>(0);
+  const [penaltyCount, SetPenaltyCount] = useState<number>(0);
+  const [energyConsumption, setEnergyConsumption] = useState<number>(0);
 
   const [startTimestamps, setStartTimestamps] = useState<string[]>([]);
   const [endTimestamps, setEndTimestamps] = useState<string[]>([]);
 
-  const [selectedStartTimestamps, setSelectedStartTimestamps] = useState<string[]>([]);
-  const [selectedEndTimestamps, setSelectedEndTimestamps] = useState<string[]>([]);
-
-  const [manualStartTime, setManualStartTime] = useState<string>(""); // ISO string
-  const [manualEndTime, setManualEndTime] = useState<string>("");
-
-  const HOUR_IN_MS = 3600000; // 1 hour offset correction
+  const [selectedStartTimestamps, setSelectedStartTimestamps] = useState<string[] | null>(null);
+  const [selectedEndTimestamps, setSelectedEndTimestamps] = useState<string[] | null>(null);
 
   // Fetch Teams
   const fetchTeams = async () => {
@@ -166,132 +128,6 @@ export default function Page() {
     }
   };
 
-  const medianTimestampISO = (timestamps: string[]): string => {
-    if (!timestamps || timestamps.length === 0) return "";
-
-    // Sort timestamps
-    const sorted = timestamps.slice().sort();
-    const mid = Math.floor(sorted.length / 2);
-
-    let medianMs: number;
-
-    if (sorted.length % 2 === 0) {
-      const mid1 = new Date(sorted[mid - 1]).getTime() - HOUR_IN_MS;
-      const mid2 = new Date(sorted[mid]).getTime() - HOUR_IN_MS;
-      medianMs = (mid1 + mid2) / 2;
-    } else {
-      medianMs = new Date(sorted[mid]).getTime() - HOUR_IN_MS;
-    }
-
-    return new Date(medianMs).toISOString(); // <- ISO format
-  };
-
-  const formatTimestampHH_MM_SS_MMMM = (input: string | number | Date): string => {
-    const date = typeof input === "string" || typeof input === "number" ? new Date(input) : input;
-
-    // USE LOCAL TIME
-    const hours = String(date.getHours()).padStart(2, "0");
-    const minutes = String(date.getMinutes()).padStart(2, "0");
-    const seconds = String(date.getSeconds()).padStart(2, "0");
-    const milliseconds = String(date.getMilliseconds()).padStart(4, "0");
-
-    return `${hours}:${minutes}:${seconds}:${milliseconds}`;
-  };
-
-  const medianTimestamp = (timestamps: string[]): number => {
-    if (!timestamps || timestamps.length === 0) return 0;
-    const sorted = timestamps.slice().sort();
-    const mid = Math.floor(sorted.length / 2);
-    if (sorted.length % 2 === 0) {
-      const mid1 = new Date(sorted[mid - 1]).getTime() - HOUR_IN_MS;
-      const mid2 = new Date(sorted[mid]).getTime() - HOUR_IN_MS;
-      return (mid1 + mid2) / 2;
-    }
-    return new Date(sorted[mid]).getTime() - HOUR_IN_MS;
-  };
-
-  const calcAttemptTime = (): string => {
-    if (medianTimestamp(selectedStartTimestamps) === 0) {
-      return `00:00:0000` // return default time, if no timestamps are selected
-    }
-
-    if (medianTimestamp(selectedEndTimestamps) === 0) {
-      return `00:00:0000` // return default time, if no timestamps are selected
-    }
-
-    const startMs = medianTimestamp(selectedStartTimestamps);
-    const endMs = medianTimestamp(selectedEndTimestamps);
-    const penaltyMs = ((penaltyCount ?? 0) * (selectedPenalty?.amount ?? 0)) * 1000; // convert to ms
-
-    const attemptMs = endMs - startMs + penaltyMs;
-
-    // Format duration directly from milliseconds
-    const hours = Math.floor(attemptMs / 3600000);
-    const minutes = Math.floor((attemptMs % 3600000) / 60000);
-    const seconds = Math.floor((attemptMs % 60000) / 1000);
-    const milliseconds = attemptMs % 1000;
-
-    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}:${String(milliseconds).padStart(4, "0")}`;
-  };
-
-  const createAttempt = () => {
-    if (!selectedTeam?.id) {
-      alert("Please select a team!");
-      return null;
-    }
-    if (!selectedDriver?.id) {
-      alert("Please select a driver!");
-      return null;
-    }
-    if (!selectedChallenge?.id) {
-      alert("Please select a challenge!");
-      return null;
-    }
-    if (!attemptNr || attemptNr <= 0) {
-      alert("Please enter a valid attempt number!");
-      return null;
-    }
-    if (!selectedStartTimestamps?.length) {
-      alert("Please select at least one start timestamp!");
-      return null;
-    }
-    if (!selectedEndTimestamps?.length) {
-      alert("Please select at least one end timestamp!");
-      return null;
-    }
-    if (!energyConsumption || energyConsumption <= 0) {
-      alert("Please enter energy consumption!");
-      return null;
-    }
-
-    if (!selectedPenalty?.type) {
-      alert("Please select a penalty!");
-      return null;
-    }
-
-    // Create the Attempt object
-    const attempt: Attempt = {
-      team_id: selectedTeam.id,
-      driver_id: selectedDriver.id,
-      challenge_id: selectedChallenge.id,
-      attempt_number: attemptNr,
-      start_time: new Date(medianTimestamp(selectedStartTimestamps)), // convert ms → Date
-      end_time: new Date(medianTimestamp(selectedEndTimestamps)),     // convert ms → Date
-      energy_used: energyConsumption,
-      penalty_id: selectedPenalty?.id,
-      penalty_count: penaltyCount ?? 0,
-    };
-
-    axios.post(`${SERVER_API_URL}/attempts/`, attempt)
-      .then(() => {
-        alert("Attempt submitted successfully!");
-      })
-      .catch((error) => {
-        console.error("Failed to submit attempt", error);
-        alert("Failed to submit attempt!");
-      });
-  }
-
   // Fetch on mount
   useEffect(() => {
     fetchTeams();
@@ -320,339 +156,131 @@ export default function Page() {
 
   return (
     <div>
-      <header className="mt-4 mb-8 px-4 grid grid-cols-3 items-center">
-        <div className="flex justify-start">
-          <img
-            src="/images/Logo_HTL_100.png"
-            alt="HTL Logo"
-            className="h-16 md:h-20 object-contain"
-          />
-        </div>
-        <h1 className="text-center text-xl md:text-5xl font-bold tracking-tight text-blue-900">
-          ZEC-Timing
-        </h1>
-        <div className="flex justify-end">
-          <img
-            src="/images/ZEC-Logo.png"
-            alt="Zero Emission Challenge Logo"
-            className="h-16 md:h-20 object-contain"
-          />
-        </div>
-      </header>
+      <ZECHeader />
 
       <div className="grid grid-cols-1 md:grid-cols-3 mb-4 gap-6">
         {/* Challenge */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Challenge</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="flex items-center justify-between gap-2">
-                  {selectedChallenge ? selectedChallenge.name : "Select Challenge"}
-                  <ChevronDown className="w-4 h-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuRadioGroup
-                  value={selectedChallenge?.id.toString() || ""}
-                  onValueChange={(value) => {
-                    const challenge = challenges.find((c) => c.id.toString() === value) || null;
-                    setSelectedChallenge(challenge);
-                  }}
-                >
-                  {challenges.map((challenge) => (
-                    <DropdownMenuRadioItem
-                      key={challenge.id}
-                      value={challenge.id.toString()}
-                    >
-                      {challenge.name}
-                    </DropdownMenuRadioItem>
-                  ))}
-                </DropdownMenuRadioGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </CardContent>
-        </Card>
+        <SelectionCard<Challenge>
+          title="Challenge"
+          items={challenges}
+          selectedItem={selectedChallenge}
+          onSelect={setSelectedChallenge}
+        />
 
         {/* Team */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Team</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline">
-                  {selectedTeam ? selectedTeam.name : "Select Team"}
-                  <ChevronDown className="w-4 h-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuRadioGroup
-                  value={selectedTeam?.id.toString() || ""}
-                  onValueChange={(value) => {
-                    const team = teams.find((t) => t.id.toString() === value) || null;
-                    setSelectedTeam(team);
-                    fetchDriversForTeam(selectedTeam?.id);
-                  }}
-                >
-                  {teams.map((team) => (
-                    <DropdownMenuRadioItem key={team.id} value={team.id.toString()}>
-                      {team.name}
-                    </DropdownMenuRadioItem>
-                  ))}
-                </DropdownMenuRadioGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </CardContent>
-        </Card>
+        <SelectionCard<Team>
+          title="Team"
+          items={teams}
+          selectedItem={selectedTeam}
+          onSelect={(team) => {
+            setSelectedTeam(team)
+            fetchDriversForTeam(team?.id)
+          }}
+        />
 
-        {/*Pairing*/}
         <Card className="md:row-span-2">
           <CardHeader>
             <CardTitle>Pairing</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/*Start 1*/}
-            <div className="flex items-center gap-2 mt-4">
-              <Input
-                value={espStart1Input}
-                onChange={(e) => setEspStart1Input(e.target.value)}
-                placeholder={selectedChallenge?.esp_mac_start1}
-              />
-              <Button
-                onClick={() => {
-                  if (selectedChallenge) {
-                    setSelectedChallenge({
-                      ...selectedChallenge,
-                      esp_mac_start1: espStart1Input, // update the property
-                    });
-                    setEspStart1Input(""); // optionally clear the input
-                  }
-                }}
-              >
-                Update Start 1
-              </Button>
-            </div>
-            {/*Start 2*/}
-            <div className="flex items-center gap-2 mt-4">
-              <Input
-                value={espStart2Input}
-                onChange={(e) => setEspStart2Input(e.target.value)}
-                placeholder={selectedChallenge?.esp_mac_start2}
-              />
-              <Button
-                onClick={() => {
-                  if (selectedChallenge) {
-                    setSelectedChallenge({
-                      ...selectedChallenge,
-                      esp_mac_start2: espStart2Input, // update the property
-                    });
-                    setEspStart2Input(""); // optionally clear the input
-                  }
-                }}
-              >
-                Update Start 2
-              </Button>
-            </div>
-            {/*Finish 1*/}
-            <div className="flex items-center gap-2 mt-4">
-              <Input
-                value={espFinish1Input}
-                onChange={(e) => setEspFinish1Input(e.target.value)}
-                placeholder={selectedChallenge?.esp_mac_finish1}
-              />
-              <Button
-                onClick={() => {
-                  if (selectedChallenge) {
-                    setSelectedChallenge({
-                      ...selectedChallenge,
-                      esp_mac_finish1: espFinish1Input, // update the property
-                    });
-                    setEspFinish1Input(""); // optionally clear the input
-                  }
-                }}
-              >
-                Update Finish 1
-              </Button>
-            </div>
-            {/*Finish 2*/}
-            <div className="flex items-center gap-2 mt-4">
-              <Input
-                value={espFinish2Input}
-                onChange={(e) => setEspFinish2Input(e.target.value)}
-                placeholder={selectedChallenge?.esp_mac_finish2}
-              />
-              <Button
-                onClick={() => {
-                  if (selectedChallenge) {
-                    setSelectedChallenge({
-                      ...selectedChallenge,
-                      esp_mac_finish2: espFinish2Input, // update the property
-                    });
-                    setEspFinish2Input(""); // optionally clear the input
-                  }
-                }}
-              >
-                Update Finish 2
-              </Button>
-            </div>
+            <MacInputRow
+              label="Update Start 1"
+              value={espStart1Input}
+              placeholder={selectedChallenge?.esp_mac_start1}
+              onChange={setEspStart1Input}
+              onUpdate={() => {
+                if (selectedChallenge) {
+                  setSelectedChallenge({ ...selectedChallenge, esp_mac_start1: espStart1Input })
+                  setEspStart1Input("")
+                }
+              }}
+            />
+
+            <MacInputRow
+              label="Update Start 2"
+              value={espStart2Input}
+              placeholder={selectedChallenge?.esp_mac_start2}
+              onChange={setEspStart2Input}
+              onUpdate={() => {
+                if (selectedChallenge) {
+                  setSelectedChallenge({ ...selectedChallenge, esp_mac_start2: espStart2Input })
+                  setEspStart2Input("")
+                }
+              }}
+            />
+
+            <MacInputRow
+              label="Update Finish 1"
+              value={espFinish1Input}
+              placeholder={selectedChallenge?.esp_mac_finish1}
+              onChange={setEspFinish1Input}
+              onUpdate={() => {
+                if (selectedChallenge) {
+                  setSelectedChallenge({ ...selectedChallenge, esp_mac_finish1: espFinish1Input })
+                  setEspFinish1Input("")
+                }
+              }}
+            />
+
+            <MacInputRow
+              label="Update Finish 2"
+              value={espFinish2Input}
+              placeholder={selectedChallenge?.esp_mac_finish2}
+              onChange={setEspFinish2Input}
+              onUpdate={() => {
+                if (selectedChallenge) {
+                  setSelectedChallenge({ ...selectedChallenge, esp_mac_finish2: espFinish2Input })
+                  setEspFinish2Input("")
+                }
+              }}
+            />
           </CardContent>
         </Card>
 
         {/* Penalty */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Penalty</CardTitle>
-          </CardHeader>
-          <CardContent className="flex items-center gap-4">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline">
-                  {selectedPenalty ? selectedPenalty.type : "Select Penalty"}
-                  <ChevronDown className="w-4 h-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuRadioGroup
-                  value={selectedPenalty?.id.toString() || ""}
-                  onValueChange={(value) => {
-                    const penalty = penalties.find((p) => p.id.toString() === value) || null;
-                    setSelectedPenalty(penalty);
-                  }}
-                >
-                  {penalties.map((penalty) => (
-                    <DropdownMenuRadioItem key={penalty.id} value={penalty.id.toString()}>
-                      {penalty.type}
-                    </DropdownMenuRadioItem>
-                  ))}
-                </DropdownMenuRadioGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <p> = {selectedPenalty?.amount} seconds</p>
-          </CardContent>
-        </Card>
+        <SelectionCard<Penalty>
+          title="Penalty"
+          items={penalties}
+          selectedItem={selectedPenalty}
+          onSelect={setSelectedPenalty}
+          getDisplayName={(p) => `${p.type ?? 'Penalty'} (${p.amount}s)`}
+        />
 
-        <Card>
-          <CardHeader>
-            <CardTitle
-              className={
-                connectionStatus.is_active
-                  ? "text-green-600"
-                  : "text-red-600"
-              }
-            >
-              Status: {connectionStatus.is_active ? "Active" : "Inactive"}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 space-x-3">
-            <Button
-              onClick={() => setConnectionStatus({ is_active: true })}
-              className="bg-green-600 hover:bg-green-700 text-white text-2xl px-6 py-3"
-            >
-              Activate
-            </Button>
+        <ConnectionStatusCard
+          status={connectionStatus}
+          setStatus={setConnectionStatus}
+        />
 
-            <Button
-              onClick={() => setConnectionStatus({ is_active: false })}
-              className="bg-red-600 hover:bg-red-700 text-white text-2xl px-6 py-3"
-            >
-              Deactivate
-            </Button>
-          </CardContent>
-        </Card>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 mb-4 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              Attempt
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 space-x-3">
-            <Input
-              type="number"
-              value={attemptNr ?? ""}
-              onChange={(e) => {
-                const value = e.target.value;
-                setAttemptNr(value === "" ? null : Number(value));
-              }}
-              placeholder="Attempt Number"
-            />
-          </CardContent>
-        </Card>
+        <NumberInputCard
+          title="Attempt"
+          value={attemptNr}
+          onChange={(value) => setAttemptNr(value ?? 0)}
+          placeholder="Attempt Number"
+        />
 
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              Penalty Count
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 space-x-3">
-            <Input
-              type="number"
-              value={penaltyCount ?? ""}
-              onChange={(e) => {
-                const value = e.target.value;
-                setpenaltyCount(value === "" ? null : Number(value));
-              }}
-              placeholder="Amount of Penalties"
-            />
-          </CardContent>
-        </Card>
+        <NumberInputCard
+          title="Penalty Count"
+          value={penaltyCount}
+          onChange={(value) => SetPenaltyCount(value ?? 0)}
+          placeholder="Amount of Penalties"
+        />
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Driver</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline">
-                  {selectedDriver ? selectedDriver.name : "Select Driver"}
-                  <ChevronDown className="w-4 h-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuRadioGroup
-                  value={selectedDriver?.id.toString() || ""}
-                  onValueChange={(value) => {
-                    const driver = drivers.find((d) => d.id.toString() === value) || null;
-                    setSelectedDriver(driver);
-                  }}
-                >
-                  {drivers.map((driver) => (
-                    <DropdownMenuRadioItem key={driver.id} value={driver.id.toString()}>
-                      {driver.name}
-                    </DropdownMenuRadioItem>
-                  ))}
-                </DropdownMenuRadioGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </CardContent>
-        </Card>
+        <SelectionCard<Driver>
+          title="Drivers"
+          items={drivers}
+          selectedItem={selectedDriver}
+          onSelect={setSelectedDriver}
+        />
 
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              Energy Consumption
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 space-x-3">
-            <Input
-              type="number"
-              value={energyConsumption ?? ""}
-              onChange={(e) => {
-                const value = e.target.value;
-                setEnergyConsumption(value === "" ? null : Number(value));
-              }}
-              placeholder="Energy Consumption"
-            />
-          </CardContent>
-        </Card>
+        <NumberInputCard
+          title="Energy Consumption"
+          value={energyConsumption}
+          onChange={(value) => setEnergyConsumption(value ?? 0)}
+          placeholder="Energy Consumption"
+        />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 mb-4 gap-6">
@@ -661,172 +289,44 @@ export default function Page() {
             <CardTitle>Timestamps</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Start Timestamps */}
-            <div>
-              <p>
-                Start timestamp:
-              </p>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline">
-                    {selectedStartTimestamps?.length
-                      ? medianTimestampISO(selectedStartTimestamps)
-                      : "Select Start Timestamps"}
-                    <ChevronDown className="w-4 h-4" />
-                  </Button>
-                </DropdownMenuTrigger>
+            <TimestampSelector
+              label="Start timestamp"
+              timestamps={startTimestamps}
+              selectedTimestamps={selectedStartTimestamps ?? []}
+              setSelectedTimestamps={setSelectedStartTimestamps}
+            />
 
-                <DropdownMenuContent
-                  sideOffset={5}
-                  align="start"
-                  className="min-w-[220px]"
-                >
-                  <DropdownMenuLabel>Start Timestamps</DropdownMenuLabel>
-
-                  {startTimestamps?.map((timestamp, index) => {
-                    const isSelected = selectedStartTimestamps?.includes(timestamp);
-                    return (
-                      <DropdownMenuCheckboxItem
-                        key={index}
-                        checked={isSelected || false}
-                        onCheckedChange={(checked) => {
-                          if (checked) {
-                            setSelectedStartTimestamps((prev) =>
-                              prev ? [...prev, timestamp] : [timestamp]
-                            );
-                          } else {
-                            setSelectedStartTimestamps((prev) =>
-                              prev ? prev.filter((t) => t !== timestamp) : []
-                            );
-                          }
-                        }}
-                        onSelect={(e) => e.preventDefault()}
-                        className={`cursor-default px-2 py-1 rounded-md ${isSelected ? "bg-slate-100 dark:bg-slate-800 font-medium" : ""
-                          }`}
-                      >
-                        {timestamp}
-                      </DropdownMenuCheckboxItem>
-                    );
-                  })}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-
-            {/* End Timestamps */}
-            <div>
-              <p>
-                End timestamp:
-              </p>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline">
-                    {selectedEndTimestamps?.length
-                      ? medianTimestampISO(selectedEndTimestamps)
-                      : "Select End Timestamps"}
-                    <ChevronDown className="w-4 h-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-
-                <DropdownMenuContent
-                  sideOffset={5}
-                  align="start"
-                  className="min-w-[220px]"
-                >
-                  <DropdownMenuLabel>End Timestamps</DropdownMenuLabel>
-
-                  {endTimestamps?.map((timestamp, index) => {
-                    const isSelected = selectedEndTimestamps?.includes(timestamp);
-                    return (
-                      <DropdownMenuCheckboxItem
-                        key={index}
-                        checked={isSelected || false}
-                        onCheckedChange={(checked) => {
-                          if (checked) {
-                            setSelectedEndTimestamps((prev) =>
-                              prev ? [...prev, timestamp] : [timestamp]
-                            );
-                          } else {
-                            setSelectedEndTimestamps((prev) =>
-                              prev ? prev.filter((t) => t !== timestamp) : []
-                            );
-                          }
-                        }}
-                        onSelect={(e) => e.preventDefault()}
-                        className={`cursor-default px-2 py-1 rounded-md ${isSelected ? "bg-slate-100 dark:bg-slate-800 font-medium" : ""
-                          }`}
-                      >
-                        {timestamp}
-                      </DropdownMenuCheckboxItem>
-                    );
-                  })}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+            <TimestampSelector
+              label="End timestamp"
+              timestamps={endTimestamps}
+              selectedTimestamps={selectedEndTimestamps ?? []}
+              setSelectedTimestamps={setSelectedEndTimestamps}
+            />
           </CardContent>
         </Card>
 
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <CardTitle>
-              Formula
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p>
-              Attempt time formula = end time - start time + (amount of penalties * time penalty)
-            </p>
+        <FormulaCard
+          selectedStartTimestamps={selectedStartTimestamps}
+          selectedEndTimestamps={selectedEndTimestamps}
+          penaltyCount={penaltyCount}
+          selectedPenaltyAmount={selectedPenalty?.amount ?? 0}
+          setSelectedStartTimestamps={setSelectedStartTimestamps}
+          setSelectedEndTimestamps={setSelectedEndTimestamps}
+        />
 
-            <p>
-              Attempt time formula ={" "}
-              {formatTimestampHH_MM_SS_MMMM(medianTimestamp(selectedEndTimestamps ?? []))} -
-              {formatTimestampHH_MM_SS_MMMM(medianTimestamp(selectedStartTimestamps ?? []))} + ( {penaltyCount ?? 0} * {(selectedPenalty?.amount ?? 0)})
-            </p>
 
-            <div className="flex flex-col gap-2 mt-4">
-              {/* Manual Start Time */}
-              <label className="flex items-center gap-2">
-                <span>Manual Start Time:</span>
-
-                <TimeSplitInput
-                  initialTime={medianTimestamp(selectedStartTimestamps)}
-                  onChange={(fullTimestamp) => setSelectedStartTimestamps([fullTimestamp])}
-                />
-              </label>
-
-              <label className="flex items-center gap-2">
-                <span>Manual End Time:</span>
-
-                <TimeSplitInput
-                  initialTime={medianTimestamp(selectedEndTimestamps)}
-                  onChange={(fullTimestamp) => setSelectedEndTimestamps([fullTimestamp])}
-                />
-              </label>
-
-            </div>
-
-          </CardContent>
-        </Card>
-
-        <Card className="md:col-span-1">
-          <CardHeader>
-            <CardTitle>
-              Result
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p>
-              Result = {calcAttemptTime()}
-            </p>
-
-            <Button variant={"outline"} onClick={
-              () => createAttempt()
-            }>
-              Submit
-            </Button>
-          </CardContent>
-        </Card>
+        <AttemptResultCard
+          selectedTeam={selectedTeam}
+          selectedDriver={selectedDriver}
+          selectedChallenge={selectedChallenge}
+          attemptNr={attemptNr}
+          selectedStartTimestamps={selectedStartTimestamps ?? []}
+          selectedEndTimestamps={selectedEndTimestamps ?? []}
+          energyConsumption={energyConsumption}
+          selectedPenalty={selectedPenalty}
+          penaltyCount={penaltyCount}
+        />
       </div>
     </div>
   );
 }
-
