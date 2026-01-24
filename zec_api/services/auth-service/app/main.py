@@ -25,8 +25,7 @@ from app.exceptions.exceptions import (
 def cstm_generate_unique_id(route: APIRoute) -> str:
     if route.tags and len(route.tags) > 0:
         return f"{route.tags[0]}-{route.name}"
-    else:
-        return f"untagged-{route.name}"
+    return f"untagged-{route.name}"
 
 app = FastAPI(
     title="Auth Service API",
@@ -46,22 +45,31 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.options("/{path:path}")
+async def options_handler(path: str):
+    return JSONResponse(status_code=200)
+
 app.include_router(api_router, prefix=settings.API_STR)
+
 if settings.ENVIRONMENT != "testing":
     Base.metadata.create_all(bind=engine)
 
 def create_exception_handler(
     status_code: int, initial_detail: str
 ) -> Callable[[Request, AuthserviceApiError], JSONResponse]:
-    detail = {"message": initial_detail}
-    async def exception_handler(_: Request, exc: AuthserviceApiError) -> JSONResponse:
-        if exc.message:
-            detail["message"] = exc.message
+
+    async def exception_handler(
+        request: Request, exc: AuthserviceApiError
+    ) -> JSONResponse:
+        message = exc.message or initial_detail
         if exc.name:
-            detail["message"] = f"{detail['message']} [{exc.name}]"
+            message = f"{message} [{exc.name}]"
+
         return JSONResponse(
-            status_code=status_code, content={"detail": detail["message"]}
+            status_code=status_code,
+            content={"detail": message},
         )
+
     return exception_handler
 
 app.add_exception_handler(
