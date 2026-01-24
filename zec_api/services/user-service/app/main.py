@@ -44,19 +44,27 @@ app.include_router(api_router, prefix=settings.API_STR)
 if settings.ENVIRONMENT != "testing":
     Base.metadata.create_all(bind=engine)
 
-
 def create_exception_handler(
     status_code: int, initial_detail: str
 ) -> Callable[[Request, UserserviceApiError], JSONResponse]:
     detail = {"message": initial_detail}
-    async def exception_handler(_: Request, exc: UserserviceApiError) -> JSONResponse:
+    async def exception_handler(request: Request, exc: UserserviceApiError) -> JSONResponse:
         if exc.message:
             detail["message"] = exc.message
         if exc.name:
             detail["message"] = f"{detail['message']} [{exc.name}]"
+        origin = request.headers.get("origin", "*")
         return JSONResponse(
-            status_code=status_code, content={"detail": detail["message"]}
+            status_code=status_code,
+            content={"detail": detail["message"]},
+            headers={
+                "Access-Control-Allow-Origin": origin,
+                "Access-Control-Allow-Credentials": "true",
+                "Access-Control-Allow-Methods": "*",
+                "Access-Control-Allow-Headers": "*",
+            }
         )
+    
     return exception_handler
 
 app.add_exception_handler(
