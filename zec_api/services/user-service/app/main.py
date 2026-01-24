@@ -5,7 +5,6 @@ from app.api.main import api_router
 from app.core.config import settings
 from app.database.session import engine, Base
 from typing import Callable
-from starlette.middleware.cors import CORSMiddleware
 from app.exceptions.exceptions import (
     AuthenticationFailed,
     UserserviceApiError,
@@ -28,18 +27,6 @@ app = FastAPI(
     generate_unique_id_function=cstm_generate_unique_id,
 )
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://localhost:3001",
-        "http://127.0.0.1:3000",
-    ],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 app.include_router(api_router, prefix=settings.API_STR)
 if settings.ENVIRONMENT != "testing":
     Base.metadata.create_all(bind=engine)
@@ -47,24 +34,19 @@ if settings.ENVIRONMENT != "testing":
 def create_exception_handler(
     status_code: int, initial_detail: str
 ) -> Callable[[Request, UserserviceApiError], JSONResponse]:
-    detail = {"message": initial_detail}
-    async def exception_handler(request: Request, exc: UserserviceApiError) -> JSONResponse:
-        if exc.message:
-            detail["message"] = exc.message
+
+    async def exception_handler(
+        request: Request, exc: UserserviceApiError
+    ) -> JSONResponse:
+        message = exc.message or initial_detail
         if exc.name:
-            detail["message"] = f"{detail['message']} [{exc.name}]"
-        origin = request.headers.get("origin", "*")
+            message = f"{message} [{exc.name}]"
+
         return JSONResponse(
             status_code=status_code,
-            content={"detail": detail["message"]},
-            headers={
-                "Access-Control-Allow-Origin": origin,
-                "Access-Control-Allow-Credentials": "true",
-                "Access-Control-Allow-Methods": "*",
-                "Access-Control-Allow-Headers": "*",
-            }
+            content={"detail": message},
         )
-    
+
     return exception_handler
 
 app.add_exception_handler(

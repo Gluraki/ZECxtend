@@ -5,7 +5,6 @@ from app.database.session import engine, Base
 from typing import Callable
 from app.api.main import api_router
 from app.core.config import settings
-from starlette.middleware.cors import CORSMiddleware
 from app.exceptions.exceptions import (
     AuthserviceApiError,
     TokenHeaderRequired,
@@ -32,22 +31,6 @@ app = FastAPI(
     openapi_url=f"{settings.API_STR}/openapi.json",
     generate_unique_id_function=cstm_generate_unique_id,
 )
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://localhost:3001",
-        "http://127.0.0.1:3000",
-    ],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-@app.options("/{path:path}")
-async def options_handler(path: str):
-    return JSONResponse(status_code=200)
 
 app.include_router(api_router, prefix=settings.API_STR)
 
