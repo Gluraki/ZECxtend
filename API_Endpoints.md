@@ -45,10 +45,11 @@
   - 7.1 [Create User](#create-user)
   - 7.2 [Get User by Username](#get-user-by-username)
   - 7.3 [Get User by ID](#get-user-by-id)
-  - 7.4 [Update User](#update-user)
-  - 7.5 [Delete User](#delete-user)
-  - 7.6 [Assign Roles](#assign-roles)
-  - 7.7 [Remove Roles](#remove-roles)
+  - 7.4 [Get all Users](#get-all-users)
+  - 7.5 [Update User](#update-user)
+  - 7.6 [Delete User](#delete-user)
+  - 7.7 [Assign Roles](#assign-roles)
+  - 7.8 [Remove Roles](#remove-roles)
 - ## 8. Penalty
   - 8.1 [Create Penalty](#create-penalty)
   - 8.2 [Update Penalty](#update-penalty)
@@ -397,6 +398,11 @@ Needs Bearer authorization header containing `access_token` from a user with adm
 
 **Path Parameters**
 - `id` (string): Keycloak user ID
+#### Get all Users
+Needs Bearer authorization header containing `access_token` from a user with admin role  
+`GET`
+
+**URL** http://hostname/users/
 #### Update User
 Needs Bearer authorization header containing `access_token` from a user with admin role  
 `PUT`

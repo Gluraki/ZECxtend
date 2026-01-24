@@ -47,3 +47,8 @@ def remove_roles_from_user(user_id: str, roles_request: UserRolesRequest):
         "user_id": user_id,
         "unassigned_roles": roles_request.roles
     }
+
+@router.get("/", response_model=list[dict])
+def list_users():
+    users = crud.get_all_users()
+    return users

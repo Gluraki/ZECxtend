@@ -213,3 +213,53 @@ def get_user_by_id(user_id: str) -> dict:
         "id": user["id"],
         "username": user["username"],
     }
+
+def get_all_users() -> list[dict]:
+    access_token = get_admin_token()
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json",
+    }
+    
+    response = requests.get(KC_USER_URL, headers=headers)
+    if response.status_code in (401, 403):
+        raise AuthenticationFailed("Authentication failed")
+    if response.status_code != 200:
+        raise ServiceError("Failed to fetch users from Keycloak")
+    
+    users = response.json()
+    
+    client_resp = requests.get(f"{KC_CLIENTS_URL}?clientId={KC_CLIENT_ID}", headers=headers)
+    if client_resp.status_code != 200:
+        raise ServiceError("Unable to resolve client")
+    client_uuid = client_resp.json()[0]["id"]
+    
+    enriched_users = []
+    for user in users:
+        user_id = user.get("id")
+        user_data = {
+            "id": user_id,
+            "username": user.get("username"),
+            "email": user.get("email"),
+            "firstName": user.get("firstName"),
+            "lastName": user.get("lastName"),
+            "enabled": user.get("enabled", False),
+            "emailVerified": user.get("emailVerified", False),
+            "roles": []
+        }
+
+        try:
+            roles_resp = requests.get(
+                f"{KC_USER_URL}/{user_id}/role-mappings/clients/{client_uuid}",
+                headers=headers
+            )
+            if roles_resp.status_code == 200:
+                roles = roles_resp.json()
+                user_data["roles"] = [role["name"] for role in roles]
+        except Exception as e:
+            print(f"Error getting roles for user {user_id}: {e}")
+            user_data["roles"] = []
+        
+        enriched_users.append(user_data)
+    
+    return enriched_users
