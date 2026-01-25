@@ -32,24 +32,6 @@ export default function Webapp() {
     from: new Date().toISOString(),
     to: new Date().toISOString(),
   })
-  const raceCategories = ["test1", "test2"]
-  const [selectedCategory, setSelectedCategory] = useState(raceCategories[0])
-  const mockLeaderboardData = {
-    test1: [
-      { position: 1, driver: "Pro One", team: "Gamma", bestTime: "1:11.999", points: 100 },
-      { position: 2, driver: "Pro One", team: "Gamma", bestTime: "1:11.999", points: 100 },
-      { position: 3, driver: "Pro One", team: "Gamma", bestTime: "1:11.999", points: 100 },
-      { position: 4, driver: "Pro One", team: "Gamma", bestTime: "1:11.999", points: 100 },
-      { position: 5, driver: "Pro One", team: "Gamma", bestTime: "1:11.999", points: 100 },
-      { position: 6, driver: "Pro One", team: "Gamma", bestTime: "1:11.999", points: 100 },
-      { position: 7, driver: "Pro One", team: "Gamma", bestTime: "1:11.999", points: 100 },
-      { position: 8, driver: "Pro One", team: "Gamma", bestTime: "1:11.999", points: 100 },
-    ],
-    test2: [
-      { position: 1, driver: "Am One", team: "Delta", bestTime: "1:15.123", points: 80 },
-    ],
-  }
-
   const permissions = getPermissions(currentUser?.role || null)
 
   useEffect(() => {
@@ -130,12 +112,7 @@ export default function Webapp() {
       userRole={currentUser?.role}
     >
       {activeTab === "leaderboard" && (
-        <LeaderboardTab
-          raceCategories={raceCategories}
-          selectedCategory={selectedCategory}
-          setSelectedCategory={setSelectedCategory}
-          mockLeaderboardData={mockLeaderboardData}
-        />
+        <LeaderboardTab />
       )}
       {activeTab === "drivers" && permissions.canEditDrivers && (
         <DriversTab
