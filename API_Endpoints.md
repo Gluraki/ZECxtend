@@ -193,17 +193,14 @@ All fields are optional depending on what needs to be updated.
 }
 ```
 #### Get Challenge by ID
-Needs Bearer authorization header containing `access_token` from a user with admin role  
 `GET`
   
 **URL** http://hostname/challenges/{challenge_id}
 #### Get Challenge by Name
-Needs Bearer authorization header containing `access_token` from a user with admin role  
 `GET`
   
 **URL** http://hostname/challenges/name/{challenge_name}
 #### Get Challenges (all)
-Needs Bearer authorization header containing `access_token` from a user with admin role  
 `GET`
 
 **URL** http://hostname/challenges/
