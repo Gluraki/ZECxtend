@@ -24,11 +24,16 @@ const CATEGORY_LABELS: Record<TeamCategory, string> = {
   [TeamCategory.PROFESSIONAL_CLASS]: "Professional Class",
 }
 
+const CATEGORIES = Object.values(TeamCategory)
+
 export default function LeaderboardTab() {
   const [challenges, setChallenges] = useState<Challenge[]>([])
   const [selectedChallenge, setSelectedChallenge] = useState<number | null>(null)
-  const [selectedCategory, setSelectedCategory] = useState<TeamCategory>(TeamCategory.CLOSE_TO_SERIES)
-  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
+  const [leaderboards, setLeaderboards] = useState<Record<TeamCategory, LeaderboardEntry[]>>({
+    [TeamCategory.CLOSE_TO_SERIES]: [],
+    [TeamCategory.ADVANCED_CLASS]: [],
+    [TeamCategory.PROFESSIONAL_CLASS]: [],
+  })
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingChallenges, setIsLoadingChallenges] = useState(false)
 
@@ -38,9 +43,9 @@ export default function LeaderboardTab() {
 
   useEffect(() => {
     if (selectedChallenge) {
-      loadLeaderboard()
+      loadAllLeaderboards()
     }
-  }, [selectedChallenge, selectedCategory])
+  }, [selectedChallenge])
 
   const loadChallenges = async () => {
     setIsLoadingChallenges(true)
@@ -57,16 +62,31 @@ export default function LeaderboardTab() {
     }
   }
 
-  const loadLeaderboard = async () => {
+  const loadAllLeaderboards = async () => {
     if (!selectedChallenge) return
 
     setIsLoading(true)
     try {
-      const data = await leaderboardApi.getLeaderboard(selectedChallenge, selectedCategory)
-      setLeaderboard(data)
+      const results = await Promise.all(
+        CATEGORIES.map(async (category) => {
+          try {
+            const data = await leaderboardApi.getLeaderboard(selectedChallenge, category)
+            return { category, data }
+          } catch (error) {
+            console.error(`Failed to load ${category}:`, error)
+            return { category, data: [] }
+          }
+        })
+      )
+
+      const newLeaderboards = results.reduce((acc, { category, data }) => {
+        acc[category] = data
+        return acc
+      }, {} as Record<TeamCategory, LeaderboardEntry[]>)
+
+      setLeaderboards(newLeaderboards)
     } catch (error: any) {
-      toast.error(error.message || "Failed to load leaderboard")
-      setLeaderboard([])
+      toast.error(error.message || "Failed to load leaderboards")
     } finally {
       setIsLoading(false)
     }
@@ -92,104 +112,94 @@ export default function LeaderboardTab() {
     }
   }
 
+  const renderLeaderboard = (category: TeamCategory, entries: LeaderboardEntry[]) => (
+    <Card key={category}>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Trophy className="h-5 w-5" />
+          <span>{CATEGORY_LABELS[category]}</span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {entries.length === 0 && (
+              <div className="text-sm text-muted-foreground text-center py-8">
+                No teams in this category.
+              </div>
+            )}
+            {entries.map((entry, index) => {
+              const position = index + 1
+              return (
+                <div
+                  key={entry.score.id}
+                  className="flex items-center justify-between rounded-lg bg-slate-50 p-3 hover:bg-slate-100 transition-colors"
+                >
+                  <div className="flex items-center gap-4">
+                    <div
+                      className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold ${getPositionColor(position)}`}
+                    >
+                      {position}
+                    </div>
+                    <div>
+                      <div className="font-medium">
+                        {entry.team.name}
+                      </div>
+                      {entry.team.vehicle_weight && (
+                        <div className="text-sm text-muted-foreground">
+                          Weight: {entry.team.vehicle_weight}kg
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-mono font-medium">
+                      {formatTime(entry.score.value)}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      Score ID: {entry.score.id}
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  )
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-semibold">Race Leaderboard</h2>
-        <div className="flex gap-4">
-          <Select
-            value={selectedChallenge?.toString()}
-            onValueChange={(value) => setSelectedChallenge(parseInt(value))}
-            disabled={isLoadingChallenges}
-          >
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="Select challenge" />
-            </SelectTrigger>
-            <SelectContent>
-              {challenges.map((challenge) => (
-                <SelectItem key={challenge.id} value={challenge.id.toString()}>
-                  {challenge.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Select
-            value={selectedCategory}
-            onValueChange={(value) => setSelectedCategory(value as TeamCategory)}
-          >
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="Select category" />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.entries(CATEGORY_LABELS).map(([value, label]) => (
-                <SelectItem key={value} value={value}>
-                  {label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        <Select
+          value={selectedChallenge?.toString()}
+          onValueChange={(value) => setSelectedChallenge(parseInt(value))}
+          disabled={isLoadingChallenges}
+        >
+          <SelectTrigger className="w-64">
+            <SelectValue placeholder="Select challenge" />
+          </SelectTrigger>
+          <SelectContent>
+            {challenges.map((challenge) => (
+              <SelectItem key={challenge.id} value={challenge.id.toString()}>
+                {challenge.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Trophy className="h-5 w-5" />
-            <span>{CATEGORY_LABELS[selectedCategory]} Standings</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {leaderboard.length === 0 && (
-                <div className="text-sm text-muted-foreground text-center py-8">
-                  No leaderboard data available for this challenge and category.
-                </div>
-              )}
-              {leaderboard.map((entry, index) => {
-                const position = index + 1
-                return (
-                  <div
-                    key={entry.score.id}
-                    className="flex items-center justify-between rounded-lg bg-slate-50 p-3 hover:bg-slate-100 transition-colors"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div
-                        className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold ${getPositionColor(position)}`}
-                      >
-                        {position}
-                      </div>
-                      <div>
-                        <div className="font-medium">
-                          {entry.team.name}
-                        </div>
-                        {entry.team.vehicle_weight && (
-                          <div className="text-sm text-muted-foreground">
-                            Weight: {entry.team.vehicle_weight}kg
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-mono font-medium">
-                        {formatTime(entry.score.value)}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        Score ID: {entry.score.id}
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-3">
+        {CATEGORIES.map((category) => 
+          renderLeaderboard(category, leaderboards[category])
+        )}
+      </div>
     </div>
   )
 }
