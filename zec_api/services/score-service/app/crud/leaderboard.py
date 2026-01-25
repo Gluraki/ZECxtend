@@ -2,6 +2,8 @@ from app.schemas.leaderboard import LeaderboardResponse
 from app.database.dependency import SessionDep
 from app.models.score import Score
 from app.core.config import settings
+from app.schemas.score import ScoreResponse
+from app.schemas.team import TeamResponse
 import requests
 from app.exceptions.exceptions import (
     ServiceError,
@@ -57,7 +59,12 @@ def get_leaderboard(db: SessionDep, challenge_id: int, category: str | None = No
             raise EntityDoesNotExistError(f"Team data missing for team_id {team_id}")
         if category is not None and team.get("category") != category:
             continue
-        leaderboard.append(LeaderboardResponse(score=score, team=team))
+        leaderboard.append(
+            LeaderboardResponse(
+                score=ScoreResponse.model_validate(score),
+                team=TeamResponse.model_validate(team),
+            )
+        )
     if not leaderboard:
         if category is not None:
             raise EntityDoesNotExistError(f"No teams found for category {category} with scores")

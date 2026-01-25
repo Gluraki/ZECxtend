@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 from typing import Optional
 
@@ -9,5 +9,4 @@ class TeamResponse(BaseModel):
     rfid_identifier: Optional[str] = None
     created_at: Optional[datetime] = None
 
-    class ConfigDict:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
