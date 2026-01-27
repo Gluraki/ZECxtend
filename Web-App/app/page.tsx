@@ -114,22 +114,8 @@ export default function Webapp() {
       {activeTab === "leaderboard" && (
         <LeaderboardTab />
       )}
-      {activeTab === "drivers" && permissions.canEditDrivers && (
-        <DriversTab
-          drivers={drivers}
-          setDrivers={setDrivers}
-          setIsAddDriverOpen={setIsAddDriverOpen}
-          setEditingDriver={setEditingDriver}
-        />
-      )}
-      {activeTab === "teams" && (
-        <TeamsTab
-          visibleTeams={visibleTeams}
-          setIsAddTeamOpen={setIsAddTeamOpen}
-          setEditingTeam={setEditingTeam}
-          handleDeleteTeam={handleDeleteTeam}
-          canEdit={permissions.canEditTeams}
-        />
+      {activeTab === "teams" && permissions.canEditTeams && (
+        <TeamsTab />
       )}
       {activeTab === "challenges" && permissions.canEditChallenges && (
         <ChallengeTab />

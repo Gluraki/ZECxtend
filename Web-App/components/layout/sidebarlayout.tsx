@@ -33,7 +33,6 @@ interface TabConfig {
 const allTabs: TabConfig[] = [
   { id: "leaderboard", label: "Leaderboard", icon: Trophy, tooltip: "Leaderboard" },
   { id: "teams", label: "Teams", icon: Users, tooltip: "Teams" },
-  { id: "drivers", label: "Drivers", icon: User, tooltip: "Drivers" },
   { id: "challenges", label: "Challenges", icon: Swords, tooltip: "Challenges" },
   { id: "users", label: "Users", icon: UserCog, tooltip: "Users" },
   { id: "export", label: "Export", icon: Download, tooltip: "Export" },
