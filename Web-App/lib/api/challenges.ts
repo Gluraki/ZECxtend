@@ -1,4 +1,4 @@
-import { authenticatedFetch } from "@/lib/auth"
+import { authenticatedFetch, publicFetch } from "@/lib/auth"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost'
 
@@ -24,7 +24,7 @@ export interface ChallengeUpdate {
 
 export const challengesApi = {
   async listChallenges(): Promise<Challenge[]> {
-    const response = await authenticatedFetch(`${API_BASE_URL}/challenges/`)
+    const response = await publicFetch(`${API_BASE_URL}/challenges/`)
     if (!response.ok) {
       const error = await response.json().catch(() => ({ detail: 'Failed to fetch challenges' }))
       throw new Error(error.detail || 'Failed to fetch challenges')
@@ -33,7 +33,7 @@ export const challengesApi = {
   },
 
   async getChallengeById(id: number): Promise<Challenge> {
-    const response = await authenticatedFetch(`${API_BASE_URL}/challenges/${id}`)
+    const response = await publicFetch(`${API_BASE_URL}/challenges/${id}`)
     if (!response.ok) {
       const error = await response.json().catch(() => ({ detail: 'Challenge not found' }))
       throw new Error(error.detail || 'Challenge not found')
@@ -42,7 +42,7 @@ export const challengesApi = {
   },
 
   async getChallengeByName(name: string): Promise<Challenge> {
-    const response = await authenticatedFetch(`${API_BASE_URL}/challenges/name/${encodeURIComponent(name)}`)
+    const response = await publicFetch(`${API_BASE_URL}/challenges/name/${encodeURIComponent(name)}`)
     if (!response.ok) {
       const error = await response.json().catch(() => ({ detail: 'Challenge not found' }))
       throw new Error(error.detail || 'Challenge not found')

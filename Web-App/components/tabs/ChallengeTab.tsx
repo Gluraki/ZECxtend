@@ -111,7 +111,6 @@ export default function ChallengeTab() {
                 <TableHead>Max Attempts</TableHead>
                 <TableHead>Start MACs</TableHead>
                 <TableHead>Finish MACs</TableHead>
-                <TableHead>Created</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -140,7 +139,6 @@ export default function ChallengeTab() {
                       .filter(Boolean)
                       .join(", ") || "—"}
                   </TableCell>
-                  <TableCell>{formatDate(c.created_at)}</TableCell>
                   <TableCell className="text-right">
                     <Button
                       variant="ghost"

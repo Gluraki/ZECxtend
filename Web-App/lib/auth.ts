@@ -186,12 +186,6 @@ export async function authenticatedFetch(
   if (!token) {
     throw new Error('Not authenticated');
   }
-  console.log('🔍 Debug Info:', {
-    url,
-    hasToken: !!token,
-    tokenPreview: token?.substring(0, 20) + '...',
-    isExpired: AuthService.isTokenExpired()
-  });
 
   const headers = new Headers(options.headers);
   headers.set('Authorization', `Bearer ${token}`);
@@ -204,5 +198,25 @@ export async function authenticatedFetch(
   return fetch(url, {
     ...options,
     headers,
+  });
+}
+
+export async function publicFetch(
+  url: string,
+  options: RequestInit = {}
+): Promise<Response> {
+  const headers = new Headers(options.headers);
+  
+  if (!(options.body instanceof FormData)) {
+    if (!headers.has('Content-Type')) {
+      headers.set('Content-Type', 'application/json');
+    }
+  }
+
+  return fetch(url, {
+    ...options,
+    headers,
+    mode: 'cors',
+    credentials: 'include',
   });
 }

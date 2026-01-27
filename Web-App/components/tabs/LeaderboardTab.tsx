@@ -92,13 +92,6 @@ export default function LeaderboardTab() {
     }
   }
 
-  const formatTime = (value?: number | null) => {
-    if (!value) return "—"
-    const minutes = Math.floor(value / 60)
-    const seconds = value % 60
-    return `${minutes}:${seconds.toFixed(3).padStart(6, '0')}`
-  }
-
   const getPositionColor = (position: number) => {
     switch (position) {
       case 1:
@@ -129,7 +122,7 @@ export default function LeaderboardTab() {
           <div className="space-y-3">
             {entries.length === 0 && (
               <div className="text-sm text-muted-foreground text-center py-8">
-                No teams in this category.
+                No attempts in this category.
               </div>
             )}
             {entries.map((entry, index) => {
@@ -149,19 +142,11 @@ export default function LeaderboardTab() {
                       <div className="font-medium">
                         {entry.team.name}
                       </div>
-                      {entry.team.vehicle_weight && (
-                        <div className="text-sm text-muted-foreground">
-                          Weight: {entry.team.vehicle_weight}kg
-                        </div>
-                      )}
                     </div>
                   </div>
                   <div className="text-right">
                     <div className="font-mono font-medium">
-                      {formatTime(entry.score.value)}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      Score ID: {entry.score.id}
+                      {parseFloat(entry.score.value!.toFixed(3))}
                     </div>
                   </div>
                 </div>
@@ -176,7 +161,7 @@ export default function LeaderboardTab() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">Race Leaderboard</h2>
+        <h2 className="text-2xl font-semibold">Leaderboard</h2>
         <Select
           value={selectedChallenge?.toString()}
           onValueChange={(value) => setSelectedChallenge(parseInt(value))}

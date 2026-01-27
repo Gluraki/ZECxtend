@@ -1,8 +1,6 @@
-import { authenticatedFetch } from "@/lib/auth"
+import { publicFetch } from "@/lib/auth"
 
-const API_BASE_URL = typeof window !== 'undefined' 
-  ? (process.env.NEXT_PUBLIC_API_URL || 'http://localhost')
-  : 'http://localhost'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost'
 
 export interface ScoreResponse {
   id: number
@@ -33,7 +31,7 @@ export enum TeamCategory {
 
 export const leaderboardApi = {
   async getLeaderboard(challengeId: number, category: TeamCategory): Promise<LeaderboardEntry[]> {
-    const response = await authenticatedFetch(
+    const response = await publicFetch(
       `${API_BASE_URL}/leaderboard/${challengeId}/category/${category}`
     )
     if (!response.ok) {
