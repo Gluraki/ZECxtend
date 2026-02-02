@@ -31,9 +31,8 @@ export interface Attempt {
     team_id: number
     driver_id: number
     challenge_id: number
-    attempt_number: number
-    start_time: Date
-    end_time: Date
+    start_time: string
+    end_time: string
     energy_used: number
     penalty_id: number
     penalty_count: number

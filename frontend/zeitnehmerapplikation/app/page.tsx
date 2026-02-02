@@ -2,20 +2,9 @@
 
 import axios from "axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { useEffect, useState, useCallback } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-  DropdownMenuRadioItem,
-  DropdownMenuRadioGroup,
-} from "@/components/ui/dropdown-menu";
+import { useEffect, useState } from "react";
 
-import { SERVER_API_URL, MQTT_WORKER_API_URL } from "@/next.config";
-import { DropdownMenuCheckboxItem, DropdownMenuLabel } from "@radix-ui/react-dropdown-menu";
-import { ChevronDown } from "lucide-react";
+import { SERVER_API_URL, MQTT_WORKER_API_URL, API_KEY } from "@/next.config";
 import { FormulaCard } from "@/components/FormulaCard";
 import { SelectionCard } from "@/components/SelectionCard";
 import { MacInputRow } from "@/components/MacInputRow";
@@ -25,6 +14,7 @@ import { ConnectionStatusCard } from "@/components/ConnectionStatusCard";
 import { TimestampSelector } from "@/components/TimestampSelector";
 import { AttemptResultCard } from "@/components/AttemptResultCard";
 import { Team, Challenge, Penalty, ConnectionStatus, Driver } from "@/components/types"
+import { medianTimestamp } from "@/components/medianTimestamp";
 
 export default function Page() {
   const [teams, setTeams] = useState<Team[]>([]);
@@ -37,6 +27,7 @@ export default function Page() {
   const [espStart2Input, setEspStart2Input] = useState("");
   const [espFinish1Input, setEspFinish1Input] = useState("");
   const [espFinish2Input, setEspFinish2Input] = useState("");
+  const [manualAttemptTime, setManualAttemptTime] = useState<string | null>(null);
 
   const [penalties, setPenalties] = useState<Penalty[]>([]);
   const [selectedPenalty, setSelectedPenalty] = useState<Penalty | null>(null);
@@ -48,7 +39,6 @@ export default function Page() {
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
 
-  const [attemptNr, setAttemptNr] = useState<number>(0);
   const [penaltyCount, SetPenaltyCount] = useState<number>(0);
   const [energyConsumption, setEnergyConsumption] = useState<number>(0);
 
@@ -61,7 +51,16 @@ export default function Page() {
   // Fetch Teams
   const fetchTeams = async () => {
     try {
-      const response = await axios.get<Team[]>(`${SERVER_API_URL}/teams/`);
+      const response = await axios.get<Team[]>(
+        `${SERVER_API_URL}/teams/`,
+        {
+          headers: {
+            "x-api-key": API_KEY
+          }
+        }
+      );
+
+
       setTeams(response.data);
       if (response.data.length > 0) setSelectedTeam(response.data[0]);
     } catch (error) {
@@ -72,7 +71,9 @@ export default function Page() {
   // Fetch Challenges
   const fetchChallenges = async () => {
     try {
-      const response = await axios.get<Challenge[]>(`${SERVER_API_URL}/challenges/`);
+      const response = await axios.get<Challenge[]>(
+        `${SERVER_API_URL}/challenges/`
+      );
       setChallenges(response.data);
       if (response.data.length > 0) setSelectedChallenge(response.data[0]);
     } catch (error) {
@@ -83,7 +84,14 @@ export default function Page() {
   // Fetch Penalties
   const fetchPenalties = async () => {
     try {
-      const response = await axios.get<Penalty[]>(`${SERVER_API_URL}/penalties/`);
+      const response = await axios.get<Penalty[]>(
+        `${SERVER_API_URL}/penalties/types/`,
+        {
+          headers: {
+            "x-api-key": API_KEY
+          }
+        }
+      );
       setPenalties(response.data);
       if (response.data.length > 0) setSelectedPenalty(response.data[0]);
     } catch (error) {
@@ -95,7 +103,14 @@ export default function Page() {
   const fetchDriversForTeam = async (teamId: number | undefined) => {
     if (!teamId) return;
     try {
-      const response = await axios.get<Driver[]>(`${SERVER_API_URL}/drivers/${teamId}`);
+      const response = await axios.get<Driver[]>(
+        `${SERVER_API_URL}/drivers/team/${teamId}`,
+        {
+          headers: {
+            "x-api-key": API_KEY
+          }
+        }
+      );
       setDrivers(response.data);
       if (response.data.length > 0) setSelectedDriver(response.data[0]);
     } catch (error) {
@@ -253,14 +268,7 @@ export default function Page() {
 
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 mb-4 gap-6">
-        <NumberInputCard
-          title="Attempt"
-          value={attemptNr}
-          onChange={(value) => setAttemptNr(value ?? 0)}
-          placeholder="Attempt Number"
-        />
-
+      <div className="grid grid-cols-1 md:grid-cols-3 mb-4 gap-6">
         <NumberInputCard
           title="Penalty Count"
           value={penaltyCount}
@@ -306,12 +314,12 @@ export default function Page() {
         </Card>
 
         <FormulaCard
-          selectedStartTimestamps={selectedStartTimestamps}
-          selectedEndTimestamps={selectedEndTimestamps}
+          medianStartTimestamp={medianTimestamp(selectedStartTimestamps ?? [])}
+          medianEndTimestamp={medianTimestamp(selectedEndTimestamps ?? [])}
+          manualAttemptTime={manualAttemptTime}
           penaltyCount={penaltyCount}
           selectedPenaltyAmount={selectedPenalty?.amount ?? 0}
-          setSelectedStartTimestamps={setSelectedStartTimestamps}
-          setSelectedEndTimestamps={setSelectedEndTimestamps}
+          setManualTimestamp={setManualAttemptTime}
         />
 
 
@@ -319,9 +327,9 @@ export default function Page() {
           selectedTeam={selectedTeam}
           selectedDriver={selectedDriver}
           selectedChallenge={selectedChallenge}
-          attemptNr={attemptNr}
-          selectedStartTimestamps={selectedStartTimestamps ?? []}
-          selectedEndTimestamps={selectedEndTimestamps ?? []}
+          medianStartTimestamp={medianTimestamp(selectedStartTimestamps ?? [])}
+          medianEndTimestamp={medianTimestamp(selectedEndTimestamps ?? [])}
+          manualAttemptTime={manualAttemptTime}
           energyConsumption={energyConsumption}
           selectedPenalty={selectedPenalty}
           penaltyCount={penaltyCount}

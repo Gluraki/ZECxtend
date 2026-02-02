@@ -3,36 +3,25 @@
 import React, { useEffect, useRef, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { medianTimestamp } from "@/components/medianTimestamp"
 
 interface FormulaCardProps {
-    selectedStartTimestamps: string[] | null
-    selectedEndTimestamps: string[] | null
+    medianStartTimestamp: number | null
+    medianEndTimestamp: number | null
+    manualAttemptTime: string | null
     penaltyCount: number
     selectedPenaltyAmount: number
-    setSelectedStartTimestamps: (timestamps: string[] | null) => void
-    setSelectedEndTimestamps: (timestamps: string[] | null) => void
+    setManualTimestamp: (timestamp: string | null) => void
+
 }
 
 export function FormulaCard({
-    selectedStartTimestamps,
-    selectedEndTimestamps,
+    medianStartTimestamp,
+    medianEndTimestamp,
+    manualAttemptTime,
     penaltyCount,
     selectedPenaltyAmount,
-    setSelectedStartTimestamps,
-    setSelectedEndTimestamps,
+    setManualTimestamp,
 }: FormulaCardProps) {
-
-    const [startMedian, setStartMedian] = useState<string | number | Date | null>(null)
-    const [endMedian, setEndMedian] = useState<string | number | Date | null>(null)
-
-
-    useEffect(() => {
-        setStartMedian(medianTimestamp(selectedStartTimestamps ?? []))
-        setEndMedian(medianTimestamp(selectedEndTimestamps ?? []))
-    }, [selectedStartTimestamps, selectedEndTimestamps])
-
-
     const formatTimestampUTC = (input: string | number | Date): string => {
         const date = typeof input === "string" || typeof input === "number"
             ? new Date(input)
@@ -55,28 +44,26 @@ export function FormulaCard({
             <CardContent>
                 <p>Attempt time formula = end time - start time + (amount of penalties * time penalty)</p>
 
-                <p>
-                    Attempt time formula ={" "}
-                    {formatTimestampUTC(endMedian ?? 0)} -{" "}
-                    {formatTimestampUTC(startMedian ?? 0)} + ({penaltyCount} * {selectedPenaltyAmount})
-                </p>
+                {manualAttemptTime == null ? (
+                    <p>
+                        Attempt time formula ={" "}
+                        {formatTimestampUTC(medianStartTimestamp ?? 0)} -{" "}
+                        {formatTimestampUTC(medianEndTimestamp ?? 0)} + ({penaltyCount} * {selectedPenaltyAmount})
+                    </p>
+                ) : (
+                    <p>
+                        Attempt time formula ={" "}
+                        {formatTimestampUTC(manualAttemptTime)} + ({penaltyCount} * {selectedPenaltyAmount})
+                    </p>
+                )}
 
                 <div className="flex flex-col gap-2 mt-4">
                     <label className="flex items-center gap-2">
-                        <span>Manual Start Time:</span>
+                        <span>Manual Attempt Time:</span>
                         <TimeSplitInput
-                            key={startMedian?.toString()}
-                            initialTime={startMedian ?? undefined}
-                            onChange={(fullTimestamp) => setSelectedStartTimestamps([fullTimestamp])}
-                        />
-                    </label>
-
-                    <label className="flex items-center gap-2">
-                        <span>Manual End Time:</span>
-                        <TimeSplitInput
-                            key={endMedian?.toString()}
-                            initialTime={endMedian ?? undefined}
-                            onChange={(fullTimestamp) => setSelectedEndTimestamps([fullTimestamp])}
+                            key={manualAttemptTime?.toString()}
+                            initialTime={manualAttemptTime ?? undefined}
+                            onChange={(fullTimestamp) => setManualTimestamp(fullTimestamp)}
                         />
                     </label>
                 </div>

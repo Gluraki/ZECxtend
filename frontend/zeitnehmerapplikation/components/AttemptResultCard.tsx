@@ -4,17 +4,16 @@ import React from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import axios from "axios"
-import { SERVER_API_URL } from "@/next.config"
-import { medianTimestamp } from "@/components/medianTimestamp" // or wherever your helper is
+import { SERVER_API_URL, API_KEY } from "@/next.config"
 import { Attempt, Penalty } from "@/components/types"
 
 interface AttemptResultCardProps {
     selectedTeam: { id: number } | null
     selectedDriver: { id: number } | null
     selectedChallenge: { id: number } | null
-    attemptNr: number
-    selectedStartTimestamps: string[]
-    selectedEndTimestamps: string[]
+    medianStartTimestamp: number | null
+    medianEndTimestamp: number | null
+    manualAttemptTime: string | null
     energyConsumption: number
     selectedPenalty: Penalty | null
     penaltyCount: number
@@ -24,24 +23,29 @@ export function AttemptResultCard({
     selectedTeam,
     selectedDriver,
     selectedChallenge,
-    attemptNr,
-    selectedStartTimestamps,
-    selectedEndTimestamps,
+    medianStartTimestamp,
+    medianEndTimestamp,
+    manualAttemptTime,
     energyConsumption,
     selectedPenalty,
     penaltyCount,
 }: AttemptResultCardProps) {
 
     const calcAttemptTime = (): string => {
-        if (!selectedStartTimestamps?.length || !selectedEndTimestamps?.length) {
-            return "00:00:0000"
+        let attemptMs = 0
+
+        if (manualAttemptTime) {
+            attemptMs = Number(manualAttemptTime)
+        } else if (medianStartTimestamp && medianEndTimestamp) {
+            attemptMs =
+                new Date(medianEndTimestamp).getTime() -
+                new Date(medianStartTimestamp).getTime()
         }
 
-        const startMs = medianTimestamp(selectedStartTimestamps)
-        const endMs = medianTimestamp(selectedEndTimestamps)
-        const penaltyMs = ((penaltyCount ?? 0) * (selectedPenalty?.amount ?? 0)) * 1000
+        const penaltyMs =
+            (penaltyCount ?? 0) * (selectedPenalty?.amount ?? 0) * 1000
 
-        const attemptMs = endMs - startMs + penaltyMs
+        attemptMs += penaltyMs
 
         const hours = Math.floor(attemptMs / 3600000)
         const minutes = Math.floor((attemptMs % 3600000) / 60000)
@@ -51,33 +55,55 @@ export function AttemptResultCard({
         return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}:${String(milliseconds).padStart(4, "0")}`
     }
 
+    const toBackendDateTime = (date: Date): string => {
+        return date
+            .toISOString()              // 2024-01-01T10:11:00.123Z
+            .replace("Z", "")           // remove Z
+            .padEnd(26, "0")            // ensure microseconds
+    }
+
+
     const createAttempt = () => {
         if (!selectedTeam?.id) return alert("Please select a team!")
         if (!selectedDriver?.id) return alert("Please select a driver!")
         if (!selectedChallenge?.id) return alert("Please select a challenge!")
-        if (!attemptNr || attemptNr <= 0) return alert("Please enter a valid attempt number!")
-        if (!selectedStartTimestamps?.length) return alert("Please select at least one start timestamp!")
-        if (!selectedEndTimestamps?.length) return alert("Please select at least one end timestamp!")
         if (!energyConsumption || energyConsumption <= 0) return alert("Please enter energy consumption!")
-        if (!selectedPenalty?.type) return alert("Please select a penalty!")
+        if (!selectedPenalty?.id) return alert("Please select a penalty!")
+
+        let startTime: Date
+        let endTime: Date
+
+        if (manualAttemptTime) {
+            const base = new Date(0) // 1970-01-01T00:00:00.000Z
+            startTime = base
+            endTime = new Date(base.getTime() + Number(manualAttemptTime))
+        } else {
+            if (!medianStartTimestamp || !medianEndTimestamp) {
+                return alert("Please provide start and end timestamps!")
+            }
+
+            startTime = new Date(medianStartTimestamp)
+            endTime = new Date(medianEndTimestamp)
+        }
 
         const attempt: Attempt = {
             team_id: selectedTeam.id,
             driver_id: selectedDriver.id,
             challenge_id: selectedChallenge.id,
-            attempt_number: attemptNr,
-            start_time: new Date(medianTimestamp(selectedStartTimestamps)),
-            end_time: new Date(medianTimestamp(selectedEndTimestamps)),
+            start_time: toBackendDateTime(startTime),
+            end_time: toBackendDateTime(endTime),
             energy_used: energyConsumption,
             penalty_id: selectedPenalty.id,
             penalty_count: penaltyCount ?? 0,
         }
 
-        axios.post(`${SERVER_API_URL}/attempts/`, attempt)
+        axios.post(`${SERVER_API_URL}/attempts/`, attempt, {
+            headers: { "x-api-key": API_KEY },
+        })
             .then(() => alert("Attempt submitted successfully!"))
             .catch((error) => {
                 console.error("Failed to submit attempt", error)
-                alert("Failed to submit attempt! No connection to server possible")
+                alert("Failed to submit attempt!")
             })
     }
 
