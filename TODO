@@ -1,2 +1,2 @@
-When entering a manual timestamp and then selecting a timestamp, the median gets build
-Force to use the selected timestamp and only use the manual timestamp, when the selecte one is zero
+Manual - selected timestamp needs to be fixed
+In axios.post at Attempt the fractional seconds need to be added

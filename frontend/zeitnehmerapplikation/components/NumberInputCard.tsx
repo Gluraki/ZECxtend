@@ -9,9 +9,17 @@ interface NumberInputCardProps {
     value: number | null
     onChange: (value: number | null) => void
     placeholder?: string
+    kind?: "int" | "float"
 }
 
-export function NumberInputCard({ title, value, onChange, placeholder }: NumberInputCardProps) {
+
+export function NumberInputCard({
+    title,
+    value,
+    onChange,
+    placeholder,
+    kind = "float",   // default
+}: NumberInputCardProps) {
     return (
         <Card>
             <CardHeader>
@@ -20,10 +28,20 @@ export function NumberInputCard({ title, value, onChange, placeholder }: NumberI
             <CardContent className="space-y-4 space-x-3">
                 <Input
                     type="number"
+                    step={kind === "int" ? "1" : "any"}
+                    inputMode={kind === "int" ? "numeric" : "decimal"}
                     value={value ?? ""}
                     onChange={(e) => {
-                        const val = e.target.value
-                        onChange(val === "" ? null : Number(val))
+                        const raw = e.target.value
+                        if (raw === "") {
+                            onChange(null)
+                            return
+                        }
+
+                        const num =
+                            kind === "int" ? parseInt(raw, 10) : Number(raw)
+
+                        onChange(Number.isNaN(num) ? null : num)
                     }}
                     placeholder={placeholder || title}
                 />

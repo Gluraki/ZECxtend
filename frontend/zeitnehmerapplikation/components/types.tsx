@@ -34,6 +34,6 @@ export interface Attempt {
     start_time: string
     end_time: string
     energy_used: number
-    penalty_id: number
+    penalty_type: number
     penalty_count: number
 }

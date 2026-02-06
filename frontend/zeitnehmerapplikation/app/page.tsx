@@ -40,7 +40,7 @@ export default function Page() {
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
 
   const [penaltyCount, SetPenaltyCount] = useState<number>(0);
-  const [energyConsumption, setEnergyConsumption] = useState<number>(0);
+  const [energyConsumption, setEnergyConsumption] = useState<number>(0.0);
 
   const [startTimestamps, setStartTimestamps] = useState<string[]>([]);
   const [endTimestamps, setEndTimestamps] = useState<string[]>([]);
@@ -51,6 +51,32 @@ export default function Page() {
   // Compute median timestamps as strings
   const medianStartTimestamp = medianTimestamp(selectedStartTimestamps ?? []);
   const medianEndTimestamp = medianTimestamp(selectedEndTimestamps ?? []);
+
+  // Reset function to clear all dynamic state
+  const resetForm = () => {
+    // Clear timestamps
+    setStartTimestamps([]);
+    setEndTimestamps([]);
+    setSelectedStartTimestamps(null);
+    setSelectedEndTimestamps(null);
+
+    // Clear manual inputs
+    setManualAttemptTime(null);
+    setEspStart1Input("");
+    setEspStart2Input("");
+    setEspFinish1Input("");
+    setEspFinish2Input("");
+
+    // Clear numbers
+    SetPenaltyCount(0);
+    setEnergyConsumption(0.0);
+
+    // Reset selections to first items
+    if (teams.length > 0) setSelectedTeam(teams[0]);
+    if (challenges.length > 0) setSelectedChallenge(challenges[0]);
+    if (penalties.length > 0) setSelectedPenalty(penalties[0]);
+    if (drivers.length > 0) setSelectedDriver(drivers[0]);
+  };
 
   // Fetch Teams
   const fetchTeams = async () => {
@@ -276,6 +302,7 @@ export default function Page() {
           value={penaltyCount}
           onChange={(value) => SetPenaltyCount(value ?? 0)}
           placeholder="Amount of Penalties"
+          kind="int"
         />
 
         <SelectionCard<Driver>
@@ -290,6 +317,7 @@ export default function Page() {
           value={energyConsumption}
           onChange={(value) => setEnergyConsumption(value ?? 0)}
           placeholder="Energy Consumption"
+          kind="float"
         />
       </div>
 
@@ -334,6 +362,7 @@ export default function Page() {
           energyConsumption={energyConsumption}
           selectedPenalty={selectedPenalty}
           penaltyCount={penaltyCount}
+          onSubmitSuccess={resetForm}
         />
       </div>
     </div>

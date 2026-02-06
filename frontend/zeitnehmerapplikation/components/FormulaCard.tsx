@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
 
 interface FormulaCardProps {
     medianStartTimestamp: string
@@ -43,15 +44,15 @@ export function FormulaCard({
                 <p>Attempt time formula = end time - start time + (amount of penalties * time penalty)</p>
 
                 {manualAttemptTime == null ? (
-                    <p>
-                        Attempt time formula ={" "}
-                        {formatTimestampUTC(medianEndTimestamp)} -{" "}
-                        {formatTimestampUTC(medianStartTimestamp)} + ({penaltyCount} * {selectedPenaltyAmount})
+                    <p className="text-sm text-muted-foreground">
+                        Attempt time formula = {formatTimestampUTC(medianEndTimestamp)} -{" "}
+                        {formatTimestampUTC(medianStartTimestamp)} + ({penaltyCount} *{" "}
+                        {selectedPenaltyAmount})
                     </p>
                 ) : (
-                    <p>
-                        Attempt time formula ={" "}
-                        {formatTimestampUTC(manualAttemptTime)} + ({penaltyCount} * {selectedPenaltyAmount})
+                    <p className="text-sm text-muted-foreground">
+                        Attempt time formula = {manualAttemptTime} + ({penaltyCount} *{" "}
+                        {selectedPenaltyAmount})
                     </p>
                 )}
 
@@ -84,6 +85,12 @@ function clamp(num: number, min: number, max: number) {
 function normalizeTimeUTC(isoString?: string): [string, string, string] {
     if (!isoString) return ["00", "00", "00"]
 
+    // Check if it's already in HH:MM:SS format
+    if (/^\d{2}:\d{2}:\d{2}$/.test(isoString)) {
+        const parts = isoString.split(':')
+        return [parts[0], parts[1], parts[2]]
+    }
+
     const d = new Date(isoString)
 
     return [
@@ -93,47 +100,20 @@ function normalizeTimeUTC(isoString?: string): [string, string, string] {
     ]
 }
 
-const buildUTCDateFromTime = (time: string, referenceDateISO?: string): string => {
-    const [hh = 0, mm = 0, ss = 0] = time.split(":").map(Number)
-
-    // Use reference date if provided and valid, otherwise use epoch (1970-01-01)
-    let refDate = new Date(0) // default to epoch
-
-    if (referenceDateISO) {
-        const testDate = new Date(referenceDateISO)
-        // Only use reference date if it's valid
-        if (!isNaN(testDate.getTime())) {
-            refDate = testDate
-        }
-    }
-
-    const utc = new Date(Date.UTC(
-        refDate.getUTCFullYear(),
-        refDate.getUTCMonth(),
-        refDate.getUTCDate(),
-        clamp(hh, 0, 23),
-        clamp(mm, 0, 59),
-        clamp(ss, 0, 59),
-        0
-    ))
-
-    return utc.toISOString()
-}
-
 function TimeSplitInput({ onChange, initialTime }: TimeSplitInputProps) {
     const [hours, setHours] = useState("00")
     const [minutes, setMinutes] = useState("00")
     const [seconds, setSeconds] = useState("00")
 
-    const hRef = useRef<HTMLInputElement | null>(null)
-    const mRef = useRef<HTMLInputElement | null>(null)
-    const sRef = useRef<HTMLInputElement | null>(null)
+    const hRef = useRef<HTMLInputElement>(null)
+    const mRef = useRef<HTMLInputElement>(null)
+    const sRef = useRef<HTMLInputElement>(null)
 
     useEffect(() => {
         const [h, m, s] = normalizeTimeUTC(initialTime)
-        setHours(h)
-        setMinutes(m)
-        setSeconds(s)
+        setHours(h || "00")
+        setMinutes(m || "00")
+        setSeconds(s || "00")
     }, [initialTime])
 
     const focusNext = (ref?: React.RefObject<HTMLInputElement | null>) => {
@@ -141,15 +121,17 @@ function TimeSplitInput({ onChange, initialTime }: TimeSplitInputProps) {
         ref?.current?.select()
     }
 
-    const handleTyping = (
-        setter: (v: string) => void,
-        max: number,
-        nextRef?: React.RefObject<HTMLInputElement | null>
-    ) => (e: React.ChangeEvent<HTMLInputElement>) => {
-        let val = e.target.value.replace(/\D/g, "").slice(0, 2)
-        setter(val)
-        if (val.length === 2) focusNext(nextRef)
-    }
+    const handleTyping =
+        (
+            setter: (v: string) => void,
+            max: number,
+            nextRef?: React.RefObject<HTMLInputElement | null>
+        ) =>
+            (e: React.ChangeEvent<HTMLInputElement>) => {
+                let val = e.target.value.replace(/\D/g, "").slice(0, 2)
+                setter(val)
+                if (val.length === 2) focusNext(nextRef)
+            }
 
     const handleBlur = (
         e: React.FocusEvent<HTMLInputElement>,
@@ -159,48 +141,60 @@ function TimeSplitInput({ onChange, initialTime }: TimeSplitInputProps) {
         const value = e.target.value
         const num = clamp(Number(value || 0), 0, max)
         const formatted = String(num).padStart(2, "0")
-
         if (type === "h") setHours(formatted)
         else if (type === "m") setMinutes(formatted)
         else setSeconds(formatted)
+    }
 
-        const h = type === "h" ? formatted : hours
-        const m = type === "m" ? formatted : minutes
-        const s = type === "s" ? formatted : seconds
+    const handleSubmit = () => {
+        // Ensure all values are properly formatted
+        const h = String(clamp(Number(hours || 0), 0, 23)).padStart(2, "0")
+        const m = String(clamp(Number(minutes || 0), 0, 59)).padStart(2, "0")
+        const s = String(clamp(Number(seconds || 0), 0, 59)).padStart(2, "0")
 
-        const timeString = `${h}:${m}:${s}`
-        // Pass initialTime as reference to maintain the same date
-        onChange(buildUTCDateFromTime(timeString, initialTime))
+        setHours(h)
+        setMinutes(m)
+        setSeconds(s)
+
+        onChange(`${h}:${m}:${s}`)
     }
 
     return (
-        <div className="flex items-center gap-1">
-            <Input
-                ref={hRef}
-                value={hours}
-                onChange={handleTyping(setHours, 23, mRef)}
-                onBlur={(e) => handleBlur(e, 23, "h")}
-                className="w-14 text-center"
-                inputMode="numeric"
-            />
-            <span>:</span>
-            <Input
-                ref={mRef}
-                value={minutes}
-                onChange={handleTyping(setMinutes, 59, sRef)}
-                onBlur={(e) => handleBlur(e, 59, "m")}
-                className="w-14 text-center"
-                inputMode="numeric"
-            />
-            <span>:</span>
-            <Input
-                ref={sRef}
-                value={seconds}
-                onChange={handleTyping(setSeconds, 59)}
-                onBlur={(e) => handleBlur(e, 59, "s")}
-                className="w-14 text-center"
-                inputMode="numeric"
-            />
+        <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
+                <Input
+                    ref={hRef}
+                    type="text"
+                    value={hours}
+                    onChange={handleTyping(setHours, 23, mRef)}
+                    onBlur={(e) => handleBlur(e, 23, "h")}
+                    className="w-14 text-center"
+                    inputMode="numeric"
+                />
+                :
+                <Input
+                    ref={mRef}
+                    type="text"
+                    value={minutes}
+                    onChange={handleTyping(setMinutes, 59, sRef)}
+                    onBlur={(e) => handleBlur(e, 59, "m")}
+                    className="w-14 text-center"
+                    inputMode="numeric"
+                />
+                :
+                <Input
+                    ref={sRef}
+                    type="text"
+                    value={seconds}
+                    onChange={handleTyping(setSeconds, 59)}
+                    onBlur={(e) => handleBlur(e, 59, "s")}
+                    className="w-14 text-center"
+                    inputMode="numeric"
+                />
+            </div>
+            <Button onClick={handleSubmit} size="sm">
+                Set
+            </Button>
         </div>
     )
 }

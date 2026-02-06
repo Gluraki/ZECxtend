@@ -17,6 +17,7 @@ interface AttemptResultCardProps {
     energyConsumption: number
     selectedPenalty: Penalty | null
     penaltyCount: number
+    onSubmitSuccess?: () => void  // Add callback prop
 }
 
 export function AttemptResultCard({
@@ -29,13 +30,15 @@ export function AttemptResultCard({
     energyConsumption,
     selectedPenalty,
     penaltyCount,
+    onSubmitSuccess,  // Destructure callback
 }: AttemptResultCardProps) {
 
     const calcAttemptTime = (): string => {
         let attemptMs = 0
 
         if (manualAttemptTime) {
-            attemptMs = Number(manualAttemptTime)
+            // manualAttemptTime is now in "HH:MM:SS" format
+            attemptMs = durationToMs(manualAttemptTime)
         } else if (medianStartTimestamp && medianEndTimestamp) {
             attemptMs =
                 new Date(medianEndTimestamp).getTime() -
@@ -52,15 +55,45 @@ export function AttemptResultCard({
         const seconds = Math.floor((attemptMs % 60000) / 1000)
         const milliseconds = attemptMs % 1000
 
-        return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}:${String(milliseconds).padStart(4, "0")}`
+        return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}:${String(milliseconds).padStart(3, "0")}`
     }
+
+    function durationToMs(time: string): number {
+        const parts = time.split(":").map(Number)
+
+        if (parts.length === 2) {
+            const [mm, ss] = parts
+            return (mm * 60 + ss) * 1000
+        }
+
+        if (parts.length === 3) {
+            const [hh, mm, ss] = parts
+            return (hh * 3600 + mm * 60 + ss) * 1000
+        }
+
+        throw new Error("Invalid time format")
+    }
+
 
     const toBackendDateTime = (isoString: string): string => {
         const date = new Date(isoString)
-        return date
-            .toISOString()              // 2024-01-01T10:11:00.123Z
-            .replace("Z", "")           // remove Z
-            .padEnd(26, "0")            // ensure microseconds
+
+        const year = date.getFullYear()
+        const month = date.getMonth() + 1 // months in js start with 0
+        const day = date.getDate()
+        const hours = date.getHours()
+        const minutes = date.getMinutes()
+        const seconds = date.getSeconds()
+        const milliseconds = date.getMilliseconds()
+
+        return `${year.toString().padStart(4, "0")}-` +
+            `${month.toString().padStart(2, "0")}-` +
+            `${day.toString().padStart(2, "0")}T` +
+            `${hours.toString().padStart(2, "0")}:` +
+            `${minutes.toString().padStart(2, "0")}:` +
+            `${seconds.toString().padStart(2, "0")}.` +
+            `${(milliseconds * 1000).toString().padStart(6, "0")}+0000`
+
     }
 
     const createAttempt = () => {
@@ -76,7 +109,8 @@ export function AttemptResultCard({
         if (manualAttemptTime) {
             const base = new Date(0) // 1970-01-01T00:00:00.000Z
             startTime = base.toISOString()
-            endTime = new Date(base.getTime() + Number(manualAttemptTime)).toISOString()
+            endTime = new Date(base.getTime() + durationToMs(manualAttemptTime)).toISOString()
+
         } else {
             if (!medianStartTimestamp || !medianEndTimestamp) {
                 return alert("Please provide start and end timestamps!")
@@ -93,14 +127,20 @@ export function AttemptResultCard({
             start_time: toBackendDateTime(startTime),
             end_time: toBackendDateTime(endTime),
             energy_used: energyConsumption,
-            penalty_id: selectedPenalty.id,
+            penalty_type: selectedPenalty.id,
             penalty_count: penaltyCount ?? 0,
         }
 
         axios.post(`${SERVER_API_URL}/attempts/`, attempt, {
             headers: { "x-api-key": API_KEY },
         })
-            .then(() => alert("Attempt submitted successfully!"))
+            .then(() => {
+                alert("Attempt submitted successfully!")
+                // Call the reset callback if provided
+                if (onSubmitSuccess) {
+                    onSubmitSuccess()
+                }
+            })
             .catch((error) => {
                 console.error("Failed to submit attempt", error)
                 alert("Failed to submit attempt!")
@@ -114,6 +154,8 @@ export function AttemptResultCard({
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
                 <p>Result = {calcAttemptTime()}</p>
+                <p>Start time: {medianStartTimestamp}</p>
+                <p>End time: {medianEndTimestamp}</p>
                 <Button variant="outline" onClick={createAttempt}>
                     Submit
                 </Button>
