@@ -1,7 +1,8 @@
 "use client"
+
 import { useState, useEffect } from "react"
-import DriversTab from "@/components/tabs/DriversTab"
 import TeamsTab from "@/components/tabs/TeamsTab"
+import AttemptsTab from "@/components/tabs/AttemptTab"
 import UsersTab from "@/components/tabs/UsersTab"
 import ChallengeTab from "@/components/tabs/ChallengeTab"
 import ExportTab from "@/components/tabs/ExportTab"
@@ -21,17 +22,6 @@ export default function Webapp() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [activeTab, setActiveTab] = useState<Tabs>("leaderboard")
-  const [isAddDriverOpen, setIsAddDriverOpen] = useState(false)
-  const [isAddTeamOpen, setIsAddTeamOpen] = useState(false)
-  const [editingDriver, setEditingDriver] = useState<any | null>(null)
-  const [editingTeam, setEditingTeam] = useState<any | null>(null)
-  const [drivers, setDrivers] = useState<any[]>([])
-  const [visibleTeams, setVisibleTeams] = useState<any[]>([])
-  const [exportFormat, setExportFormat] = useState("csv")
-  const [exportDateRange, setExportDateRange] = useState({
-    from: new Date().toISOString(),
-    to: new Date().toISOString(),
-  })
   const permissions = getPermissions(currentUser?.role || null)
 
   useEffect(() => {
@@ -55,29 +45,13 @@ export default function Webapp() {
     }
   }, [])
 
-  const handleLogin = async (username: string, password: string) => {
-    try {
-      const tokenData = await AuthService.login(username, password)
-      const role = AuthService.getUserRole(tokenData.access_token)
-      const userUsername = AuthService.getUsername(tokenData.access_token)
-      
-      const user = {
-        id: userUsername || username,
-        username: userUsername || username,
-        role: role || "viewer",
-      }
-      
-      setCurrentUser(user)
-      setIsLoggedIn(true)
-      setActiveTab(getDefaultTab(user.role))
-    } catch (error) {
-      console.error("Login failed:", error)
-      throw error 
-    }
+  const handleLoginSuccess = (user: User) => {
+    setCurrentUser(user)
+    setIsLoggedIn(true)
+    setActiveTab(getDefaultTab(user.role))
   }
 
   const handleLogout = () => {
-    AuthService.clearTokens()
     setCurrentUser(null)
     setIsLoggedIn(false)
     setActiveTab("login")
@@ -91,20 +65,6 @@ export default function Webapp() {
     }
   }
 
-  const handleDeleteTeam = (id: string | number) => {
-    if (!permissions.canEditTeams) {
-      alert("You don't have permission to delete teams")
-      return
-    }
-  }
-  
-  const handleExport = () => {
-    if (!permissions.canExport) {
-      alert("You don't have permission to export data")
-      return
-    }
-  }  
-
   return (
     <SideBarLayout 
       activeTab={activeTab} 
@@ -113,6 +73,9 @@ export default function Webapp() {
     >
       {activeTab === "leaderboard" && (
         <LeaderboardTab />
+      )}
+      {activeTab === "attempts" && permissions.canViewAttempts && (
+        <AttemptsTab />
       )}
       {activeTab === "teams" && permissions.canEditTeams && (
         <TeamsTab />
@@ -124,19 +87,13 @@ export default function Webapp() {
         <UsersTab />
       )}
       {activeTab === "export" && permissions.canExport && (
-        <ExportTab
-          exportFormat={exportFormat}
-          setExportFormat={setExportFormat}
-          exportDateRange={exportDateRange}
-          setExportDateRange={setExportDateRange}
-          handleExport={handleExport}
-        />
+        <ExportTab />
       )}
       {activeTab === "login" && (
         <LoginTab
           isLoggedIn={isLoggedIn}
           user={currentUser}
-          onLogin={handleLogin}
+          onLoginSuccess={handleLoginSuccess}
           onLogout={handleLogout}
         />
       )}

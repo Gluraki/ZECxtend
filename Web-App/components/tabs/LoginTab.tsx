@@ -1,30 +1,51 @@
+"use client"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { User } from "lucide-react"
+import { AuthService } from "@/lib/auth"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
-interface LoginTabProps {
+interface User {
+  id: string
+  username: string
+  role: string
+}
+
+interface Props {
   isLoggedIn: boolean
-  user: { username: string; role: string } | null
-  onLogin: (username: string, password: string) => Promise<void>
+  user: User | null
+  onLoginSuccess: (user: User) => void
   onLogout: () => void
 }
 
-export default function LoginTab({ isLoggedIn, user, onLogin, onLogout }: LoginTabProps) {
+export default function LoginTab({ isLoggedIn, user, onLoginSuccess, onLogout }: Props) {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
     setIsLoading(true)
-
     try {
-      await onLogin(username, password)
+      const tokenData = await AuthService.login(username, password)
+      const role = AuthService.getUserRole(tokenData.access_token)
+      const userUsername = AuthService.getUsername(tokenData.access_token)
+      const userData: User = {
+        id: userUsername || username,
+        username: userUsername || username,
+        role: role || "viewer",
+      }
+      onLoginSuccess(userData)
       setUsername("")
       setPassword("")
     } catch (err: any) {
@@ -66,7 +87,7 @@ export default function LoginTab({ isLoggedIn, user, onLogin, onLogout }: LoginT
           <CardTitle>Login</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleLogin} className="space-y-4">
             {error && (
               <Alert variant="destructive">
                 <AlertDescription>{error}</AlertDescription>

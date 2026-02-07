@@ -10,12 +10,13 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
-import { User, Users, UserCog, Download, Trophy, Swords, CircleUser } from "lucide-react"
+import { Activity, Users, UserCog, Download, Trophy, Swords, CircleUser } from "lucide-react"
 import Footer from "@/components/footer/footer"
 import { canAccessTab } from "@/lib/permissions"
 
 export type Tabs =
   | "leaderboard"
+  | "attempts"
   | "teams"
   | "drivers"
   | "challenges"
@@ -32,6 +33,7 @@ interface TabConfig {
 
 const allTabs: TabConfig[] = [
   { id: "leaderboard", label: "Leaderboard", icon: Trophy, tooltip: "Leaderboard" },
+  { id: "attempts", label: "Attempts", icon: Activity, tooltip: "Attempts" },
   { id: "teams", label: "Teams", icon: Users, tooltip: "Teams" },
   { id: "challenges", label: "Challenges", icon: Swords, tooltip: "Challenges" },
   { id: "users", label: "Users", icon: UserCog, tooltip: "Users" },
@@ -48,7 +50,7 @@ interface MainLayoutProps {
 
 export function SideBarLayout({ activeTab, setActiveTab, children, userRole }: MainLayoutProps) {
   const [open, setOpen] = useState(false)
-  const visibleTabs = allTabs.filter(tab => canAccessTab(userRole, tab.id))
+  const visibleTabs = allTabs.filter(tab => canAccessTab(userRole ?? null, tab.id))
 
   return (
     <SidebarProvider open={open} onOpenChange={setOpen}>

@@ -4,6 +4,7 @@ export type UserRole = 'admin' | 'team_lead' | 'viewer'
 
 export interface RolePermissions {
   allowedTabs: Tabs[]
+  canViewAttempts: boolean
   canEditDrivers: boolean
   canEditTeams: boolean
   canEditUsers: boolean
@@ -13,7 +14,8 @@ export interface RolePermissions {
 
 const rolePermissions: Record<UserRole, RolePermissions> = {
   admin: {
-    allowedTabs: ['leaderboard', 'teams', 'drivers', 'challenges', 'users', 'export', 'login'],
+    allowedTabs: ['leaderboard', 'attempts', 'teams', 'drivers', 'challenges', 'users', 'export', 'login'],
+    canViewAttempts: true,
     canEditDrivers: true,
     canEditTeams: true,
     canEditUsers: true,
@@ -22,6 +24,7 @@ const rolePermissions: Record<UserRole, RolePermissions> = {
   },
   team_lead: {
     allowedTabs: ['leaderboard', 'teams', 'login'],
+    canViewAttempts: false,
     canEditDrivers: false,
     canEditTeams: true,
     canEditUsers: false,
@@ -30,6 +33,7 @@ const rolePermissions: Record<UserRole, RolePermissions> = {
   },
   viewer: {
     allowedTabs: ['leaderboard', 'login'],
+    canViewAttempts: false,
     canEditDrivers: false,
     canEditTeams: false,
     canEditUsers: false,

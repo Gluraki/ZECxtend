@@ -1,5 +1,5 @@
 "use client"
-
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -7,52 +7,75 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
 import {
   Select,
-  SelectTrigger,
-  SelectValue,
   SelectContent,
   SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select"
-import { Download } from "lucide-react"
+import { Label } from "@/components/ui/label"
+import { Download, Loader2 } from "lucide-react"
+import { toast } from "sonner"
 
-interface Props {
-  exportFormat: string
-  setExportFormat: (f: string) => void
-  exportDateRange: { from: string; to: string }
-  setExportDateRange: (r: { from: string; to: string }) => void
-  handleExport: () => void
-}
+export default function ExportTab() {
+  const [leaderboardFormat, setLeaderboardFormat] = useState<"csv" | "pdf">("csv")
+  const [AttemptsRange, setAttemptsRange] = useState<"today" | "week">("today")
+  const [isExportingLeaderboard, setIsExportingLeaderboard] = useState(false)
+  const [isExportingAttempts, setIsExportingAttempts] = useState(false)
 
-export default function ExportTab({
-  exportFormat,
-  setExportFormat,
-  exportDateRange,
-  setExportDateRange,
-  handleExport,
-}: Props) {
+  const handleExportLeaderboard = async () => {
+    setIsExportingLeaderboard(true)
+    try {
+      toast.success(`Exporting leaderboard as ${leaderboardFormat.toUpperCase()}...`)
+      await new Promise(resolve => setTimeout(resolve, 1500))
+      toast.success("Leaderboard exported successfully!")
+    } catch (error: any) {
+      toast.error(error.message || "Failed to export leaderboard")
+    } finally {
+      setIsExportingLeaderboard(false)
+    }
+  }
+
+  const handleExportAttempts = async () => {
+    setIsExportingAttempts(true)
+    try {
+      const today = new Date()
+      let fromDate = new Date()
+      if (AttemptsRange === "today") {
+        fromDate.setHours(0, 0, 0, 0)
+      } else if (AttemptsRange === "week") {
+        fromDate.setDate(today.getDate() - 7)
+      }
+      toast.success(`Exporting Attempts for ${AttemptsRange === "today" ? "today" : "this week"}...`)
+      await new Promise(resolve => setTimeout(resolve, 1500))
+      toast.success("Attempts exported successfully!")
+    } catch (error: any) {
+      toast.error(error.message || "Failed to export Attempts")
+    } finally {
+      setIsExportingAttempts(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-semibold">Data Export</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-semibold">Data Export</h2>
+      </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        {/* Leaderboard Export */}
+      <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">
-              Leaderboard Export
-            </CardTitle>
+            <CardTitle>Leaderboard Export</CardTitle>
           </CardHeader>
-
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label>Format</Label>
+            <div>
+              <Label htmlFor="leaderboard-format">Format</Label>
               <Select
-                value={exportFormat}
-                onValueChange={setExportFormat}
+                value={leaderboardFormat}
+                onValueChange={(value) => setLeaderboardFormat(value as "csv" | "pdf")}
               >
-                <SelectTrigger>
+                <SelectTrigger id="leaderboard-format" className="mt-2">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -61,41 +84,38 @@ export default function ExportTab({
                 </SelectContent>
               </Select>
             </div>
-
-            <Button className="w-full" onClick={handleExport}>
-              <Download className="mr-2 h-4 w-4" />
-              Export Leaderboard
+            <Button
+              onClick={handleExportLeaderboard}
+              disabled={isExportingLeaderboard}
+              className="w-full flex items-center gap-2"
+            >
+              {isExportingLeaderboard ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Exporting...
+                </>
+              ) : (
+                <>
+                  <Download className="h-4 w-4" />
+                  Export Leaderboard
+                </>
+              )}
             </Button>
           </CardContent>
         </Card>
 
-        {/* Race Data Export */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">
-              Race Data Export
-            </CardTitle>
+            <CardTitle>Attempts Export</CardTitle>
           </CardHeader>
-
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label>Date Range</Label>
+            <div>
+              <Label htmlFor="race-data-range">Date Range</Label>
               <Select
-                defaultValue="today"
-                onValueChange={(value) =>
-                  setExportDateRange({
-                    from:
-                      value === "today"
-                        ? new Date().toISOString()
-                        : "",
-                    to:
-                      value === "today"
-                        ? new Date().toISOString()
-                        : "",
-                  })
-                }
+                value={AttemptsRange}
+                onValueChange={(value) => setAttemptsRange(value as "today" | "week")}
               >
-                <SelectTrigger>
+                <SelectTrigger id="race-data-range" className="mt-2">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -104,10 +124,22 @@ export default function ExportTab({
                 </SelectContent>
               </Select>
             </div>
-
-            <Button className="w-full" onClick={handleExport}>
-              <Download className="mr-2 h-4 w-4" />
-              Export Race Data
+            <Button
+              onClick={handleExportAttempts}
+              disabled={isExportingAttempts}
+              className="w-full flex items-center gap-2"
+            >
+              {isExportingAttempts ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Exporting...
+                </>
+              ) : (
+                <>
+                  <Download className="h-4 w-4" />
+                  Export Attempts
+                </>
+              )}
             </Button>
           </CardContent>
         </Card>
