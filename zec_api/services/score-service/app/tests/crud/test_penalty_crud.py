@@ -4,7 +4,7 @@ from app.schemas.penalty import PenaltyCreate, PenaltyUpdate
 from app.models.penalty import Penalty
 from app.exceptions.exceptions import EntityDoesNotExistError, ServiceError
 
-def test_create_penalty_success(db):
+def test_create_penalty_success(db, seeded_penalty_types):
     penalty_in = PenaltyCreate(attempt_id=1, penalty_type_id=1, count=2)
     result = penalty_crud.create_penalty(db=db, penalty=penalty_in)
     assert isinstance(result, Penalty)

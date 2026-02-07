@@ -12,6 +12,9 @@ def create_penalty(*, db: SessionDep, penalty: PenaltyCreate):
     response = requests.get(f"{ATTEMPT_URL}/api/attempts/{penalty.attempt_id}")
     if response.status_code != 200:
         raise ServiceError("Failed to fetch attempt")
+    penaltytyp = db.query(PenaltyType).filter(PenaltyType.id == penalty.penalty_type_id).first()
+    if not penaltytyp:
+        raise EntityDoesNotExistError("PenaltyType does not exist")
     try:
         penalty_data = penalty.model_dump(exclude_unset=True)
         db_penalty = Penalty(**penalty_data)
