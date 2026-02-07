@@ -15,7 +15,6 @@ os.environ.setdefault("TEAM_SERVICE_URL", "http://team-service")
 os.environ.setdefault("CHALLENGE_SERVICE_URL", "http://challenge-service")
 os.environ.setdefault("ATTEMPT_SERVICE_URL", "http://attempt-service")
 os.environ.setdefault("SCORE_SERVICE_URL", "http://score-service")
-
 from app.main import app as fastapi_app
 from app.database.session import Base
 from app.database.dependency import get_db
@@ -46,6 +45,12 @@ def db():
         session.rollback()
         session.close()
         Base.metadata.drop_all(bind=engine)
+
+@pytest.fixture(scope="function")
+def override_get_db(db):
+    def _override():
+        yield db
+    return _override
 
 @pytest.fixture(scope="function")
 def seeded_penalty_types(db):
@@ -87,19 +92,26 @@ def seeded_scores(db):
     return items
 
 @pytest.fixture(scope="function")
+def mock_requests():
+    with patch("app.crud.score.requests") as mock_score, \
+         patch("app.crud.penalty.requests") as mock_penalty, \
+         patch("app.crud.leaderboard.requests") as mock_leaderboard:
+        yield mock_score
+
+@pytest.fixture(scope="function")
 def mock_score_requests():
-    with patch("app.crud.score.requests") as mock_requests, \
-         patch("app.crud.penalty.requests"), \
-         patch("app.crud.leaderboard.requests"):
+    with patch("app.crud.score.requests") as mock_requests:
         yield mock_requests
 
 @pytest.fixture(scope="function")
 def mock_leaderboard_requests():
-    with patch("app.crud.leaderboard.requests") as mock_requests, \
-         patch("app.crud.score.requests"), \
-         patch("app.crud.penalty.requests"):
+    with patch("app.crud.leaderboard.requests") as mock_requests:
         yield mock_requests
 
+@pytest.fixture(scope="function")
+def mock_penalty_requests():
+    with patch("app.crud.penalty.requests") as mock_requests:
+        yield mock_requests
 
 @pytest.fixture(autouse=True)
 def mock_requests_penalty():
@@ -112,14 +124,12 @@ def mock_requests_penalty():
 @pytest.fixture(scope="function")
 def client(
     db,
+    override_get_db,
     seeded_penalty_types,
     seeded_penalties,
     seeded_scores,
     mock_requests,
 ):
-    def override_get_db():
-        yield db
-
     fastapi_app.dependency_overrides[get_db] = override_get_db
     with TestClient(fastapi_app) as c:
         yield c
@@ -127,10 +137,7 @@ def client(
 
 
 @pytest.fixture(scope="function")
-def minimal_client(db, mock_requests):
-    def override_get_db():
-        yield db
-
+def minimal_client(db, override_get_db, mock_requests):
     fastapi_app.dependency_overrides[get_db] = override_get_db
     with TestClient(fastapi_app) as c:
         yield c
