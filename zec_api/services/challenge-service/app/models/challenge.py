@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, DateTime, String
-from datetime import datetime
+from datetime import datetime, timezone
 from app.database.session import Base
 
 class Challenge(Base):
@@ -12,4 +12,4 @@ class Challenge(Base):
     esp_mac_start2 = Column(String)
     esp_mac_finish1 = Column(String)
     esp_mac_finish2 = Column(String)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.now(timezone.utc))

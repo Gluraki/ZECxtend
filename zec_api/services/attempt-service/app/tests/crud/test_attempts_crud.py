@@ -1,5 +1,5 @@
 import pytest
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, timezone
 from app.crud import attempt as crud
 from app.schemas.attempt import AttemptUpdate, AttemptCreate
 from app.exceptions.exceptions import EntityDoesNotExistError, ServiceError
@@ -71,8 +71,8 @@ def test_create_attempt_success(db, mock_requests):
         team_id=1,
         driver_id=1,
         challenge_id=1,
-        start_time=datetime.utcnow(),
-        end_time=datetime.utcnow() + timedelta(seconds=5),
+        start_time=datetime.now(timezone.utc),
+        end_time=datetime.now(timezone.utc) + timedelta(seconds=5),
         energy_used=30,
         is_valid=True,
     )
@@ -85,8 +85,8 @@ def test_create_attempt_max_attempts_reached(db, seeded_attempts, mock_requests)
         team_id=1,
         driver_id=1,
         challenge_id=1,
-        start_time=datetime.utcnow(),
-        end_time=datetime.utcnow() + timedelta(seconds=5),
+        start_time=datetime.now(timezone.utc),
+        end_time=datetime.now(timezone.utc) + timedelta(seconds=5),
         energy_used=20,
         is_valid=True,
     )

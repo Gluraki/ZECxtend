@@ -4,7 +4,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from unittest.mock import patch, Mock
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 os.environ.setdefault("ENVIRONMENT", "testing")
 os.environ.setdefault("PROJECT_NAME", "test")
 os.environ.setdefault("POSTGRES_SERVER", "localhost")
@@ -45,7 +45,7 @@ def db():
 
 @pytest.fixture(scope="function")
 def seeded_attempts(db):
-    base = datetime.utcnow()
+    base = datetime.now(timezone.utc)
     attempts = [
         Attempt(
             team_id=1,
@@ -70,7 +70,7 @@ def seeded_attempts(db):
     db.commit()
     return attempts
 
-@pytest.fixture(scope="function")
+@pytest.fixture(autouse=True)
 def mock_requests():
     with patch("app.crud.attempt.requests") as mock_requests:
         def mock_get(url, *args, **kwargs):
@@ -89,17 +89,13 @@ def mock_requests():
             else:
                 response.json.return_value = {}
             return response
-        def mock_post(*args, **kwargs):
-            response = Mock()
-            response.status_code = 200
-            return response
-        def mock_delete(*args, **kwargs):
+        def mock_response(*args, **kwargs):
             response = Mock()
             response.status_code = 200
             return response
         mock_requests.get.side_effect = mock_get
-        mock_requests.post.side_effect = mock_post
-        mock_requests.delete.side_effect = mock_delete
+        mock_requests.post.side_effect = mock_response
+        mock_requests.delete.side_effect = mock_response
         yield mock_requests
 
 @pytest.fixture(scope="function")

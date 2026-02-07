@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 def test_list_attempts(client):
     response = client.get("/api/attempts/")
@@ -30,8 +30,8 @@ def test_create_attempt_success(client):
         "team_id": 1,
         "driver_id": 1,
         "challenge_id": 1,
-        "start_time": datetime.utcnow().isoformat(),
-        "end_time": (datetime.utcnow() + timedelta(seconds=5)).isoformat(),
+        "start_time": datetime.now(timezone.utc).isoformat(),
+        "end_time": (datetime.now(timezone.utc) + timedelta(seconds=5)).isoformat(),
         "energy_used": 25,
         "is_valid": True,
     }

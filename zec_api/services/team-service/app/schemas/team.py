@@ -11,7 +11,7 @@ class TeamBase(BaseModel):
     rfid_identifier: str
 
 class TeamCreate(TeamBase):
-    created_at: Optional[datetime] = datetime.utcnow()
+    pass
 
 class TeamUpdate(BaseModel):
     name: Optional[str] = None

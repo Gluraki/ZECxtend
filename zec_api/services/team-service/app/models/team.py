@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, Float, DateTime, String
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, timezone
 from app.database.session import Base
 from enum import Enum
 from sqlalchemy import Enum as SQLEnum
@@ -19,6 +19,6 @@ class Team(Base):
     vehicle_weight = Column(Float)
     mean_power = Column(Float)
     rfid_identifier = Column(String)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.now(timezone.utc))
     
     drivers = relationship("Driver", back_populates="team")
