@@ -77,8 +77,8 @@ Needs Bearer authorization header containing `access_token` from a user with adm
   "driver_id": int,
   "challenge_id": int,
   "is_valid": bool, (optional) if you want to create a invalid attempt
-  "start_time": datetime, (with milliseconds)
-  "end_time": datetime, (with milliseconds)
+  "start_time": datetime, (YYYY-MM-DDTHH:MM:SS.mmmmmm)
+  "end_time": datetime, (YYYY-MM-DDTHH:MM:SS.mmmmmm)
   "energy_used": float,
   "penalty_count": int,
   "penalty_type": int
@@ -98,8 +98,8 @@ All fields are optional depending on what needs to be updated.
   "driver_id": int,
   "challenge_id": int,
   "is_valid": bool,
-  "start_time": datetime, (with milliseconds)
-  "end_time": datetime, (with milliseconds)
+  "start_time": datetime, (YYYY-MM-DDTHH:MM:SS.mmmmmm)
+  "end_time": datetime, (YYYY-MM-DDTHH:MM:SS.mmmmmm)
   "energy_used": float
 }
 ```
