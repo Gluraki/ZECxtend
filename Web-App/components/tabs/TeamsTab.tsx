@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from "react"
+import React, { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Table,
@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { ConfirmDialog } from "@/components/dialogs/confirm-dialog"
 import {
   Select,
   SelectContent,
@@ -53,6 +54,11 @@ export default function TeamsTab() {
   const [teams, setTeams] = useState<Team[]>([])
   const [drivers, setDrivers] = useState<Record<number, Driver[]>>({})
   const [isLoading, setIsLoading] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  const [teamToDelete, setTeamToDelete] = useState<number | null>(null)
+  const [driverToDelete, setDriverToDelete] = useState<{ id: number; teamId: number } | null>(null)
+
   const [isTeamDialogOpen, setIsTeamDialogOpen] = useState(false)
   const [editingTeam, setEditingTeam] = useState<Team | null>(null)
   const [expandedTeams, setExpandedTeams] = useState<Set<number>>(new Set())
@@ -165,30 +171,34 @@ export default function TeamsTab() {
     }
   }
 
-  const handleDeleteTeam = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this team? All associated drivers will also be deleted.")) return
+  const handleDeleteTeam = async () => {
+    if (!teamToDelete) return
 
-    setIsLoading(true)
+    setIsDeleting(true)
     try {
-      await teamsApi.deleteTeam(id)
+      await teamsApi.deleteTeam(teamToDelete)
       toast.success("Team deleted successfully")
       loadTeams()
     } catch (error: any) {
       toast.error(error.message || "Failed to delete team")
     } finally {
-      setIsLoading(false)
+      setIsDeleting(false)
+      setTeamToDelete(null)
     }
   }
 
-  const handleDeleteDriver = async (driverId: number, teamId: number) => {
-    if (!confirm("Are you sure you want to delete this driver?")) return
-
+  const handleDeleteDriver = async () => {
+    if (!driverToDelete) return
+    setIsDeleting(true)
     try {
-      await driversApi.deleteDriver(driverId)
+      await driversApi.deleteDriver(driverToDelete.id)
       toast.success("Driver deleted successfully")
-      loadDriversForTeam(teamId)
+      loadDriversForTeam(driverToDelete.teamId)
     } catch (error: any) {
       toast.error(error.message || "Failed to delete driver")
+    } finally {
+      setIsDeleting(false)
+      setDriverToDelete(null)
     }
   }
 
@@ -270,8 +280,8 @@ export default function TeamsTab() {
                 </TableRow>
               )}
               {teams.map((team) => (
-                <>
-                  <TableRow key={team.id}>
+                <React.Fragment key={team.id}>
+                  <TableRow>
                     <TableCell className="font-medium">{team.name}</TableCell>
                     <TableCell>
                       <Badge variant="outline">{CATEGORY_LABELS[team.category]}</Badge>
@@ -298,7 +308,7 @@ export default function TeamsTab() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleDeleteTeam(team.id)}
+                          onClick={() => setTeamToDelete(team.id)}
                           disabled={isLoading}
                         >
                           <Trash2 className="h-4 w-4 text-destructive" />
@@ -307,7 +317,7 @@ export default function TeamsTab() {
                     </TableCell>
                   </TableRow>
                   {expandedTeams.has(team.id) && (
-                    <TableRow key={`team-${team.id}-drivers`}>
+                    <TableRow>
                       <TableCell colSpan={6} className="bg-slate-50">
                         <div className="p-4">
                           <h4 className="font-semibold mb-3 flex items-center gap-2">
@@ -336,7 +346,7 @@ export default function TeamsTab() {
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() => handleDeleteDriver(driver.id, team.id)}
+                                    onClick={() => setDriverToDelete({ id: driver.id, teamId: team.id })}
                                   >
                                     <Trash2 className="h-4 w-4 text-destructive" />
                                   </Button>
@@ -348,7 +358,7 @@ export default function TeamsTab() {
                       </TableCell>
                     </TableRow>
                   )}
-                </>
+                </React.Fragment>
               ))}
             </TableBody>
           </Table>
@@ -482,6 +492,27 @@ export default function TeamsTab() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <ConfirmDialog
+        open={!!teamToDelete}
+        onOpenChange={() => setTeamToDelete(null)}
+        title="Delete Team"
+        description="Are you sure you want to delete this team? All associated drivers will also be deleted."
+        confirmLabel="Delete"
+        destructive
+        loading={isDeleting}
+        onConfirm={handleDeleteTeam}
+      />
+
+      <ConfirmDialog
+        open={!!driverToDelete}
+        onOpenChange={() => setDriverToDelete(null)}
+        title="Delete Driver"
+        description="Are you sure you want to delete this driver?"
+        confirmLabel="Delete"
+        destructive
+        loading={isDeleting}
+        onConfirm={handleDeleteDriver}
+      />
     </div>
   )
 }
