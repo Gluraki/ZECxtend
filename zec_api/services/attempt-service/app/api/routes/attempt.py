@@ -60,3 +60,13 @@ def least_energy_attempt(db: SessionDep, challenge_id: int):
 def least_energy_attempts_per_team(db: SessionDep, challenge_id: int, team_id: int):
     attempts = crud.get_least_energy_attempt_for_team(db=db, challenge_id=challenge_id, team_id=team_id)
     return attempts
+
+@router.get("/per-team/{team_id}", response_model=List[AttemptResponse])
+def attempts_per_team(db: SessionDep, team_id: int):
+    attempts = crud.get_attempts_for_team(db=db, team_id=team_id)
+    return attempts
+
+@router.get("/per-driver/{driver_id}", response_model=List[AttemptResponse])
+def attempts_per_driver(db: SessionDep, driver_id: int):
+    attempts = crud.get_attempts_for_driver(db=db, driver_id=driver_id)
+    return attempts

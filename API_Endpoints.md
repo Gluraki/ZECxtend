@@ -12,6 +12,8 @@
   - 1.9 [Get Fastest Attempt for a Team in a Challenge](#get-fastest-attempt-for-a-team-in-a-challenge)
   - 1.10 [Get Least Energy Attempt for a Challenge](#get-least-energy-attempt-for-a-challenge)
   - 1.11 [Get Least Energy Attempt for a Team in a Challenge](#get-least-energy-attempt-for-a-team-in-a-challenge)
+  - 1.12 [Get Attempts per Team](#get-attempts-per-team)
+  - 1.13 [Get Attempts per Driver](#get-attempts-per-driver)
 - ## 2. Auth
   - 2.1 [Login](#login)
   - 2.2 [Refresh Token](#refresh-token)
@@ -157,6 +159,16 @@ Needs Bearer authorization header containing `access_token` from a user with adm
 **Query Parameters**
 - `challenge_id` (int): ID of the challenge  
 - `team_id` (int): ID of the team
+#### Get Attempts per Team
+Needs Bearer authorization header containing `access_token` from a user with admin role  
+`GET`
+
+**URL** http://hostname/attempts/per-team/{team_id}
+#### Get Attempts per Driver
+Needs Bearer authorization header containing `access_token` from a user with admin role  
+`GET`
+
+**URL** http://hostname/attempts/per-driver/{driver_id}
 ### Auth
 #### Login
 `POST`

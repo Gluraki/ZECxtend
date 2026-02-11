@@ -199,3 +199,15 @@ def get_attempts_for_team_per_challenge(*, db: SessionDep, team_id: int, challen
         .all()
     )
     return db_attempts
+
+def get_attempts_for_team(*, db: SessionDep, team_id: int):
+    db_attempts = db.query(Attempt).filter(Attempt.team_id == team_id).all()
+    if not db_attempts:
+        raise EntityDoesNotExistError("No attempts found for this team")
+    return db_attempts
+
+def get_attempts_for_driver(*, db: SessionDep, driver_id: int):
+    db_attempts = db.query(Attempt).filter(Attempt.driver_id == driver_id).all()
+    if not db_attempts:
+        raise EntityDoesNotExistError("No attempts found for this driver")
+    return db_attempts
