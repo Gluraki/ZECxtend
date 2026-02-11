@@ -34,7 +34,6 @@ interface User {
   id: string
   username: string
   email?: string
-  enabled: boolean
   roles?: string[]
 }
 
@@ -208,7 +207,6 @@ export default function UsersTab() {
                 <TableHead>Username</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Roles</TableHead>
-                <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -219,7 +217,7 @@ export default function UsersTab() {
                     colSpan={5}
                     className="text-center text-muted-foreground"
                   >
-                    No users found. Add a user to get started.
+                    No users found.
                   </TableCell>
                 </TableRow>
               )}
@@ -239,11 +237,6 @@ export default function UsersTab() {
                         <span className="text-sm text-muted-foreground">No roles</span>
                       )}
                     </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={user.enabled ? "secondary" : "destructive"}>
-                      {user.enabled ? "Active" : "Disabled"}
-                    </Badge>
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
@@ -327,9 +320,6 @@ export default function UsersTab() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit User</DialogTitle>
-            <DialogDescription>
-              Update user information
-            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
