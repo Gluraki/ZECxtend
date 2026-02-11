@@ -88,7 +88,7 @@ export default function TeamsTab() {
       const data = await driversApi.getDriversByTeam(teamId)
       setDrivers(prev => ({ ...prev, [teamId]: data }))
     } catch (error: any) {
-      toast.error(error.message || "Failed to load drivers")
+      setDrivers(prev => ({ ...prev, [teamId]: [] }))
     }
   }
 
@@ -307,7 +307,7 @@ export default function TeamsTab() {
                     </TableCell>
                   </TableRow>
                   {expandedTeams.has(team.id) && (
-                    <TableRow>
+                    <TableRow key={`team-${team.id}-drivers`}>
                       <TableCell colSpan={6} className="bg-slate-50">
                         <div className="p-4">
                           <h4 className="font-semibold mb-3 flex items-center gap-2">
