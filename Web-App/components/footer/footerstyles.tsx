@@ -1,14 +1,10 @@
 import styled from "styled-components";
 
 export const Box = styled.div`
-    padding: 40px 0;
+    padding: 8px 0;
     background: white;
     bottom: 0;
     width: 100%;
-
-    @media (max-width: 1000px) {
-        /* padding: 70px 30px; */
-    }
     border-top: 1px solid #a3a3a3;
 `;
 
@@ -44,8 +40,8 @@ export const Row = styled.div`
 
 export const FooterLink = styled.a`
     color: #000000;
-    margin-bottom: 20px;
-    font-size: 18px;
+    margin-bottom: 6px;
+    font-size: 14px;
     text-decoration: none;
 
     &:hover {
@@ -55,9 +51,9 @@ export const FooterLink = styled.a`
 `;
 
 export const Heading = styled.p`
-    font-size: 24px;
+    font-size: 9px;
     color: #000000;
-    margin-bottom: 40px;
+    margin-bottom: 0px;
     font-weight: bold;
 `;
 

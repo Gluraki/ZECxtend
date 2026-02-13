@@ -369,9 +369,6 @@ export default function TeamsTab() {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingTeam ? "Edit Team" : "Add New Team"}</DialogTitle>
-            <DialogDescription>
-              {editingTeam ? "Update team information" : "Create a new team and optionally add drivers"}
-            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>

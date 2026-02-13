@@ -6,3 +6,4 @@ Repository for **Z**ero**E**mission**C**hallenge Timing by Darnhofer and Maderba
 - Test with Playwright
 - allow creating a driver after team has been created
 - export logic
+- seperate teamlead view for team tab

@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Edit, Trash2, Loader2, CheckCircle2, XCircle } from "lucide-react"
+import { ConfirmDialog } from "@/components/dialogs/confirm-dialog"
 import { attemptsApi, type Attempt, type AttemptUpdate } from "@/lib/api/attempts"
 import { challengesApi, type Challenge } from "@/lib/api/challenges"
 import { teamsApi, type Team } from "@/lib/api/teams"
@@ -49,6 +50,7 @@ export default function AttemptsTab() {
   const [isLoading, setIsLoading] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [editingAttempt, setEditingAttempt] = useState<Attempt | null>(null)
+  const [attemptToDelete, setAttemptToDelete] = useState<number | null>(null)
 
   const [formData, setFormData] = useState<AttemptUpdate>({
     start_time: undefined,
@@ -83,7 +85,6 @@ export default function AttemptsTab() {
         setSelectedChallenge(challengesData[0].id)
       }
     } catch (error: any) {
-      toast.error(error.message || "Failed to load data")
     } finally {
       setIsLoading(false)
     }
@@ -97,7 +98,6 @@ export default function AttemptsTab() {
       const data = await attemptsApi.getAttemptsForChallenge(selectedChallenge)
       setAttempts(data)
     } catch (error: any) {
-      toast.error(error.message || "Failed to load attempts")
       setAttempts([])
     } finally {
       setIsLoading(false)
@@ -121,14 +121,18 @@ export default function AttemptsTab() {
     }
   }
 
-  const handleDeleteAttempt = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this attempt?")) return
+  const handleDeleteAttempt = (id: number) => {
+    setAttemptToDelete(id)
+  }
 
+  const confirmDeleteAttempt = async () => {
+    if (attemptToDelete === null) return
     setIsLoading(true)
     try {
-      await attemptsApi.deleteAttempt(id)
+      await attemptsApi.deleteAttempt(attemptToDelete)
       toast.success("Attempt deleted successfully")
       loadAttempts()
+      setAttemptToDelete(null)
     } catch (error: any) {
       toast.error(error.message || "Failed to delete attempt")
     } finally {
@@ -353,6 +357,16 @@ export default function AttemptsTab() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <ConfirmDialog
+        open={attemptToDelete !== null}
+        onOpenChange={() => setAttemptToDelete(null)}
+        title="Delete Attempt"
+        description="Are you sure you want to delete this attempt?"
+        confirmLabel="Delete"
+        destructive
+        loading={isLoading}
+        onConfirm={confirmDeleteAttempt}
+      />
     </div>
   )
 }

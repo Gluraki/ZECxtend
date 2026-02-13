@@ -27,6 +27,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Plus, Trash2, UserCog, Loader2 } from "lucide-react"
+import { ConfirmDialog } from "@/components/dialogs/confirm-dialog"
 import { usersApi } from "@/lib/api/users"
 import { toast } from "sonner"
 
@@ -47,6 +48,7 @@ export default function UsersTab() {
   const [isManageRolesOpen, setIsManageRolesOpen] = useState(false)
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [userToDelete, setUserToDelete] = useState<User | null>(null)
 
   const [formData, setFormData] = useState({
     username: "",
@@ -117,14 +119,18 @@ export default function UsersTab() {
     }
   }
 
-  const handleDeleteUser = async (userId: string) => {
-    if (!confirm("Are you sure you want to delete this user?")) return
+  const handleDeleteUser = (user: User) => {
+    setUserToDelete(user)
+  }
 
+  const confirmDeleteUser = async () => {
+    if (!userToDelete) return
     setIsDeleting(true)
     try {
-      await usersApi.deleteUser(userId)
+      await usersApi.deleteUser(userToDelete.id)
       toast.success("User deleted successfully")
       loadUsers()
+      setUserToDelete(null)
     } catch (error: any) {
       toast.error(error.message || "Failed to delete user")
     } finally {
@@ -257,7 +263,7 @@ export default function UsersTab() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleDeleteUser(user.id)}
+                        onClick={() => handleDeleteUser(user)}
                         disabled={isDeleting}
                       >
                         <Trash2 className="h-4 w-4 text-destructive" />
@@ -393,6 +399,16 @@ export default function UsersTab() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <ConfirmDialog
+        open={!!userToDelete}
+        onOpenChange={() => setUserToDelete(null)}
+        title="Delete User"
+        description="Are you sure you want to delete this user?"
+        confirmLabel="Delete"
+        destructive
+        loading={isDeleting}
+        onConfirm={confirmDeleteUser}
+      />
     </div>
   )
 }

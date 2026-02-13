@@ -159,9 +159,6 @@ export default function ChallengeTab() {
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Edit Challenge</DialogTitle>
-            <DialogDescription>
-              Update challenge information
-            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
