@@ -12,7 +12,7 @@ Manage racing challenges and their configuration.
 
 ## Seeded Data
 
-The predefined challenges—**Skidpad**, **Slalom**, **Acceleration**, and **Endurance**—are seeded in the service.  
+The predefined challenges **Skidpad**, **Slalom**, **Acceleration**, and **Endurance** are seeded in the service.  
 You can modify or extend these defaults in the following file:
 
 `zec_api/services/challenge-service/app/database/seed.py`
