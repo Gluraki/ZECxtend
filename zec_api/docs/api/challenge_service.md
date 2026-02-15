@@ -56,9 +56,9 @@ All fields are optional - only include fields you want to update.
 }
 ```
 ### Responses
-- 200 Successfully updated
-- 404 Challenge not found
-- 422 Invalid request schema
+- `200 OK`: Successfully updated
+- `404 Not Found`: Challenge not found
+- `422 Unprocessable Entity`: Invalid request schema
 
 ## Get Challenge by ID
 Retrieves a single challenge by its ID.
@@ -71,8 +71,8 @@ Retrieves a single challenge by its ID.
 - `challenge_id` (int): ID of the challenge
 
 ### Responses
-- 200 Challenge returned
-- 404 Challenge not found
+- `200 OK`: Challenge returned
+- `404 Not Found`: Challenge not found
 
 ## Get Challenge by Name
 Retrieves a single challenge by its name.
@@ -85,8 +85,8 @@ Retrieves a single challenge by its name.
 - `challenge_name` (string): Name of the challenge
 
 ### Responses
-- 200 Challenge returned
-- 404 Challenge not found
+- `200 OK`: Challenge returned
+- `404 Not Found`: Challenge not found
 
 ## Get Challenges (all)
 Retrieves all challenges in the system.
@@ -96,5 +96,5 @@ Retrieves all challenges in the system.
 **URL:** `http://hostname/challenges/`
 
 ### Responses
-- 200 List of challenges
-- 200 (empty) - No challenges found
+- `200 OK`: List of challenges returned
+- `200 OK (empty)`: No challenges found
