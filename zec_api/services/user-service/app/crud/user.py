@@ -1,4 +1,5 @@
 import requests
+import time
 from app.core.config import settings
 from app.schemas.user import CreateUserKC, UpdateUserKC
 from app.models.user import User
@@ -176,8 +177,38 @@ def get_user_by_id_db(db: SessionDep, user_id: str):
     return db_user
 
 def get_admin_token() -> str:
-    access_token = requests.get(f"{settings.AUTH_SERVICE_URL}/api/auth/internal/get-admin-token").json()
-    return access_token
+    url = f"{settings.AUTH_SERVICE_URL}/api/auth/internal/get-admin-token"
+    last_exc = None
+    last_resp = None
+    for attempt in range(1, 11):
+        try:
+            resp = requests.get(url, timeout=5)
+            last_resp = resp
+        except requests.RequestException as e:
+            last_exc = e
+            time.sleep(0.5 * attempt)
+            continue
+        if resp.status_code != 200:
+            last_exc = Exception(f"Auth service returned status {resp.status_code}")
+            time.sleep(0.5 * attempt)
+            continue
+        try:
+            data = resp.json()
+        except ValueError:
+            raise ServiceError(f"Invalid JSON from auth service: {resp.text}")
+        if isinstance(data, str):
+            return data
+        if isinstance(data, dict):
+            token = data.get("access_token") or data.get("token") or data.get("accessToken")
+            if token:
+                return token
+            raise ServiceError(f"Auth service JSON missing token field: {data}")
+        raise ServiceError(f"Unexpected auth service response: {data}")
+    if last_exc:
+        raise ServiceError(f"Failed to obtain admin token: {last_exc}")
+    if last_resp is not None:
+        raise ServiceError(f"Failed to obtain admin token, last response: {last_resp.text}")
+    raise ServiceError("Failed to obtain admin token: unknown error")
 
 def get_user_by_username(username: str) -> Optional[dict]:
     access_token = get_admin_token()
