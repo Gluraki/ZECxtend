@@ -27,6 +27,7 @@ Get all endpoints return a list of objects of this
 ```json
 {
   "id": 1,
+  "team_id": 1,
   "username": "team_leader_01",
   "email": "",
   "kc_id": "a3f8b2c1-9d4e-4f5a-8b3c-1e2f3a4b5c6d",
@@ -45,7 +46,8 @@ Creates a new user.
 ```json
 {
   "username": "team_leader_01",
-  "password": "SecurePassword123!"
+  "password": "SecurePassword123!",
+  "team_id": 1
 }
 ```
 
@@ -118,7 +120,8 @@ All fields are optional - only include fields you want to update.
 ```json
 {
   "username": "new_username",
-  "password": "NewSecurePassword456!"
+  "password": "NewSecurePassword456!",
+  "team_id": 1
 }
 ```
 

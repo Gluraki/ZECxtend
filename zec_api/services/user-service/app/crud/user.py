@@ -17,6 +17,16 @@ from app.exceptions.exceptions import (
 KC_USER_URL = settings.KEYCLOAK_USER_URL
 KC_CLIENTS_URL = settings.KC_CLIENTS_URL
 KC_CLIENT_ID = settings.KC_CLIENT_ID
+TEAM_URL = settings.TEAM_SERVICE_URL
+
+def _validate_team(team_id: int):
+    resp = requests.get(f"{TEAM_URL}/api/teams/{team_id}", params={"team_id": team_id})
+    if resp.status_code == 404:
+        raise EntityDoesNotExistError(f"Team {team_id} does not exist")
+    if resp.status_code in (401, 403):
+        raise AuthenticationFailed(f"Unauthorized to fetch team {team_id}")
+    if resp.status_code != 200:
+        raise ServiceError(f"Failed to fetch team {team_id}: {resp.text}")
 
 def create_user(db: SessionDep, request: CreateUserKC):
     access_token = get_admin_token()
@@ -56,6 +66,9 @@ def create_user(db: SessionDep, request: CreateUserKC):
         kc_id=kc_user["id"],
         created_at=datetime.now(timezone.utc),
     )
+    if request.team_id is not None:
+        _validate_team(request.team_id)
+        db_user.team_id = request.team_id
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
@@ -90,7 +103,12 @@ def update_user(db: SessionDep, user_id: str, request: UpdateUserKC) -> Optional
         db_user.username = request.username
         db.commit()
         db.refresh(db_user)
-    return {"id": db_user.kc_id, "username": db_user.username}
+    if request.team_id is not None:
+        _validate_team(request.team_id)
+        db_user.team_id = request.team_id
+        db.commit()
+        db.refresh(db_user)
+    return {"id": db_user.kc_id, "username": db_user.username, "team_id": db_user.team_id}
 
 def delete_user(db: SessionDep, user_id: str) -> None:
     access_token = get_admin_token()
@@ -222,6 +240,8 @@ def get_user_by_username(username: str) -> Optional[dict]:
     if response.status_code == 404:
         raise EntityDoesNotExistError(f"No user for id: {username}")
     users = response.json()
+    if not users:
+        raise EntityDoesNotExistError(f"No user for username: {username}")
     user = users[0]
     return {
         "id": user["id"],
