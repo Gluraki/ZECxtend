@@ -34,6 +34,7 @@ import { toast } from "sonner"
 interface User {
   id: string
   username: string
+  team_id?: string
   email?: string
   roles?: string[]
 }
@@ -49,12 +50,13 @@ export default function UsersTab() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [userToDelete, setUserToDelete] = useState<User | null>(null)
-
   const [formData, setFormData] = useState({
     username: "",
     password: "",
+    team_id: "",
   })
   const [selectedRoles, setSelectedRoles] = useState<string[]>([])
+
   useEffect(() => {
     loadUsers()
   }, [])
@@ -79,16 +81,15 @@ export default function UsersTab() {
 
     setIsLoading(true)
     try {
-      const newUser = await usersApi.createUser({
+      await usersApi.createUser({
         username: formData.username,
         password: formData.password,
+        ...(formData.team_id ? { team_id: formData.team_id } : {}),
       })
-      
+
       toast.success("User created successfully")
-      
       setIsAddUserOpen(false)
-      setFormData({ username: "", password: "" })
-      
+      setFormData({ username: "", password: "", team_id: "" })
       loadUsers()
     } catch (error: any) {
       toast.error(error.message || "Failed to create user")
@@ -102,15 +103,27 @@ export default function UsersTab() {
 
     setIsLoading(true)
     try {
-      await usersApi.updateUser(selectedUser.id, {
-        username: formData.username || undefined,
-        password: formData.password || undefined,
-      })
-      
+      const payload: any = {}
+
+      if (formData.username && formData.username !== selectedUser.username) {
+        payload.username = formData.username
+      }
+
+      if (formData.password) {
+        payload.password = formData.password
+      }
+
+      if (formData.team_id !== selectedUser.team_id) {
+        payload.team_id =
+          formData.team_id.trim() === "" ? null : formData.team_id
+      }
+
+      await usersApi.updateUser(selectedUser.id, payload)
+
       toast.success("User updated successfully")
-      
       setIsEditUserOpen(false)
-      setFormData({ username: "", password: "" })
+      setSelectedUser(null)
+      setFormData({ username: "", password: "", team_id: "" })
       loadUsers()
     } catch (error: any) {
       toast.error(error.message || "Failed to update user")
@@ -125,12 +138,15 @@ export default function UsersTab() {
 
   const confirmDeleteUser = async () => {
     if (!userToDelete) return
+
+    const userId = userToDelete.id
+
     setIsDeleting(true)
     try {
-      await usersApi.deleteUser(userToDelete.id)
+      await usersApi.deleteUser(userId)
       toast.success("User deleted successfully")
-      loadUsers()
       setUserToDelete(null)
+      loadUsers()
     } catch (error: any) {
       toast.error(error.message || "Failed to delete user")
     } finally {
@@ -147,23 +163,35 @@ export default function UsersTab() {
   const handleUpdateRoles = async () => {
     if (!selectedUser) return
 
+    const userId = selectedUser.id
+    const currentRoles = selectedUser.roles || []
+
     setIsLoading(true)
     try {
-      const currentRoles = selectedUser.roles || []
-      const rolesToAdd = selectedRoles.filter(r => !currentRoles.includes(r))
-      const rolesToRemove = currentRoles.filter(r => !selectedRoles.includes(r))
+      const rolesToAdd = selectedRoles.filter(
+        (r) => !currentRoles.includes(r)
+      )
+      const rolesToRemove = currentRoles.filter(
+        (r) => !selectedRoles.includes(r)
+      )
+
+      if (rolesToAdd.length === 0 && rolesToRemove.length === 0) {
+        setIsManageRolesOpen(false)
+        return
+      }
 
       if (rolesToAdd.length > 0) {
-        await usersApi.assignRoles(selectedUser.id, rolesToAdd)
+        await usersApi.assignRoles(userId, rolesToAdd)
       }
+
       if (rolesToRemove.length > 0) {
-        await usersApi.removeRoles(selectedUser.id, rolesToRemove)
+        await usersApi.removeRoles(userId, rolesToRemove)
       }
 
       toast.success("Roles updated successfully")
-      
       setIsManageRolesOpen(false)
-    
+      setSelectedUser(null)
+      setSelectedRoles([])
       loadUsers()
     } catch (error: any) {
       toast.error(error.message || "Failed to update roles")
@@ -174,14 +202,18 @@ export default function UsersTab() {
 
   const openEditDialog = (user: User) => {
     setSelectedUser(user)
-    setFormData({ username: user.username, password: "" })
+    setFormData({
+      username: user.username,
+      password: "",
+      team_id: user.team_id || "",
+    })
     setIsEditUserOpen(true)
   }
 
   const toggleRole = (role: string) => {
-    setSelectedRoles(prev =>
+    setSelectedRoles((prev) =>
       prev.includes(role)
-        ? prev.filter(r => r !== role)
+        ? prev.filter((r) => r !== role)
         : [...prev, role]
     )
   }
@@ -192,10 +224,11 @@ export default function UsersTab() {
         <h2 className="text-2xl font-semibold">User Management</h2>
         <Button
           onClick={() => {
-            setFormData({ username: "", password: "" })
+            setFormData({ username: "", password: "", team_id: "" })
             setIsAddUserOpen(true)
           }}
           className="flex items-center gap-2"
+          disabled={isLoading}
         >
           <Plus className="h-4 w-4" />
           <span>Add User</span>
@@ -211,7 +244,7 @@ export default function UsersTab() {
             <TableHeader>
               <TableRow>
                 <TableHead>Username</TableHead>
-                <TableHead>Email</TableHead>
+                <TableHead>Team</TableHead>
                 <TableHead>Roles</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -229,18 +262,26 @@ export default function UsersTab() {
               )}
               {users.map((user) => (
                 <TableRow key={user.id}>
-                  <TableCell className="font-medium">{user.username}</TableCell>
-                  <TableCell>{user.email || "N/A"}</TableCell>
+                  <TableCell className="font-medium">
+                    {user.username}
+                  </TableCell>
+                  <TableCell>{user.team_id || "N/A"}</TableCell>
                   <TableCell>
                     <div className="flex gap-1 flex-wrap">
                       {user.roles && user.roles.length > 0 ? (
                         user.roles.map((role) => (
-                          <Badge key={role} variant="outline" className="capitalize">
+                          <Badge
+                            key={role}
+                            variant="outline"
+                            className="capitalize"
+                          >
                             {role}
                           </Badge>
                         ))
                       ) : (
-                        <span className="text-sm text-muted-foreground">No roles</span>
+                        <span className="text-sm text-muted-foreground">
+                          No roles
+                        </span>
                       )}
                     </div>
                   </TableCell>
@@ -250,6 +291,7 @@ export default function UsersTab() {
                         variant="ghost"
                         size="sm"
                         onClick={() => openEditDialog(user)}
+                        disabled={isLoading}
                       >
                         Edit
                       </Button>
@@ -257,6 +299,7 @@ export default function UsersTab() {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleManageRoles(user)}
+                        disabled={isLoading}
                       >
                         <UserCog className="h-4 w-4" />
                       </Button>
@@ -277,7 +320,15 @@ export default function UsersTab() {
         </CardContent>
       </Card>
 
-      <Dialog open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
+      <Dialog
+        open={isAddUserOpen}
+        onOpenChange={(open) => {
+          setIsAddUserOpen(open)
+          if (!open) {
+            setFormData({ username: "", password: "", team_id: "" })
+          }
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Add New User</DialogTitle>
@@ -292,9 +343,11 @@ export default function UsersTab() {
                 id="username"
                 value={formData.username}
                 onChange={(e) =>
-                  setFormData({ ...formData, username: e.target.value })
+                  setFormData({
+                    ...formData,
+                    username: e.target.value,
+                  })
                 }
-                placeholder="Enter username"
               />
             </div>
             <div>
@@ -304,25 +357,59 @@ export default function UsersTab() {
                 type="password"
                 value={formData.password}
                 onChange={(e) =>
-                  setFormData({ ...formData, password: e.target.value })
+                  setFormData({
+                    ...formData,
+                    password: e.target.value,
+                  })
                 }
-                placeholder="Enter password"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="team-id">
+                Team ID{" "}
+                <span className="text-muted-foreground font-normal">
+                  (optional)
+                </span>
+              </Label>
+              <Input
+                id="team-id"
+                value={formData.team_id}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    team_id: e.target.value,
+                  })
+                }
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddUserOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsAddUserOpen(false)}
+            >
               Cancel
             </Button>
             <Button onClick={handleCreateUser} disabled={isLoading}>
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isLoading && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
               Create User
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      <Dialog open={isEditUserOpen} onOpenChange={setIsEditUserOpen}>
+      <Dialog
+        open={isEditUserOpen}
+        onOpenChange={(open) => {
+          setIsEditUserOpen(open)
+          if (!open) {
+            setSelectedUser(null)
+            setFormData({ username: "", password: "", team_id: "" })
+          }
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit User</DialogTitle>
@@ -334,37 +421,75 @@ export default function UsersTab() {
                 id="edit-username"
                 value={formData.username}
                 onChange={(e) =>
-                  setFormData({ ...formData, username: e.target.value })
+                  setFormData({
+                    ...formData,
+                    username: e.target.value,
+                  })
                 }
-                placeholder="Enter username"
               />
             </div>
             <div>
-              <Label htmlFor="edit-password">Password (leave empty to keep current)</Label>
+              <Label htmlFor="edit-password">
+                Password (leave empty to keep current)
+              </Label>
               <Input
                 id="edit-password"
                 type="password"
                 value={formData.password}
                 onChange={(e) =>
-                  setFormData({ ...formData, password: e.target.value })
+                  setFormData({
+                    ...formData,
+                    password: e.target.value,
+                  })
                 }
-                placeholder="Enter new password"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-team-id">
+                Team ID{" "}
+                <span className="text-muted-foreground font-normal">
+                  (optional)
+                </span>
+              </Label>
+              <Input
+                id="edit-team-id"
+                value={formData.team_id}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    team_id: e.target.value,
+                  })
+                }
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditUserOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsEditUserOpen(false)}
+            >
               Cancel
             </Button>
             <Button onClick={handleUpdateUser} disabled={isLoading}>
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isLoading && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
               Update User
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      <Dialog open={isManageRolesOpen} onOpenChange={setIsManageRolesOpen}>
+      <Dialog
+        open={isManageRolesOpen}
+        onOpenChange={(open) => {
+          setIsManageRolesOpen(open)
+          if (!open) {
+            setSelectedUser(null)
+            setSelectedRoles([])
+          }
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Manage User Roles</DialogTitle>
@@ -389,16 +514,22 @@ export default function UsersTab() {
             ))}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsManageRolesOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsManageRolesOpen(false)}
+            >
               Cancel
             </Button>
             <Button onClick={handleUpdateRoles} disabled={isLoading}>
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isLoading && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
               Update Roles
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
       <ConfirmDialog
         open={!!userToDelete}
         onOpenChange={() => setUserToDelete(null)}
