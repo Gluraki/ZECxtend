@@ -62,10 +62,6 @@ export default function Page() {
 
     // Clear manual inputs
     setManualAttemptTime(null);
-    setEspStart1Input("");
-    setEspStart2Input("");
-    setEspFinish1Input("");
-    setEspFinish2Input("");
 
     // Clear numbers
     SetPenaltyCount(0);
