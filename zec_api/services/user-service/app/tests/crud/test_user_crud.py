@@ -29,9 +29,9 @@ def test_create_user(db):
     assert user.username == "newuser"
     assert user.kc_id == "kc-12345"
 
-def test_get_user_by_username():
-    user = get_user_by_username("testuser")
-    assert user["username"] == "testuser"
+def test_get_user_by_username(db, seeded_user):
+    user = get_user_by_username(db=db, username="testuser")
+    assert user.username == "testuser"
 
 def test_update_user(db, seeded_user):
     updated = update_user(
@@ -39,7 +39,7 @@ def test_update_user(db, seeded_user):
         user_id=seeded_user.kc_id,
         request=UpdateUserKC(username="updated"),
     )
-    assert updated["username"] == "updated"
+    assert updated.username == "updated"
 
 def test_delete_user(db, seeded_user):
     deleted = delete_user(db=db, user_id=seeded_user.kc_id)
