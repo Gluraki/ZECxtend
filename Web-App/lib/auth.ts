@@ -30,6 +30,8 @@ export class AuthService {
   private static ACCESS_TOKEN_KEY = 'access_token';
   private static REFRESH_TOKEN_KEY = 'refresh_token';
   private static TOKEN_EXPIRY_KEY = 'token_expiry';
+  private static REFRESH_TOKEN_EXPIRY_KEY = 'refresh_token_expiry';
+  private static refreshPromise: Promise<TokenData> | null = null;
 
   static async login(username: string, password: string): Promise<TokenData> {
     const formData = new FormData();
@@ -62,9 +64,27 @@ export class AuthService {
   }
 
   static async refresh(): Promise<TokenData> {
+    if (this.refreshPromise) {
+      return this.refreshPromise;
+    }
+
+    this.refreshPromise = this._doRefresh().finally(() => {
+      this.refreshPromise = null;
+    });
+
+    return this.refreshPromise;
+  }
+
+  private static async _doRefresh(): Promise<TokenData> {
     const refreshToken = this.getRefreshToken();
     if (!refreshToken) {
+      this._expireSession();
       throw new Error('No refresh token available');
+    }
+
+    if (this.isRefreshTokenExpired()) {
+      this._expireSession();
+      throw new Error('Refresh token has expired');
     }
 
     const formData = new FormData();
@@ -79,7 +99,7 @@ export class AuthService {
       });
 
       if (!response.ok) {
-        this.clearTokens();
+        this._expireSession();
         throw new Error('Token refresh failed');
       }
 
@@ -87,17 +107,27 @@ export class AuthService {
       this.saveTokens(tokenData);
       return tokenData;
     } catch (error) {
-      this.clearTokens();
+      if (this.getRefreshToken()) {
+        this._expireSession();
+      }
       throw error;
     }
+  }
+
+  private static _expireSession(): void {
+    this.clearTokens();
+    window.dispatchEvent(new Event('auth:session-expired'));
   }
 
   static saveTokens(tokenData: TokenData): void {
     localStorage.setItem(this.ACCESS_TOKEN_KEY, tokenData.access_token);
     localStorage.setItem(this.REFRESH_TOKEN_KEY, tokenData.refresh_token);
-    
+
     const expiryTime = Date.now() + tokenData.expires_in * 1000;
     localStorage.setItem(this.TOKEN_EXPIRY_KEY, expiryTime.toString());
+
+    const refreshExpiryTime = Date.now() + tokenData.refresh_expires_in * 1000;
+    localStorage.setItem(this.REFRESH_TOKEN_EXPIRY_KEY, refreshExpiryTime.toString());
   }
 
   static getAccessToken(): string | null {
@@ -112,10 +142,17 @@ export class AuthService {
     localStorage.removeItem(this.ACCESS_TOKEN_KEY);
     localStorage.removeItem(this.REFRESH_TOKEN_KEY);
     localStorage.removeItem(this.TOKEN_EXPIRY_KEY);
+    localStorage.removeItem(this.REFRESH_TOKEN_EXPIRY_KEY);
   }
 
   static isTokenExpired(): boolean {
     const expiry = localStorage.getItem(this.TOKEN_EXPIRY_KEY);
+    if (!expiry) return true;
+    return Date.now() >= parseInt(expiry);
+  }
+
+  static isRefreshTokenExpired(): boolean {
+    const expiry = localStorage.getItem(this.REFRESH_TOKEN_EXPIRY_KEY);
     if (!expiry) return true;
     return Date.now() >= parseInt(expiry);
   }
@@ -129,7 +166,6 @@ export class AuthService {
       await this.refresh();
       return this.getAccessToken();
     } catch (error) {
-      this.clearTokens();
       return null;
     }
   }
@@ -154,7 +190,7 @@ export class AuthService {
       for (const resource of Object.values(decoded.resource_access)) {
         if (resource.roles && resource.roles.length > 0) {
           const commonRoles = ['ADMIN', 'TEAM_LEAD', 'VIEWER'];
-          const foundRole = resource.roles.find(role => 
+          const foundRole = resource.roles.find(role =>
             commonRoles.includes(role.toUpperCase())
           );
           if (foundRole) {
@@ -189,8 +225,9 @@ export async function authenticatedFetch(
   options: RequestInit = {}
 ): Promise<Response> {
   const token = await AuthService.getValidToken();
-  
+
   if (!token) {
+    window.dispatchEvent(new Event('auth:session-expired'));
     throw new Error('Not authenticated');
   }
 
@@ -213,7 +250,7 @@ export async function publicFetch(
   options: RequestInit = {}
 ): Promise<Response> {
   const headers = new Headers(options.headers);
-  
+
   if (!(options.body instanceof FormData)) {
     if (!headers.has('Content-Type')) {
       headers.set('Content-Type', 'application/json');

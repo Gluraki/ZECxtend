@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { User } from "lucide-react"
 import { AuthService } from "@/lib/auth"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
@@ -24,9 +23,10 @@ interface Props {
   user: User | null
   onLoginSuccess: (user: User) => void
   onLogout: () => void
+  sessionMessage?: string | null
 }
 
-export default function LoginTab({ isLoggedIn, user, onLoginSuccess, onLogout }: Props) {
+export default function LoginTab({ isLoggedIn, user, onLoginSuccess, onLogout, sessionMessage }: Props) {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
@@ -88,12 +88,18 @@ export default function LoginTab({ isLoggedIn, user, onLoginSuccess, onLogout }:
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
+            {sessionMessage && !error && (
+              <Alert variant="default" className="border-yellow-500 text-yellow-700 bg-yellow-50">
+                <AlertDescription>{sessionMessage}</AlertDescription>
+              </Alert>
+            )}
+
             {error && (
               <Alert variant="destructive">
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-            
+
             <div className="space-y-2">
               <Label htmlFor="username">Username</Label>
               <Input
@@ -106,7 +112,7 @@ export default function LoginTab({ isLoggedIn, user, onLoginSuccess, onLogout }:
                 disabled={isLoading}
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <Input
@@ -119,7 +125,7 @@ export default function LoginTab({ isLoggedIn, user, onLoginSuccess, onLogout }:
                 disabled={isLoading}
               />
             </div>
-            
+
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? "Logging in..." : "Login"}
             </Button>

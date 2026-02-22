@@ -23,6 +23,7 @@ export default function Webapp() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [activeTab, setActiveTab] = useState<Tabs>("leaderboard")
+  const [sessionMessage, setSessionMessage] = useState<string | null>(null)
   const permissions = getPermissions(currentUser?.role || null)
 
   useEffect(() => {
@@ -31,30 +32,39 @@ export default function Webapp() {
       if (token) {
         const username = AuthService.getUsername(token)
         const role = AuthService.getUserRole(token)
-        
+
         if (username && role) {
-          const user = {
-            id: username,
-            username,
-            role,
-          }
+          const user = { id: username, username, role }
           setCurrentUser(user)
           setIsLoggedIn(true)
           setActiveTab(getDefaultTab(role))
         }
       }
     }
+
+    const handleSessionExpired = () => {
+      AuthService.clearTokens()
+      setCurrentUser(null)
+      setIsLoggedIn(false)
+      setActiveTab("login")
+      setSessionMessage("Your session has expired. Please log in again.")
+    }
+
+    window.addEventListener('auth:session-expired', handleSessionExpired)
+    return () => window.removeEventListener('auth:session-expired', handleSessionExpired)
   }, [])
 
   const handleLoginSuccess = (user: User) => {
     setCurrentUser(user)
     setIsLoggedIn(true)
+    setSessionMessage(null) // Clear any session expiry message on fresh login
     setActiveTab(getDefaultTab(user.role))
   }
 
   const handleLogout = () => {
     setCurrentUser(null)
     setIsLoggedIn(false)
+    setSessionMessage(null)
     setActiveTab("login")
   }
 
@@ -67,8 +77,8 @@ export default function Webapp() {
   }
 
   return (
-    <SideBarLayout 
-      activeTab={activeTab} 
+    <SideBarLayout
+      activeTab={activeTab}
       setActiveTab={handleTabChange}
       userRole={currentUser?.role}
     >
@@ -102,6 +112,7 @@ export default function Webapp() {
           user={currentUser}
           onLoginSuccess={handleLoginSuccess}
           onLogout={handleLogout}
+          sessionMessage={sessionMessage}  // FIX 5: pass message down
         />
       )}
     </SideBarLayout>
