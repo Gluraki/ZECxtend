@@ -1,5 +1,6 @@
 import requests
 import time
+import jwt
 from app.core.config import settings
 from app.schemas.user import CreateUserKC, UpdateUserKC, UserResponseKC
 from app.models.user import User
@@ -11,6 +12,7 @@ from app.exceptions.exceptions import (
     InvalidOperationError,
     ServiceError,
     EntityAlreadyExistsError,
+    InvalidTokenError,
 )
 
 KC_USER_URL = settings.KEYCLOAK_USER_URL
@@ -348,3 +350,12 @@ def get_all_users(db: SessionDep) -> list[UserResponseKC]:
         raise ServiceError("Unable to resolve client")
     client_uuid = client_resp.json()[0]["id"]
     return [_build_user_response(db, kc_user, client_uuid) for kc_user in kc_users]
+
+def get_current_user(db: SessionDep, authorization: str) -> UserResponseKC:
+    token = authorization.split(" ")[1]
+    decoded = jwt.decode(token, options={"verify_signature": False})
+    username = decoded.get("preferred_username") or decoded.get("sub")
+    if not username:
+        raise InvalidTokenError("Username not found in token")
+    user = get_user_by_username(db=db, username=username)
+    return user

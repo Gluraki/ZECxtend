@@ -204,3 +204,14 @@ Removes one or more roles from a user.
 - `403 Forbidden`: Insufficient permissions
 - `404 Not Found`: User or role not found
 - `422 Unprocessable Entity`: Validation error
+
+## Get Current User
+Gets the current user.
+
+**Authorization:** Authenticated user required  
+**Method:** `GET`  
+**URL:** `http://hostname/users/me`
+
+### Responses
+- `200 OK`: Roles successfully removed
+- `401 Unauthorized`: Missing or invalid token

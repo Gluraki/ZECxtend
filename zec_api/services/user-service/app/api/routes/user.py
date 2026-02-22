@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+from fastapi import Header
 from app.schemas.user import CreateUserKC, UpdateUserKC, UserRolesRequest, UserResponseKC
 from app.crud import user as crud
 from app.database.dependency import SessionDep
@@ -52,3 +53,8 @@ def get_user_by_id(db: SessionDep, id: str):
 def get_all_users(db: SessionDep):
     users = crud.get_all_users(db=db)
     return users
+
+@router.get("/me", response_model=UserResponseKC)
+def get_current_user(db: SessionDep, authorization: str = Header(...)):
+    current_user = crud.get_current_user(db=db, authorization=authorization)
+    return current_user
