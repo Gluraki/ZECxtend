@@ -55,8 +55,8 @@ services:
       KEYCLOAK_REALM: zec-realm
       KEYCLOAK_CLIENT_ID: login-client
       KEYCLOAK_ADMIN_CLIENT_ID: user-admin-client
-      KEYCLOAK_ADMIN_CLIENT_SECRET: ydwaEhM0mRjYhCmogwjClRNZkJpWduEF
-      KEYCLOAK_CLIENT_SECRET: TTEqyMjY9CsH3xWHxbjVTbpp6qzofd3m
+      KEYCLOAK_ADMIN_CLIENT_SECRET: FzF2Bqb7NnmXECNfkzaE3Bx6mc176Yen
+      KEYCLOAK_CLIENT_SECRET: ESW6xtI8MjLN7dW35ZKq7h1Ex2z9lgaF
       KEYCLOAK_TOKEN_URL: http://keycloak:8080/realms/zec-realm/protocol/openid-connect/token
       KEYCLOAK_JWKS_URL: http://keycloak:8080/realms/zec-realm/protocol/openid-connect/certs
       KEYCLOAK_USER_URL: http://keycloak:8080/admin/realms/zec-realm/users
