@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Query
 from typing import List
 from app.database.dependency import SessionDep
 from app.schemas.driver import DriverCreate, DriverUpdate, DriverResponse
@@ -34,4 +34,9 @@ def get_all_drivers(db: SessionDep):
 @router.get("/team/{team_id}", response_model=List[DriverResponse])
 def get_drivers_by_team(db: SessionDep, team_id: int, request: Request):
     drivers = crud.get_drivers_by_team(db=db, team_id=team_id, request=request)
+    return drivers
+
+@router.get("/by-ids/", response_model=List[DriverResponse])
+def get_drivers_by_ids(db: SessionDep, driver_ids: List[int] = Query(...)):
+    drivers = crud.get_drivers_by_ids(db=db, driver_ids=driver_ids)
     return drivers

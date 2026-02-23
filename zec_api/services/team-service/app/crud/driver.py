@@ -115,3 +115,6 @@ def get_drivers_by_team(*, db: SessionDep, team_id: int, request: Request):
             message=f"No drivers found for team with id {team_id}"
         )
     return db_drivers
+
+def get_drivers_by_ids(*, db: SessionDep, driver_ids: list[int]):
+    return db.query(Driver).filter(Driver.id.in_(driver_ids)).all()
