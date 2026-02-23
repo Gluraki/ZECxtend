@@ -1,35 +1,56 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
 import { Download, Loader2 } from "lucide-react"
 import { toast } from "sonner"
+import { leaderboardApi, TeamCategory } from "@/lib/api/leaderboard"
+import { attemptsApi } from "@/lib/api/attempts"
+import { challengesApi, type Challenge } from "@/lib/api/challenges"
+
+const CATEGORY_LABELS: Record<TeamCategory, string> = {
+  [TeamCategory.CLOSE_TO_SERIES]: "Close to Series",
+  [TeamCategory.ADVANCED_CLASS]: "Advanced Class",
+  [TeamCategory.PROFESSIONAL_CLASS]: "Professional Class",
+}
 
 export default function ExportTab() {
-  const [leaderboardFormat, setLeaderboardFormat] = useState<"csv" | "pdf">("csv")
-  const [AttemptsRange, setAttemptsRange] = useState<"today" | "week">("today")
+  const [challenges, setChallenges] = useState<Challenge[]>([])
+  const [selectedChallenge, setSelectedChallenge] = useState<number | null>(null)
+  const [isLoadingChallenges, setIsLoadingChallenges] = useState(false)
+
+  const [leaderboardFormat, setLeaderboardFormat] = useState<"csv" | "xlsx">("csv")
+  const [leaderboardCategory, setLeaderboardCategory] = useState<TeamCategory>(TeamCategory.ADVANCED_CLASS)
   const [isExportingLeaderboard, setIsExportingLeaderboard] = useState(false)
+
+  const [attemptsFormat, setAttemptsFormat] = useState<"csv" | "xlsx">("csv")
+  const [attemptsCategory, setAttemptsCategory] = useState<string>("all")
   const [isExportingAttempts, setIsExportingAttempts] = useState(false)
 
+  useEffect(() => {
+    const loadChallenges = async () => {
+      setIsLoadingChallenges(true)
+      try {
+        const data = await challengesApi.listChallenges()
+        setChallenges(data)
+        if (data.length > 0) setSelectedChallenge(data[0].id)
+      } catch {
+        toast.error("Failed to load challenges")
+      } finally {
+        setIsLoadingChallenges(false)
+      }
+    }
+    loadChallenges()
+  }, [])
+
   const handleExportLeaderboard = async () => {
+    if (!selectedChallenge) return toast.error("Select a challenge first")
     setIsExportingLeaderboard(true)
     try {
-      toast.success(`Exporting leaderboard as ${leaderboardFormat.toUpperCase()}...`)
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      toast.success("Leaderboard exported successfully!")
+      await leaderboardApi.exportLeaderboard(selectedChallenge, leaderboardCategory, leaderboardFormat)
+      toast.success("Leaderboard exported!")
     } catch (error: any) {
       toast.error(error.message || "Failed to export leaderboard")
     } finally {
@@ -38,20 +59,17 @@ export default function ExportTab() {
   }
 
   const handleExportAttempts = async () => {
+    if (!selectedChallenge) return toast.error("Select a challenge first")
     setIsExportingAttempts(true)
     try {
-      const today = new Date()
-      let fromDate = new Date()
-      if (AttemptsRange === "today") {
-        fromDate.setHours(0, 0, 0, 0)
-      } else if (AttemptsRange === "week") {
-        fromDate.setDate(today.getDate() - 7)
-      }
-      toast.success(`Exporting Attempts for ${AttemptsRange === "today" ? "today" : "this week"}...`)
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      toast.success("Attempts exported successfully!")
+      await attemptsApi.exportAttempts(
+        selectedChallenge,
+        attemptsFormat,
+        attemptsCategory === "all" ? undefined : attemptsCategory
+      )
+      toast.success("Attempts exported!")
     } catch (error: any) {
-      toast.error(error.message || "Failed to export Attempts")
+      toast.error(error.message || "Failed to export attempts")
     } finally {
       setIsExportingAttempts(false)
     }
@@ -61,85 +79,105 @@ export default function ExportTab() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-semibold">Data Export</h2>
+        <Select
+          value={selectedChallenge?.toString()}
+          onValueChange={(v) => setSelectedChallenge(parseInt(v))}
+          disabled={isLoadingChallenges}
+        >
+          <SelectTrigger className="w-64">
+            <SelectValue placeholder="Select challenge" />
+          </SelectTrigger>
+          <SelectContent>
+            {challenges.map((c) => (
+              <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
+        {/* Leaderboard Export */}
         <Card>
-          <CardHeader>
-            <CardTitle>Leaderboard Export</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle>Leaderboard Export</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="leaderboard-format">Format</Label>
+              <Label>Category</Label>
+              <Select
+                value={leaderboardCategory}
+                onValueChange={(v) => setLeaderboardCategory(v as TeamCategory)}
+              >
+                <SelectTrigger className="mt-2"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {Object.values(TeamCategory).map((cat) => (
+                    <SelectItem key={cat} value={cat}>{CATEGORY_LABELS[cat]}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Format</Label>
               <Select
                 value={leaderboardFormat}
-                onValueChange={(value) => setLeaderboardFormat(value as "csv" | "pdf")}
+                onValueChange={(v) => setLeaderboardFormat(v as "csv" | "xlsx")}
               >
-                <SelectTrigger id="leaderboard-format" className="mt-2">
-                  <SelectValue />
-                </SelectTrigger>
+                <SelectTrigger className="mt-2"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="csv">CSV</SelectItem>
-                  <SelectItem value="pdf">PDF</SelectItem>
+                  <SelectItem value="xlsx">Excel</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <Button
               onClick={handleExportLeaderboard}
-              disabled={isExportingLeaderboard}
+              disabled={isExportingLeaderboard || !selectedChallenge}
               className="w-full flex items-center gap-2"
             >
-              {isExportingLeaderboard ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Exporting...
-                </>
-              ) : (
-                <>
-                  <Download className="h-4 w-4" />
-                  Export Leaderboard
-                </>
-              )}
+              {isExportingLeaderboard
+                ? <><Loader2 className="h-4 w-4 animate-spin" />Exporting...</>
+                : <><Download className="h-4 w-4" />Export Leaderboard</>
+              }
             </Button>
           </CardContent>
         </Card>
 
+        {/* Attempts Export */}
         <Card>
-          <CardHeader>
-            <CardTitle>Attempts Export</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle>Attempts Export</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="race-data-range">Date Range</Label>
-              <Select
-                value={AttemptsRange}
-                onValueChange={(value) => setAttemptsRange(value as "today" | "week")}
-              >
-                <SelectTrigger id="race-data-range" className="mt-2">
-                  <SelectValue />
-                </SelectTrigger>
+              <Label>Category <span className="text-muted-foreground text-xs">(optional)</span></Label>
+              <Select value={attemptsCategory} onValueChange={setAttemptsCategory}>
+                <SelectTrigger className="mt-2"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="today">Today</SelectItem>
-                  <SelectItem value="week">This Week</SelectItem>
+                  <SelectItem value="all">All categories</SelectItem>
+                  {Object.values(TeamCategory).map((cat) => (
+                    <SelectItem key={cat} value={cat}>{CATEGORY_LABELS[cat]}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Format</Label>
+              <Select
+                value={attemptsFormat}
+                onValueChange={(v) => setAttemptsFormat(v as "csv" | "xlsx")}
+              >
+                <SelectTrigger className="mt-2"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="csv">CSV</SelectItem>
+                  <SelectItem value="xlsx">Excel</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <Button
               onClick={handleExportAttempts}
-              disabled={isExportingAttempts}
+              disabled={isExportingAttempts || !selectedChallenge}
               className="w-full flex items-center gap-2"
             >
-              {isExportingAttempts ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Exporting...
-                </>
-              ) : (
-                <>
-                  <Download className="h-4 w-4" />
-                  Export Attempts
-                </>
-              )}
+              {isExportingAttempts
+                ? <><Loader2 className="h-4 w-4 animate-spin" />Exporting...</>
+                : <><Download className="h-4 w-4" />Export Attempts</>
+              }
             </Button>
           </CardContent>
         </Card>

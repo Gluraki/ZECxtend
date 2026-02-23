@@ -1,4 +1,5 @@
 import { authenticatedFetch } from "@/lib/auth"
+import { triggerDownload } from "@/lib/utils/export"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
 
@@ -25,8 +26,8 @@ export const attemptsApi = {
   async listAttempts(): Promise<Attempt[]> {
     const response = await authenticatedFetch(`${API_BASE_URL}/attempts/`)
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ detail: 'Failed to fetch attempts' }))
-      throw new Error(error.detail || 'Failed to fetch attempts')
+      const error = await response.json().catch(() => ({ detail: "Failed to fetch attempts" }))
+      throw new Error(error.detail || "Failed to fetch attempts")
     }
     return response.json()
   },
@@ -34,8 +35,8 @@ export const attemptsApi = {
   async getAttemptById(id: number): Promise<Attempt> {
     const response = await authenticatedFetch(`${API_BASE_URL}/attempts/${id}`)
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ detail: 'Attempt not found' }))
-      throw new Error(error.detail || 'Attempt not found')
+      const error = await response.json().catch(() => ({ detail: "Attempt not found" }))
+      throw new Error(error.detail || "Attempt not found")
     }
     return response.json()
   },
@@ -43,8 +44,8 @@ export const attemptsApi = {
   async getAttemptsForChallenge(challengeId: number): Promise<Attempt[]> {
     const response = await authenticatedFetch(`${API_BASE_URL}/attempts/challenges/${challengeId}`)
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ detail: 'Failed to fetch attempts' }))
-      throw new Error(error.detail || 'Failed to fetch attempts')
+      const error = await response.json().catch(() => ({ detail: "Failed to fetch attempts" }))
+      throw new Error(error.detail || "Failed to fetch attempts")
     }
     return response.json()
   },
@@ -52,8 +53,8 @@ export const attemptsApi = {
   async getFastestAttempt(challengeId: number): Promise<Attempt> {
     const response = await authenticatedFetch(`${API_BASE_URL}/attempts/fastest/${challengeId}`)
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ detail: 'No attempts found' }))
-      throw new Error(error.detail || 'No attempts found')
+      const error = await response.json().catch(() => ({ detail: "No attempts found" }))
+      throw new Error(error.detail || "No attempts found")
     }
     return response.json()
   },
@@ -63,8 +64,8 @@ export const attemptsApi = {
       `${API_BASE_URL}/attempts/fastest/per-team/?challenge_id=${challengeId}&team_id=${teamId}`
     )
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ detail: 'No attempts found' }))
-      throw new Error(error.detail || 'No attempts found')
+      const error = await response.json().catch(() => ({ detail: "No attempts found" }))
+      throw new Error(error.detail || "No attempts found")
     }
     return response.json()
   },
@@ -72,8 +73,8 @@ export const attemptsApi = {
   async getLeastEnergyAttempt(challengeId: number): Promise<Attempt> {
     const response = await authenticatedFetch(`${API_BASE_URL}/attempts/least-energy/${challengeId}`)
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ detail: 'No attempts found' }))
-      throw new Error(error.detail || 'No attempts found')
+      const error = await response.json().catch(() => ({ detail: "No attempts found" }))
+      throw new Error(error.detail || "No attempts found")
     }
     return response.json()
   },
@@ -83,31 +84,50 @@ export const attemptsApi = {
       `${API_BASE_URL}/attempts/least-energy/per-team/?challenge_id=${challengeId}&team_id=${teamId}`
     )
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ detail: 'No attempts found' }))
-      throw new Error(error.detail || 'No attempts found')
+      const error = await response.json().catch(() => ({ detail: "No attempts found" }))
+      throw new Error(error.detail || "No attempts found")
     }
     return response.json()
   },
 
   async updateAttempt(id: number, data: AttemptUpdate): Promise<Attempt> {
     const response = await authenticatedFetch(`${API_BASE_URL}/attempts/${id}`, {
-      method: 'PUT',
+      method: "PUT",
       body: JSON.stringify(data),
     })
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ detail: 'Failed to update attempt' }))
-      throw new Error(error.detail || 'Failed to update attempt')
+      const error = await response.json().catch(() => ({ detail: "Failed to update attempt" }))
+      throw new Error(error.detail || "Failed to update attempt")
     }
     return response.json()
   },
 
   async deleteAttempt(id: number): Promise<void> {
     const response = await authenticatedFetch(`${API_BASE_URL}/attempts/${id}`, {
-      method: 'DELETE',
+      method: "DELETE",
     })
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ detail: 'Failed to delete attempt' }))
-      throw new Error(error.detail || 'Failed to delete attempt')
+      const error = await response.json().catch(() => ({ detail: "Failed to delete attempt" }))
+      throw new Error(error.detail || "Failed to delete attempt")
     }
+  },
+
+  async exportAttempts(
+    challengeId: number,
+    format: "csv" | "xlsx",
+    category?: string
+  ): Promise<void> {
+    const params = new URLSearchParams({ challenge_id: String(challengeId), format })
+    if (category) params.append("category", category)
+
+    const response = await authenticatedFetch(
+      `${API_BASE_URL}/export/attempts?${params}`
+    )
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ detail: "Failed to export attempts" }))
+      throw new Error(error.detail || "Failed to export attempts")
+    }
+    const blob = await response.blob()
+    triggerDownload(blob, `attempts_challenge${challengeId}.${format}`)
   },
 }
