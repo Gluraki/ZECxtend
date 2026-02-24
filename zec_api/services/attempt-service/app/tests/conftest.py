@@ -5,6 +5,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from unittest.mock import patch, Mock
 from datetime import datetime, timedelta, timezone
+
 os.environ.setdefault("ENVIRONMENT", "testing")
 os.environ.setdefault("PROJECT_NAME", "test")
 os.environ.setdefault("POSTGRES_SERVER", "localhost")
@@ -14,6 +15,7 @@ os.environ.setdefault("POSTGRES_DB", "test")
 os.environ.setdefault("TEAM_SERVICE_URL", "http://team-service")
 os.environ.setdefault("CHALLENGE_SERVICE_URL", "http://challenge-service")
 os.environ.setdefault("SCORE_SERVICE_URL", "http://score-service")
+
 from app.main import app
 from app.database.session import Base
 from app.database.dependency import get_db
@@ -32,6 +34,7 @@ TestingSessionLocal = sessionmaker(
     bind=engine,
 )
 
+
 @pytest.fixture(scope="function")
 def db():
     Base.metadata.create_all(bind=engine)
@@ -42,6 +45,7 @@ def db():
         session.rollback()
         session.close()
         Base.metadata.drop_all(bind=engine)
+
 
 @pytest.fixture(scope="function")
 def seeded_attempts(db):
@@ -70,33 +74,44 @@ def seeded_attempts(db):
     db.commit()
     return attempts
 
+
 @pytest.fixture(autouse=True)
 def mock_requests():
-    with patch("app.crud.attempt.requests") as mock_requests:
+    with patch("app.crud.attempt.requests") as mock_attempt, \
+         patch("app.crud.export.requests") as mock_export:
+
         def mock_get(url, *args, **kwargs):
             response = Mock()
             response.status_code = 200
-
             if "/api/challenges/" in url:
-                response.json.return_value = {
-                    "id": 1,
-                    "max_attempts": 3,
-                }
+                response.json.return_value = {"id": 1, "max_attempts": 3, "name": "Speed Run"}
+            elif "/api/teams/by-ids/" in url:
+                response.json.return_value = [{"id": 1, "name": "Team Alpha", "category": "A"}]
             elif "/api/teams/" in url:
                 response.json.return_value = {"id": 1}
+            elif "/api/drivers/by-ids/" in url:
+                response.json.return_value = [
+                    {"id": 1, "name": "Alice", "weight": 60},
+                    {"id": 2, "name": "Bob", "weight": 75},
+                ]
             elif "/api/drivers/" in url:
                 response.json.return_value = {"id": 1}
             else:
                 response.json.return_value = {}
             return response
+
         def mock_response(*args, **kwargs):
             response = Mock()
             response.status_code = 200
             return response
-        mock_requests.get.side_effect = mock_get
-        mock_requests.post.side_effect = mock_response
-        mock_requests.delete.side_effect = mock_response
-        yield mock_requests
+
+        for m in (mock_attempt, mock_export):
+            m.get.side_effect = mock_get
+            m.post.side_effect = mock_response
+            m.delete.side_effect = mock_response
+
+        yield mock_attempt, mock_export
+
 
 @pytest.fixture(scope="function")
 def client(db, seeded_attempts, mock_requests):
