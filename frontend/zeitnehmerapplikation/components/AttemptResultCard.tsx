@@ -5,12 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import axios from "axios"
 import { SERVER_API_URL, API_KEY } from "@/lib/env"
-import { Attempt, Penalty } from "@/components/types"
+import { Attempt, Penalty, Driver, Team, Challenge } from "@/components/types"
 
 interface AttemptResultCardProps {
-    selectedTeam: { id: number } | null
-    selectedDriver: { id: number } | null
-    selectedChallenge: { id: number } | null
+    selectedTeam: Team | null
+    selectedDriver: Driver | null
+    selectedChallenge: Challenge | null
     medianStartTimestamp: string
     medianEndTimestamp: string
     manualAttemptTime: string | null
@@ -153,9 +153,14 @@ export function AttemptResultCard({
                 <CardTitle>Result</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
-                <p>Result = {calcAttemptTime()}</p>
-                <p>Start time: {medianStartTimestamp}</p>
-                <p>End time: {medianEndTimestamp}</p>
+                <p className="bold text-2xl">Result = {calcAttemptTime()}</p>
+
+                <div className="flex flex-col gap-1">
+                    <p>Penalty = {selectedPenalty?.amount ?? 0} * {penaltyCount} = {selectedPenalty?.amount ?? 0 * penaltyCount}</p>
+                    <p>Challenge = {selectedChallenge?.name ?? "None"}</p>
+                    <p>Team = {selectedTeam?.name ?? "None"}</p>
+                    <p>Driver = {selectedDriver?.name ?? "None"}</p>
+                </div>
                 <Button variant="outline" onClick={createAttempt}>
                     Submit
                 </Button>

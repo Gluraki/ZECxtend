@@ -1,5 +1,6 @@
 'use client'
 
+import React from "react";
 import axios from "axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useEffect, useState } from "react";
@@ -15,6 +16,7 @@ import { TimestampSelector } from "@/components/TimestampSelector";
 import { AttemptResultCard } from "@/components/AttemptResultCard";
 import { Team, Challenge, Penalty, ConnectionStatus, Driver } from "@/components/types"
 import { medianTimestamp } from "@/components/medianTimestamp";
+import { ManualAttemptTimeInput } from "@/components/ManualInput";
 
 export default function Page() {
   const [teams, setTeams] = useState<Team[]>([]);
@@ -193,7 +195,6 @@ export default function Page() {
       <ZECHeader />
 
       <div className="grid grid-cols-1 md:grid-cols-3 mb-4 gap-6">
-        {/* Challenge */}
         <SelectionCard<Challenge>
           title="Challenge"
           items={challenges}
@@ -201,7 +202,21 @@ export default function Page() {
           onSelect={setSelectedChallenge}
         />
 
-        {/* Team */}
+        <SelectionCard<Penalty>
+          title="Penalty"
+          items={penalties}
+          selectedItem={selectedPenalty}
+          onSelect={setSelectedPenalty}
+          getDisplayName={(p) => `${p.type ?? 'Penalty'} (${p.amount}s)`}
+        />
+
+        <ConnectionStatusCard
+          status={connectionStatus}
+          setStatus={setConnectionStatus}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 md:grid-rows-2 mb-4 gap-6">
         <SelectionCard<Team>
           title="Team"
           items={teams}
@@ -210,6 +225,13 @@ export default function Page() {
             setSelectedTeam(team)
             fetchDriversForTeam(team?.id)
           }}
+        />
+
+        <SelectionCard<Driver>
+          title="Drivers"
+          items={drivers}
+          selectedItem={selectedDriver}
+          onSelect={setSelectedDriver}
         />
 
         <Card className="md:row-span-2">
@@ -271,35 +293,12 @@ export default function Page() {
           </CardContent>
         </Card>
 
-        {/* Penalty */}
-        <SelectionCard<Penalty>
-          title="Penalty"
-          items={penalties}
-          selectedItem={selectedPenalty}
-          onSelect={setSelectedPenalty}
-          getDisplayName={(p) => `${p.type ?? 'Penalty'} (${p.amount}s)`}
-        />
-
-        <ConnectionStatusCard
-          status={connectionStatus}
-          setStatus={setConnectionStatus}
-        />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 mb-4 gap-6">
         <NumberInputCard
           title="Penalty Count"
           value={penaltyCount}
           onChange={(value) => SetPenaltyCount(value ?? 0)}
           placeholder="Amount of Penalties"
           kind="int"
-        />
-
-        <SelectionCard<Driver>
-          title="Drivers"
-          items={drivers}
-          selectedItem={selectedDriver}
-          onSelect={setSelectedDriver}
         />
 
         <NumberInputCard
@@ -330,6 +329,13 @@ export default function Page() {
               selectedTimestamps={selectedEndTimestamps ?? []}
               setSelectedTimestamps={setSelectedEndTimestamps}
             />
+
+            <div className="flex flex-col gap-2 mt-4">
+              <ManualAttemptTimeInput
+                value={manualAttemptTime}
+                onChange={setManualAttemptTime}
+              />
+            </div>
           </CardContent>
         </Card>
 
@@ -339,7 +345,6 @@ export default function Page() {
           manualAttemptTime={manualAttemptTime}
           penaltyCount={penaltyCount}
           selectedPenaltyAmount={selectedPenalty?.amount ?? 0}
-          setManualTimestamp={setManualAttemptTime}
         />
 
         <AttemptResultCard

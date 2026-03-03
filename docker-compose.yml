@@ -1,14 +1,4 @@
 services:
-  zec-mock-backend:
-    container_name: zec-mock-backend
-    build:
-      context: ./backend
-    restart: always
-    env_file:
-      - .env
-    ports:
-      - ${BACKEND_PORT_DESKTOP_APP}:${FLASK_PORT}
-
   zec-desktop-app-frontend:
     container_name: zec-desktop-app-frontend
     build:
@@ -36,6 +26,3 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
-
-volumes:
-  zec-db-data:
