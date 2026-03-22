@@ -57,7 +57,7 @@ export default function Webapp() {
   const handleLoginSuccess = (user: User) => {
     setCurrentUser(user)
     setIsLoggedIn(true)
-    setSessionMessage(null) // Clear any session expiry message on fresh login
+    setSessionMessage(null)
     setActiveTab(getDefaultTab(user.role))
   }
 
@@ -112,7 +112,7 @@ export default function Webapp() {
           user={currentUser}
           onLoginSuccess={handleLoginSuccess}
           onLogout={handleLogout}
-          sessionMessage={sessionMessage}  // FIX 5: pass message down
+          sessionMessage={sessionMessage}
         />
       )}
     </SideBarLayout>
