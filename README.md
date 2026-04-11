@@ -4,9 +4,9 @@ Fork/Extension of [Niklas-Maderbacher/zec-timing](https://github.com/Niklas-Made
 
 ## What This Is
 
-ZECxtend aims to fulfill what was originally planned for ZEC-timing while also serving as a playground for testing and learning.
+ZECxtend aims to fulfill and extend what was originally planned for ZEC-timing while also serving as a playground for testing and learning.
 
-## Featues
+## Features
 - Manage teams, drivers, and users in one system
 - Configure challenges and attempt rules for competitions
 - Capture and store attempts with timing and validity data
