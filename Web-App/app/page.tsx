@@ -47,7 +47,7 @@ export default function Webapp() {
       setCurrentUser(null)
       setIsLoggedIn(false)
       setActiveTab("login")
-      setSessionMessage("Your session has expired. Please log in again.")
+      setSessionMessage("Your session has expired. Please log in again1.")
     }
 
     window.addEventListener('auth:session-expired', handleSessionExpired)
