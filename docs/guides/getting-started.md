@@ -1,4 +1,4 @@
-# Getting Started with ZEC-API
+# Getting Started with API Server
 
 ## Prerequisites
 - Docker
@@ -17,7 +17,7 @@ Add `-d` to run in detached mode.
    - Default credentials: `admin` / `admin`
    - **Important:** Change these default credentials immediately after first login for security purposes
 2. Create a new realm by importing the configuration file:
-    - Location: `zec-api/config/keycloak/realm-export.json`
+    - Location: `api-server/config/keycloak/realm-export.json`
 3. Regenerate client secrets:
     - Switch to your newly created **zec-realm**
     - Go to clients
@@ -28,13 +28,13 @@ Add `-d` to run in detached mode.
 4. Update your environment variables with the new client secrets in your `.env` file or Docker environment configuration
 
 ### 3. Verify Installation
-Once configured, the ZEC-API should be running and ready to accept requests.
+Once configured, the API Server should be running and ready to accept requests.
 
 ---
 
-## What is ZEC-API?
+## What is the API Server?
 
-The ZEC-API is a RESTful API for managing racing challenges, teams, drivers, attempts, scores, and penalties.
+The API Server is a RESTful API for managing racing challenges, teams, drivers, attempts, scores, and penalties.
 
 ## API Documentation
 
