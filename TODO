@@ -1,0 +1,2 @@
+Manual - selected timestamp needs to be fixed
+In axios.post at Attempt the fractional seconds need to be added
