@@ -34,3 +34,6 @@ Service API docs:
 - Score Service: [docs/api/score_service.md](docs/api/score_service.md)
 - Team Service: [docs/api/team_service.md](docs/api/team_service.md)
 - User Service: [docs/api/user_service.md](docs/api/user_service.md)
+
+# Status
+Check out: [docs/status.md](docs/status.md)
