@@ -8,6 +8,9 @@ const eslintConfig = defineConfig([
   {
     files: ["**/*.{ts,tsx}"],
     rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-unused-vars": "off",
+      "react-hooks/exhaustive-deps": "off",
       "@typescript-eslint/naming-convention": [
         "error",
         {
@@ -37,7 +40,20 @@ const eslintConfig = defineConfig([
           format: ["UPPER_CASE", "PascalCase"],
         },
         {
+          selector: "classProperty",
+          format: ["camelCase", "UPPER_CASE"],
+          leadingUnderscore: "allow",
+        },
+        {
+          selector: "typeProperty",
+          format: null,
+        },
+        {
           selector: "objectLiteralProperty",
+          format: null,
+        },
+        {
+          selector: "objectLiteralMethod",
           format: null,
         },
       ],

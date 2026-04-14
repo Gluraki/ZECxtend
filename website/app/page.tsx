@@ -19,34 +19,70 @@ interface User {
   role: string
 }
 
+interface AuthState {
+  isLoggedIn: boolean
+  currentUser: User | null
+  activeTab: Tabs
+}
+
+function getInitialAuthState(): AuthState {
+  if (typeof window === "undefined") {
+    return {
+      isLoggedIn: false,
+      currentUser: null,
+      activeTab: "leaderboard",
+    }
+  }
+
+  if (!AuthService.isLoggedIn()) {
+    return {
+      isLoggedIn: false,
+      currentUser: null,
+      activeTab: "leaderboard",
+    }
+  }
+
+  const token = AuthService.getAccessToken()
+  if (!token) {
+    return {
+      isLoggedIn: false,
+      currentUser: null,
+      activeTab: "leaderboard",
+    }
+  }
+
+  const username = AuthService.getUsername(token)
+  const role = AuthService.getUserRole(token)
+  if (!username || !role) {
+    return {
+      isLoggedIn: false,
+      currentUser: null,
+      activeTab: "leaderboard",
+    }
+  }
+
+  const user = { id: username, username, role }
+  return {
+    isLoggedIn: true,
+    currentUser: user,
+    activeTab: getDefaultTab(role),
+  }
+}
+
 export default function Webapp() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [currentUser, setCurrentUser] = useState<User | null>(null)
-  const [activeTab, setActiveTab] = useState<Tabs>("leaderboard")
+  const [authState, setAuthState] = useState<AuthState>(() => getInitialAuthState())
+  const { isLoggedIn, currentUser, activeTab } = authState
   const [sessionMessage, setSessionMessage] = useState<string | null>(null)
   const permissions = getPermissions(currentUser?.role || null)
 
   useEffect(() => {
-    if (AuthService.isLoggedIn()) {
-      const token = AuthService.getAccessToken()
-      if (token) {
-        const username = AuthService.getUsername(token)
-        const role = AuthService.getUserRole(token)
-
-        if (username && role) {
-          const user = { id: username, username, role }
-          setCurrentUser(user)
-          setIsLoggedIn(true)
-          setActiveTab(getDefaultTab(role))
-        }
-      }
-    }
-
     const handleSessionExpired = () => {
       AuthService.clearTokens()
-      setCurrentUser(null)
-      setIsLoggedIn(false)
-      setActiveTab("login")
+      setAuthState({
+        isLoggedIn: false,
+        currentUser: null,
+        activeTab: "login",
+      })
       setSessionMessage("Your session has expired. Please log in again1.")
     }
 
@@ -55,22 +91,26 @@ export default function Webapp() {
   }, [])
 
   const handleLoginSuccess = (user: User) => {
-    setCurrentUser(user)
-    setIsLoggedIn(true)
+    setAuthState({
+      isLoggedIn: true,
+      currentUser: user,
+      activeTab: getDefaultTab(user.role),
+    })
     setSessionMessage(null)
-    setActiveTab(getDefaultTab(user.role))
   }
 
   const handleLogout = () => {
-    setCurrentUser(null)
-    setIsLoggedIn(false)
+    setAuthState({
+      isLoggedIn: false,
+      currentUser: null,
+      activeTab: "login",
+    })
     setSessionMessage(null)
-    setActiveTab("login")
   }
 
   const handleTabChange = (tab: Tabs) => {
     if (canAccessTab(currentUser?.role || null, tab)) {
-      setActiveTab(tab)
+      setAuthState((prev) => ({ ...prev, activeTab: tab }))
     } else {
       console.warn(`Access denied to tab: ${tab}`)
     }

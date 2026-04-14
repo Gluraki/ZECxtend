@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { AuthService } from '@/lib/auth'
 
 interface User {
@@ -7,32 +7,32 @@ interface User {
   role: string
 }
 
-export function useAuth() {
-  const [user, setUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    checkAuth()
-  }, [])
-
-  const checkAuth = () => {
-    if (AuthService.isLoggedIn()) {
-      const token = AuthService.getAccessToken()
-      if (token) {
-        const username = AuthService.getUsername(token)
-        const role = AuthService.getUserRole(token)
-        
-        if (username && role) {
-          setUser({
-            id: username,
-            username,
-            role,
-          })
-        }
-      }
-    }
-    setIsLoading(false)
+function getInitialUser(): User | null {
+  if (!AuthService.isLoggedIn()) {
+    return null
   }
+
+  const token = AuthService.getAccessToken()
+  if (!token) {
+    return null
+  }
+
+  const username = AuthService.getUsername(token)
+  const role = AuthService.getUserRole(token)
+  if (!username || !role) {
+    return null
+  }
+
+  return {
+    id: username,
+    username,
+    role,
+  }
+}
+
+export function useAuth() {
+  const [user, setUser] = useState<User | null>(() => getInitialUser())
+  const isLoading = false
 
   const login = async (username: string, password: string) => {
     const tokenData = await AuthService.login(username, password)
