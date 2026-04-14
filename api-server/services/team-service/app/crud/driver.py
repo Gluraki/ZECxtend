@@ -15,18 +15,30 @@ from app.schemas.driver import DriverCreate, DriverUpdate
 
 ATTEMPT_URL = settings.ATTEMPT_SERVICE_URL
 
-def check_driver_permissions(*, db: SessionDep, driver_id: int | None = None, team_id: int | None = None, request: Request):
+def check_driver_permissions(
+    *,
+    db: SessionDep,
+    driver_id: int | None = None,
+    team_id: int | None = None,
+    request: Request,
+):
     role = request.headers.get("X-Role")
     user_team_id = request.headers.get("X-Team-Id")
     if role == "TEAM_LEAD":
         if driver_id is not None:
             driver = get_driver_no_perm_check(db=db, driver_id=driver_id)
             if driver.team_id != int(user_team_id):
-                raise InsufficientPermissions(f"Teamleads can only operate on drivers in their own team. Driver {driver.name} does not belong to the same team as the user")
+                raise InsufficientPermissions(
+                    "Teamleads can only operate on drivers in their own team. "
+                    f"Driver {driver.name} does not belong to the same team as the user"
+                )
             return None
         elif team_id is not None:
             if team_id != int(user_team_id):
-                raise InsufficientPermissions("Teamleads can only operate on their own team. Attempted to operate on a team that he is not assigned to")
+                raise InsufficientPermissions(
+                    "Teamleads can only operate on their own team. "
+                    "Attempted to operate on a team that he is not assigned to"
+                )
     return None
 
 def create_driver(*, db: SessionDep, driver: DriverCreate, request: Request):
@@ -83,7 +95,9 @@ def delete_driver(*, db: SessionDep, driver_id: int, request: Request):
         and db_attempts.get("detail") != "No attempts found for this driver [Attemptservice]"
     )
     if has_attempts:
-        raise InvalidOperationError(f"Cannot delete driver {driver_id} because they have made attempts")
+        raise InvalidOperationError(
+            f"Cannot delete driver {driver_id} because they have made attempts"
+        )
     try:
         db.delete(db_driver)
         db.commit()

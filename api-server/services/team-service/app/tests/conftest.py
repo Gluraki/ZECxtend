@@ -50,8 +50,20 @@ def seeded_data(db):
     from app.models.team import team_category
 
     teams = [
-        Team(category=team_category.close_to_series, name="Team A", vehicle_weight=300, mean_power=80, rfid_identifier="RFID_A"),
-        Team(category=team_category.advanced_class, name="Team B", vehicle_weight=320, mean_power=75, rfid_identifier="RFID_B"),
+        Team(
+            category=team_category.close_to_series,
+            name="Team A",
+            vehicle_weight=300,
+            mean_power=80,
+            rfid_identifier="RFID_A",
+        ),
+        Team(
+            category=team_category.advanced_class,
+            name="Team B",
+            vehicle_weight=320,
+            mean_power=75,
+            rfid_identifier="RFID_B",
+        ),
     ]
     db.add_all(teams)
     db.commit()

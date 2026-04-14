@@ -48,7 +48,11 @@ def create_attempt(*, db: SessionDep, attempt: AttemptCreate):
     db_challenge = requests.get(f"{CHALLENGE_URL}/api/challenges/{attempt.challenge_id}").json()
     if not db_challenge:
         raise EntityDoesNotExistError(f"Challenge {attempt.challenge_id} does not exist")
-    attempt_count = get_attempts_for_team_per_challenge(db=db, team_id=attempt.team_id, challenge_id=attempt.challenge_id)
+    attempt_count = get_attempts_for_team_per_challenge(
+        db=db,
+        team_id=attempt.team_id,
+        challenge_id=attempt.challenge_id,
+    )
     if len(attempt_count) >= db_challenge["max_attempts"]:
         raise ServiceError("Maximum attempts reached for this challenge")
     db_attempt = Attempt(

@@ -8,16 +8,19 @@ from sqlalchemy.orm import relationship
 from app.database.session import Base
 
 
-class team_category(Enum):
+class TeamCategory(Enum):
     close_to_series = "close_to_series"
     advanced_class = "advanced_class"
     professional_class = "professional_class"
+
+
+team_category = TeamCategory
 
 class Team(Base):
     __tablename__ = 'teams'
     
     id = Column(Integer, primary_key=True)
-    category = Column(SQLEnum(team_category), nullable=False)
+    category = Column(SQLEnum(TeamCategory), nullable=False)
     name = Column(String, nullable=False)
     vehicle_weight = Column(Float)
     mean_power = Column(Float)

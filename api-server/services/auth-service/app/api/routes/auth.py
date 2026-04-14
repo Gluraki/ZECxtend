@@ -14,7 +14,10 @@ def login(username: str = Form(...),password: str = Form(...)):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username and password are required")
     token_data = crud.keycloak_login(username, password)
     if not token_data:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Authentication service is unavailable")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Authentication service is unavailable",
+        )
     return token_data
 
 @router.post("/refresh")

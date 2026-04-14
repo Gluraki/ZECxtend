@@ -104,8 +104,8 @@ def mock_attempt_service(mock_penalty_requests):
 @pytest.fixture(scope="function")
 def mock_requests():
     with patch("app.crud.score.requests") as mock_score, \
-         patch("app.crud.penalty.requests") as mock_penalty, \
-         patch("app.crud.leaderboard.requests") as mock_leaderboard:
+         patch("app.crud.penalty.requests"), \
+         patch("app.crud.leaderboard.requests"):
         yield mock_score
 
 @pytest.fixture(scope="function")

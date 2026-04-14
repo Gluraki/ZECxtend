@@ -19,7 +19,10 @@ def check_team_permissions(*, db: SessionDep, team_id: int | None = None, reques
     user_team_id = request.headers.get("X-Team-Id")
     if role == "TEAM_LEAD" and team_id is not None:
         if int(team_id) != int(user_team_id):
-            raise InsufficientPermissions("Teamleads can only operate on their own team. Attempted to operate on a team that he is not assigned to")
+            raise InsufficientPermissions(
+                "Teamleads can only operate on their own team. "
+                "Attempted to operate on a team that he is not assigned to"
+            )
 
 def create_team(*, db: SessionDep, team: TeamCreate):
     try:

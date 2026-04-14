@@ -10,6 +10,5 @@ Copied over from old repo (zeitnehmerapplikation) without mqtt part no changes p
 # Todo
 - Change api-server folder structure
 - add tests to github actions
-- fix the linting errors (for api-server)
 - acutual api-server rewrites
 - docs and test changes for api-server
