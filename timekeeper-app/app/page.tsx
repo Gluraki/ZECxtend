@@ -2,7 +2,7 @@
 
 import axios from "axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { SERVER_API_URL, MQTT_WORKER_API_URL, API_KEY } from "@/lib/env";
 import { FormulaCard } from "@/components/FormulaCard";
@@ -139,55 +139,71 @@ export default function Page() {
   };
 
   // Fetch timestamps
-  const fetchStartTimestamps = async () => {
+  const fetchStartTimestamps = useCallback(async () => {
     if (!selectedChallenge) return;
     try {
-      const start_1 = await axios.get<{ timestamp: string[] }>(`${MQTT_WORKER_API_URL}/timestamps/${selectedChallenge.esp_mac_start1.replace(/:/g, '-')}`);
-      const start_2 = await axios.get<{ timestamp: string[] }>(`${MQTT_WORKER_API_URL}/timestamps/${selectedChallenge.esp_mac_start2.replace(/:/g, '-')}`);
-      const combined = [...(start_1.data.timestamp || []), ...(start_2.data.timestamp || [])];
+      const start1 = await axios.get<{ timestamp: string[] }>(`${MQTT_WORKER_API_URL}/timestamps/${selectedChallenge.esp_mac_start1.replace(/:/g, '-')}`);
+      const start2 = await axios.get<{ timestamp: string[] }>(`${MQTT_WORKER_API_URL}/timestamps/${selectedChallenge.esp_mac_start2.replace(/:/g, '-')}`);
+      const combined = [...(start1.data.timestamp || []), ...(start2.data.timestamp || [])];
       setStartTimestamps(combined);
     } catch (error) {
       console.error("Failed to fetch start timestamps", error);
     }
-  };
+  }, [selectedChallenge]);
 
-  const fetchEndTimestamps = async () => {
+  const fetchEndTimestamps = useCallback(async () => {
     if (!selectedChallenge) return;
     try {
-      const end_1 = await axios.get<{ timestamp: string[] }>(`${MQTT_WORKER_API_URL}/timestamps/${selectedChallenge.esp_mac_finish1.replace(/:/g, '-')}`);
-      const end_2 = await axios.get<{ timestamp: string[] }>(`${MQTT_WORKER_API_URL}/timestamps/${selectedChallenge.esp_mac_finish2.replace(/:/g, '-')}`);
-      const combined = [...(end_1.data.timestamp || []), ...(end_2.data.timestamp || [])];
+      const end1 = await axios.get<{ timestamp: string[] }>(`${MQTT_WORKER_API_URL}/timestamps/${selectedChallenge.esp_mac_finish1.replace(/:/g, '-')}`);
+      const end2 = await axios.get<{ timestamp: string[] }>(`${MQTT_WORKER_API_URL}/timestamps/${selectedChallenge.esp_mac_finish2.replace(/:/g, '-')}`);
+      const combined = [...(end1.data.timestamp || []), ...(end2.data.timestamp || [])];
       setEndTimestamps(combined);
     } catch (error) {
       console.error("Failed to fetch end timestamps", error);
     }
-  };
+  }, [selectedChallenge]);
 
   // Fetch on mount
   useEffect(() => {
-    fetchTeams();
-    fetchChallenges();
-    fetchPenalties();
+    // Defer updates so they are not applied synchronously during effect execution.
+    const id = setTimeout(() => {
+      void fetchTeams();
+      void fetchChallenges();
+      void fetchPenalties();
+    }, 0);
+
+    return () => clearTimeout(id);
   }, []);
 
   useEffect(() => {
     if (!selectedTeam) return;
-    fetchDriversForTeam(selectedTeam.id);
+
+    const id = setTimeout(() => {
+      void fetchDriversForTeam(selectedTeam.id);
+    }, 0);
+
+    return () => clearTimeout(id);
   }, [selectedTeam]);
 
   useEffect(() => {
     if (!connectionStatus.is_active) return;
 
-    fetchStartTimestamps();
-    fetchEndTimestamps();
+    const fetchAllTimestamps = () => {
+      void fetchStartTimestamps();
+      void fetchEndTimestamps();
+    };
+
+    const kickoffId = setTimeout(fetchAllTimestamps, 0);
 
     const interval = setInterval(() => {
-      fetchStartTimestamps();
-      fetchEndTimestamps();
+      fetchAllTimestamps();
     }, 3000);
 
-    return () => clearInterval(interval);
-  }, [connectionStatus.is_active, selectedChallenge]);
+    return () => {
+      clearTimeout(kickoffId);
+      clearInterval(interval);
+    };
+  }, [connectionStatus.is_active, fetchEndTimestamps, fetchStartTimestamps]);
 
   return (
     <div>

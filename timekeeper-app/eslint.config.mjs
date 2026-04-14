@@ -40,6 +40,10 @@ const eslintConfig = defineConfig([
           selector: "objectLiteralProperty",
           format: null,
         },
+        {
+          selector: "typeProperty",
+          format: null,
+        },
       ],
     },
   },

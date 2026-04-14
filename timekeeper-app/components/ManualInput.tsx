@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useRef, useState } from "react"
+import React, { useRef, useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 
@@ -34,37 +34,36 @@ interface TimeSplitInputProps {
 }
 
 function TimeSplitInput({ onChange, initialTime }: TimeSplitInputProps) {
-    const [hours, setHours] = useState("00")
-    const [minutes, setMinutes] = useState("00")
-    const [seconds, setSeconds] = useState("00")
+    const [hours, setHours] = useState(() => normalizeTimeUTC(initialTime)[0] || "00")
+    const [minutes, setMinutes] = useState(() => normalizeTimeUTC(initialTime)[1] || "00")
+    const [seconds, setSeconds] = useState(() => normalizeTimeUTC(initialTime)[2] || "00")
 
     const hRef = useRef<HTMLInputElement>(null)
     const mRef = useRef<HTMLInputElement>(null)
     const sRef = useRef<HTMLInputElement>(null)
 
-    useEffect(() => {
-        const [h, m, s] = normalizeTimeUTC(initialTime)
-        setHours(h || "00")
-        setMinutes(m || "00")
-        setSeconds(s || "00")
-    }, [initialTime])
-
-    const focusNext = (ref?: React.RefObject<HTMLInputElement | null>) => {
-        ref?.current?.focus()
-        ref?.current?.select()
+    const handleHoursChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = e.target.value.replace(/\D/g, "").slice(0, 2)
+        setHours(val)
+        if (val.length === 2) {
+            mRef.current?.focus()
+            mRef.current?.select()
+        }
     }
 
-    const handleTyping =
-        (
-            setter: (v: string) => void,
-            max: number,
-            nextRef?: React.RefObject<HTMLInputElement | null>
-        ) =>
-            (e: React.ChangeEvent<HTMLInputElement>) => {
-                const val = e.target.value.replace(/\D/g, "").slice(0, 2)
-                setter(val)
-                if (val.length === 2) focusNext(nextRef)
-            }
+    const handleMinutesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = e.target.value.replace(/\D/g, "").slice(0, 2)
+        setMinutes(val)
+        if (val.length === 2) {
+            sRef.current?.focus()
+            sRef.current?.select()
+        }
+    }
+
+    const handleSecondsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = e.target.value.replace(/\D/g, "").slice(0, 2)
+        setSeconds(val)
+    }
 
     const handleBlur = (
         e: React.FocusEvent<HTMLInputElement>,
@@ -97,7 +96,7 @@ function TimeSplitInput({ onChange, initialTime }: TimeSplitInputProps) {
                     ref={hRef}
                     type="text"
                     value={hours}
-                    onChange={handleTyping(setHours, 23, mRef)}
+                    onChange={handleHoursChange}
                     onBlur={(e) => handleBlur(e, 23, "h")}
                     className="w-14 text-center"
                     inputMode="numeric"
@@ -107,7 +106,7 @@ function TimeSplitInput({ onChange, initialTime }: TimeSplitInputProps) {
                     ref={mRef}
                     type="text"
                     value={minutes}
-                    onChange={handleTyping(setMinutes, 59, sRef)}
+                    onChange={handleMinutesChange}
                     onBlur={(e) => handleBlur(e, 59, "m")}
                     className="w-14 text-center"
                     inputMode="numeric"
@@ -117,7 +116,7 @@ function TimeSplitInput({ onChange, initialTime }: TimeSplitInputProps) {
                     ref={sRef}
                     type="text"
                     value={seconds}
-                    onChange={handleTyping(setSeconds, 59)}
+                    onChange={handleSecondsChange}
                     onBlur={(e) => handleBlur(e, 59, "s")}
                     className="w-14 text-center"
                     inputMode="numeric"

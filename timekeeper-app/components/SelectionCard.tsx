@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import {
@@ -12,7 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { ChevronDown } from "lucide-react"
 
-interface SelectionCardProps<T extends { id: number }> {
+interface SelectionCardProps<T extends { id: number; name?: string }> {
     title: string;
     items: T[];
     selectedItem: T | null;
@@ -20,12 +19,12 @@ interface SelectionCardProps<T extends { id: number }> {
     getDisplayName?: (item: T) => string; // optional
 }
 
-export function SelectionCard<T extends { id: number }>({
+export function SelectionCard<T extends { id: number; name?: string }>({
     title,
     items,
     selectedItem,
     onSelect,
-    getDisplayName = (item) => (item as any).name || String(item.id),
+    getDisplayName = (item) => item.name ?? String(item.id),
 }: SelectionCardProps<T>) {
     return (
         <Card>
