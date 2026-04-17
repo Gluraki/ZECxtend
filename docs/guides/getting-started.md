@@ -17,7 +17,7 @@ Add `-d` to run in detached mode.
    - Default credentials: `admin` / `admin`
    - **Important:** Change these default credentials immediately after first login for security purposes
 2. Create a new realm by importing the configuration file:
-    - Location: `api-server/config/keycloak/realm-export.json`
+    - Location: `api-server/templates/keycloak/realm-export.json`
 3. Regenerate client secrets:
     - Switch to your newly created **zec-realm**
     - Go to clients
