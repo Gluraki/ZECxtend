@@ -2,7 +2,7 @@ from shared.config import BaseAppSettings
 
 
 class Settings(BaseAppSettings):
-    PROJECT_NAME: str = "challenge-service"
+    PROJECT_NAME: str = "team-service"
     SCORE_SERVICE_URL: str
     TEAM_SERVICE_URL: str
     CHALLENGE_SERVICE_URL: str
