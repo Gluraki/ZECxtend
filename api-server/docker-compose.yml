@@ -10,6 +10,7 @@ services:
       - score-service
       - attempt-service
       - team-service
+      - user-service
     networks:
       - public
       - internal
@@ -19,8 +20,6 @@ services:
       context: .
       dockerfile: services/user-service/Dockerfile
     container_name: user-service
-    ports:
-      - "8001:8001"
     depends_on:
       db:
         condition: service_healthy
@@ -42,8 +41,6 @@ services:
       context: .
       dockerfile: services/auth-service/Dockerfile
     container_name: auth-service
-    ports:
-      - "8002:8002"
     depends_on:
       db:
         condition: service_healthy
@@ -64,8 +61,6 @@ services:
       context: .
       dockerfile: services/challenge-service/Dockerfile
     container_name: challenge-service
-    ports:
-      - "8003:8003"
     depends_on:
       db:
         condition: service_healthy
@@ -84,8 +79,6 @@ services:
       context: .
       dockerfile: services/attempt-service/Dockerfile
     container_name: attempt-service
-    ports:
-      - "8004:8004"
     depends_on:
       db:
         condition: service_healthy
@@ -107,8 +100,6 @@ services:
       context: .
       dockerfile: services/score-service/Dockerfile
     container_name: score-service
-    ports:
-      - "8005:8005"
     depends_on:
       db:
         condition: service_healthy
@@ -130,8 +121,6 @@ services:
       context: .
       dockerfile: services/team-service/Dockerfile
     container_name: team-service
-    ports:
-      - "8006:8006"
     depends_on:
       db:
         condition: service_healthy
@@ -205,11 +194,8 @@ services:
     ports:
       - "${COMPOSE_PORT_HTTP:-9000}:9000"
       - "${COMPOSE_PORT_HTTPS:-9443}:9443"
-    volumes:
-      - ./media:/media
-      - ./custom-templates:/templates
     networks:
-      - public      # ← accessible from browser
+      - public
       - internal
 
   worker:
@@ -233,9 +219,6 @@ services:
       AUTHENTIK_BOOTSTRAP_TOKEN: ${AUTHENTIK_BOOTSTRAP_TOKEN}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./media:/media
-      - ./certs:/certs
-      - ./custom-templates:/templates
     networks:
       - internal
 
