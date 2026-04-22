@@ -5,7 +5,7 @@ from pydantic_core import MultiHostUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class BaseAppSettings(BaseSettings):
+class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_ignore_empty=True,
         extra="ignore",
@@ -14,13 +14,14 @@ class BaseAppSettings(BaseSettings):
     ENVIRONMENT: Literal["local", "staging", "production", "testing"] = "local"
     API_STR: str = "/api"
 
-    POSTGRES_SERVER: str
+    POSTGRES_SERVER: str = ""
     POSTGRES_PORT: int = 5432
-    POSTGRES_USER: str
-    POSTGRES_PASSWORD: str
-    POSTGRES_DB: str
+    POSTGRES_USER: str = ""
+    POSTGRES_PASSWORD: str = ""
+    POSTGRES_DB: str = ""
 
     @computed_field
+    @property
     def SQLALCHEMY_DATABASE_URI(self) -> str:
         if self.ENVIRONMENT == "testing":
             return "sqlite:///./test.db"
@@ -32,3 +33,5 @@ class BaseAppSettings(BaseSettings):
             port=self.POSTGRES_PORT,
             path=self.POSTGRES_DB,
         ))
+
+settings = Settings()
