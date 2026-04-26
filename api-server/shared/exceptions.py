@@ -26,11 +26,48 @@ class AuthenticationFailed(ApiServerError):
 class InvalidTokenError(ApiServerError):
     pass
 
+class ForeignKeyViolationError(ApiServerError):
+    pass
+
+class NotEnoughPermissionsError(ApiServerError):
+    pass
+
+class DatabaseError(ApiServerError):
+    pass
+
 def register_exception_handlers(app: FastAPI):
-    @app.exception_handler(ServiceError)
-    async def service_error_handler(request: Request, exc: ServiceError):
+    @app.exception_handler(InvalidOperationError)
+    async def invalid_operation_handler(request: Request, exc: InvalidOperationError):
         return JSONResponse(
-            status_code=500,
+            status_code=400,
+            content={"detail": f"{exc.message}-{exc.name}"},
+        )
+    
+    @app.exception_handler(ForeignKeyViolationError)
+    async def foreign_key_violation_handler(request: Request, exc: ForeignKeyViolationError):
+        return JSONResponse(
+            status_code=400,
+            content={"detail": f"{exc.message}-{exc.name}"},
+        )
+    
+    @app.exception_handler(AuthenticationFailed)
+    async def authentication_failed_handler(request: Request, exc: AuthenticationFailed):
+        return JSONResponse(
+            status_code=401,
+            content={"detail": f"{exc.message}-{exc.name}"},
+        )
+
+    @app.exception_handler(InvalidTokenError)
+    async def invalid_token_handler(request: Request, exc: InvalidTokenError):
+        return JSONResponse(
+            status_code=401,
+            content={"detail": f"{exc.message}-{exc.name}"},
+        )
+    
+    @app.exception_handler(NotEnoughPermissionsError)
+    async def not_enough_permissions_handler(request: Request, exc: NotEnoughPermissionsError):
+        return JSONResponse(
+            status_code=403,
             content={"detail": f"{exc.message}-{exc.name}"},
         )
     
@@ -47,24 +84,16 @@ def register_exception_handlers(app: FastAPI):
             status_code=409,
             content={"detail": f"{exc.message}-{exc.name}"},
         )
-    
-    @app.exception_handler(InvalidOperationError)
-    async def invalid_operation_handler(request: Request, exc: InvalidOperationError):
+
+    @app.exception_handler(ServiceError)
+    async def service_error_handler(request: Request, exc: ServiceError):
         return JSONResponse(
-            status_code=400,
+            status_code=500,
             content={"detail": f"{exc.message}-{exc.name}"},
         )
-
-    @app.exception_handler(AuthenticationFailed)
-    async def authentication_failed_handler(request: Request, exc: AuthenticationFailed):
+    @app.exception_handler(DatabaseError)
+    async def database_error_handler(request: Request, exc: DatabaseError):
         return JSONResponse(
-            status_code=401,
-            content={"detail": f"{exc.message}-{exc.name}"},
-        )
-
-    @app.exception_handler(InvalidTokenError)
-    async def invalid_token_handler(request: Request, exc: InvalidTokenError):
-        return JSONResponse(
-            status_code=401,
+            status_code=500,
             content={"detail": f"{exc.message}-{exc.name}"},
         )
