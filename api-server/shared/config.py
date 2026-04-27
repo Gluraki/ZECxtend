@@ -12,7 +12,6 @@ class Settings(BaseSettings):
     )
 
     ENVIRONMENT: Literal["local", "staging", "production", "testing"] = "local"
-    API_STR: str = "/api"
 
     POSTGRES_SERVER: str = ""
     POSTGRES_PORT: int = 5432

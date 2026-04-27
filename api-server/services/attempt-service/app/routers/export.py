@@ -1,47 +1,24 @@
-import io
+from fastapi import APIRouter, Query
 
-import pandas as pd
-from app.crud.export import get_attempts_export
-from app.database.dependency import SessionDep
-from app.exceptions.exceptions import EntityDoesNotExistError
-from fastapi import APIRouter, HTTPException, Query
-from fastapi.responses import StreamingResponse
+from shared.database import SessionDep
 
 router = APIRouter()
 
-def stream_response(df: pd.DataFrame, format: str, filename: str) -> StreamingResponse:
-    if format == "xlsx":
-        buffer = io.BytesIO()
-        df.to_excel(buffer, index=False, engine="openpyxl")
-        buffer.seek(0)
-        return StreamingResponse(
-            buffer,
-            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            headers={"Content-Disposition": f"attachment; filename={filename}.xlsx"}
-        )
-    buffer = io.StringIO()
-    df.to_csv(buffer, index=False)
-    buffer.seek(0)
-    return StreamingResponse(
-        buffer,
-        media_type="text/csv",
-        headers={"Content-Disposition": f"attachment; filename={filename}.csv"}
-    )
-
+#TODO Implement actual logic
 @router.get("/attempts")
 def export_attempts(
+    db: SessionDep,
     challenge_id: int = Query(...),
     category: str = Query(None),
-    format: str = Query("csv", enum=["csv", "xlsx"]),
-    db: SessionDep = None,
+    format: str = Query("csv", enum=["csv", "xlsx"])
 ):
-    try:
-        df = get_attempts_export(db, challenge_id, category)
-    except EntityDoesNotExistError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+    return {"challenge_id": challenge_id, "category": category, "format": format}
 
-    filename = f"attempts_challenge{challenge_id}"
-    if category:
-        filename += f"_{category}"
-
-    return stream_response(df, format, filename)
+@router.get("/leaderboard")
+def export_leaderboard(
+    db: SessionDep,
+    challenge_id: int = Query(...),
+    category: str = Query(None),
+    format: str = Query("csv", enum=["csv", "xlsx"])
+):
+    return {"challenge_id": challenge_id, "category": category, "format": format}
