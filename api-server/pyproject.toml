@@ -9,9 +9,7 @@ members = [
     "services/attempt-service",
     "services/auth-service",
     "services/challenge-service",
-    "services/score-service",
-    "services/team-service",
-    "services/user-service",
+    "services/roster-service",
 ]
 
 [tool.uv.sources]
