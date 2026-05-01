@@ -50,23 +50,23 @@ def _make_engine(db_filename: str):
     """Return a SQLite engine + session factory for the given filename."""
     url = f"sqlite:///./{db_filename}"
     engine = create_engine(url, connect_args={"check_same_thread": False})
-    Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-    return engine, Session
+    session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    return engine, session
 
 
-def _db_fixture(engine, Session, Base):
+def _db_fixture(engine, session, base):
     """
     Generic per-function DB fixture factory.
     Creates all tables before the test and drops them after.
     """
-    Base.metadata.create_all(bind=engine)
-    session = Session()
+    base.metadata.create_all(bind=engine)
+    session = session()
     try:
         yield session
     finally:
         session.rollback()
         session.close()
-        Base.metadata.drop_all(bind=engine)
+        base.metadata.drop_all(bind=engine)
 
 
 # ===========================================================================
@@ -76,8 +76,8 @@ def _db_fixture(engine, Session, Base):
 @pytest.fixture(scope="function")
 def attempt_db():
     from app.database.session import Base as AttemptBase
-    engine, Session = _make_engine("test_attempt.db")
-    yield from _db_fixture(engine, Session, AttemptBase)
+    engine, session = _make_engine("test_attempt.db")
+    yield from _db_fixture(engine, session, AttemptBase)
 
 
 @pytest.fixture(scope="function")
@@ -284,8 +284,8 @@ def override_viewer():
 @pytest.fixture(scope="function")
 def challenge_db():
     from app.database.session import Base as ChallengeBase
-    engine, Session = _make_engine("test_challenge.db")
-    yield from _db_fixture(engine, Session, ChallengeBase)
+    engine, session = _make_engine("test_challenge.db")
+    yield from _db_fixture(engine, session, ChallengeBase)
 
 
 @pytest.fixture(scope="function")
@@ -322,8 +322,8 @@ def challenge_client(challenge_db, seeded_challenges):
 @pytest.fixture(scope="function")
 def score_db():
     from app.database.session import Base as ScoreBase
-    engine, Session = _make_engine("test_score.db")
-    yield from _db_fixture(engine, Session, ScoreBase)
+    engine, session = _make_engine("test_score.db")
+    yield from _db_fixture(engine, session, ScoreBase)
 
 
 @pytest.fixture(scope="function")
@@ -446,8 +446,8 @@ def score_minimal_client(score_db, score_override_get_db, mock_score_requests):
 @pytest.fixture(scope="function")
 def team_db():
     from app.database.session import Base as TeamBase
-    engine, Session = _make_engine("test_team.db")
-    yield from _db_fixture(engine, Session, TeamBase)
+    engine, session = _make_engine("test_team.db")
+    yield from _db_fixture(engine, session, TeamBase)
 
 
 @pytest.fixture(scope="function")
@@ -554,8 +554,8 @@ def mock_request():
 @pytest.fixture(scope="function")
 def user_db():
     from app.database.session import Base as UserBase
-    engine, Session = _make_engine("test_user.db")
-    yield from _db_fixture(engine, Session, UserBase)
+    engine, session = _make_engine("test_user.db")
+    yield from _db_fixture(engine, session, UserBase)
 
 
 @pytest.fixture(scope="function")
