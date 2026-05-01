@@ -1,19 +1,13 @@
-from typing import Generic, Type, TypeVar
+from typing import Any, Generic, Type, TypeVar
 
 from pydantic import BaseModel
-from sqlalchemy import Column, Integer, select
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from shared import exceptions as exc
-from shared.database import Base
 
-
-class SQLModel(Base):
-    __abstract__ = True
-    id = Column(Integer, autoincrement=True, primary_key=True, index=True)
-
-ModelType = TypeVar("ModelType", bound=SQLModel)
+ModelType = TypeVar("ModelType")
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
 UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
 
@@ -26,7 +20,7 @@ def _handle_integrity_error(e: IntegrityError, model_name: str, operation: str):
 
 class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     def __init__(self, model: Type[ModelType]):
-        self.model = model
+        self.model: Any = model
 
     async def get(self, db: AsyncSession, id: int) -> ModelType:
         result = await db.execute(select(self.model).where(self.model.id == id))

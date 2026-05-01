@@ -1,4 +1,3 @@
-from app.config import settings
 from app.routers.challenge import router as challenges_router
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
@@ -13,9 +12,9 @@ def cstm_generate_unique_id(route: APIRoute) -> str:
 
 app = FastAPI(
     title="Challenge Service API",
-    openapi_url=f"{settings.API_STR}/openapi.json",
+    openapi_url="/openapi.json",
     generate_unique_id_function=cstm_generate_unique_id,
 )
-app.include_router(challenges_router, prefix=settings.API_STR)
+app.include_router(challenges_router, prefix="/challenges", tags=["challenges"])
 
 register_exception_handlers(app)

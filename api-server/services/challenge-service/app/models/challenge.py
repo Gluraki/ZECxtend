@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 
 from sqlalchemy import Column, DateTime, Integer, String
 
-from app.database.session import Base
+from shared.database import Base
 
 
 class Challenge(Base):

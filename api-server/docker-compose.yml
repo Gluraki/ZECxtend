@@ -43,11 +43,6 @@ services:
         condition: service_healthy
     environment:
       PROJECT_NAME: auth-service
-      POSTGRES_SERVER: db
-      POSTGRES_PORT: 5432
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
       AUTHENTIK_URL: http://authentik:9000
       ROSTER_SERVICE_URL: http://roster-service:8001
     networks:
