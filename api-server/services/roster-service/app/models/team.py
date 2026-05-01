@@ -1,19 +1,17 @@
 from datetime import datetime, timezone
 from enum import Enum
 
-from app.database.session import Base
 from sqlalchemy import Column, DateTime, Float, Integer, String
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import relationship
+
+from shared.database import Base
 
 
 class TeamCategory(Enum):
     close_to_series = "close_to_series"
     advanced_class = "advanced_class"
     professional_class = "professional_class"
-
-
-team_category = TeamCategory
 
 class Team(Base):
     __tablename__ = 'teams'

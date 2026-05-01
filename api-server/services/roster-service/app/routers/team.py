@@ -1,38 +1,32 @@
-from typing import List
+from app.crud.team import crud_team as crud
+from app.schemas.team import TeamCreate, TeamResponse, TeamUpdate  # type: ignore
+from fastapi import APIRouter
 
-from app.crud import team as crud
-from app.database.dependency import SessionDep
-from app.schemas.team import TeamCreate, TeamResponse, TeamUpdate
-from fastapi import APIRouter, Query, Request
+from shared.database import SessionDep
 
 router = APIRouter()
 
 @router.post("/", response_model=TeamResponse)
-def create_team(db: SessionDep, team: TeamCreate):
-    team = crud.create_team(db=db, team=team)
+async def create_team(db: SessionDep, team: TeamCreate):
+    team = await crud.create(db=db, obj_in=team)
     return team
 
 @router.put("/{team_id}", response_model=TeamResponse)
-def update_team(db: SessionDep, team_id: int, team_update: TeamUpdate, request: Request):
-    team = crud.update_team(db=db, team_id=team_id, team_update=team_update, request=request)
+async def update_team(db: SessionDep, team_id: int, team_update: TeamUpdate):
+    team = await crud.update(db=db, id=team_id, obj_in=team_update)
     return team
 
 @router.delete("/{team_id}", response_model=TeamResponse)
-def delete_team(db: SessionDep, team_id: int, request: Request):
-    team = crud.delete_team(db=db, team_id=team_id, request=request)
+async def delete_team(db: SessionDep, team_id: int):
+    team = await crud.delete(db=db, id=team_id)
     return team
 
 @router.get("/{team_id}", response_model=TeamResponse)
-def get_team(db: SessionDep, team_id: int, request: Request):
-    team = crud.get_team(db=db, team_id=team_id, request=request)
+async def get_team(db: SessionDep, team_id: int):
+    team = await crud.get(db=db, id=team_id)
     return team
 
-@router.get("/", response_model=List[TeamResponse])
-def get_all_teams(db: SessionDep):
-    teams = crud.get_teams(db=db)
-    return teams
-
-@router.get("/by-ids/", response_model=List[TeamResponse])
-def get_teams_by_ids(db: SessionDep, team_ids: list[int] = Query(...)):
-    teams = crud.get_teams_by_ids(db=db, team_ids=team_ids)
+@router.get("/", response_model=list[TeamResponse])
+async def get_all_teams(db: SessionDep):
+    teams = await crud.get_multi(db=db)
     return teams

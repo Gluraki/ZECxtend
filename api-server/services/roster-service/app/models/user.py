@@ -1,8 +1,9 @@
 from datetime import datetime, timezone
 from enum import Enum
 
-from app.database.session import Base
 from sqlalchemy import Column, DateTime, Integer, String
+
+from shared.database import Base
 
 
 class UserRole(Enum):

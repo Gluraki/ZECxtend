@@ -1,12 +1,12 @@
 from datetime import datetime
 from typing import Optional
 
-from app.models.team import team_category
+from app.models.team import TeamCategory
 from pydantic import BaseModel, ConfigDict
 
 
 class TeamBase(BaseModel):
-    category: team_category
+    category: TeamCategory
     name: str
     mean_power: float
     vehicle_weight: float
@@ -20,7 +20,7 @@ class TeamUpdate(BaseModel):
     vehicle_weight: Optional[float] = None
     mean_power: Optional[float] = None
     rfid_identifier: Optional[str] = None
-    category: Optional[team_category] = None
+    category: Optional[TeamCategory] = None
 
 class TeamResponse(TeamBase):
     id: int

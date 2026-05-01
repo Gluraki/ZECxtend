@@ -1,4 +1,5 @@
-from app.config import settings
+from app.routers.driver import router as driver_router
+from app.routers.team import router as team_router
 from app.routers.user import router as users_router
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
@@ -13,10 +14,12 @@ def cstm_generate_unique_id(route: APIRoute) -> str:
 
 app = FastAPI(
     title="User Service API",
-    openapi_url=f"{settings.API_STR}/openapi.json",
+    openapi_url="/openapi.json",
     generate_unique_id_function=cstm_generate_unique_id,
 )
 
-app.include_router(users_router, prefix=settings.API_STR)
+app.include_router(users_router, prefix="/users", tags=["users"])
+app.include_router(driver_router, prefix="/drivers", tags=["drivers"])
+app.include_router(team_router, prefix="/teams", tags=["teams"])
 
 register_exception_handlers(app)
