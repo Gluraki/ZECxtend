@@ -31,6 +31,6 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 COPY --from=builder /app /app
 COPY --from=builder /usr/local/lib/python3.12 /usr/local/lib/python3.12
 
-EXPOSE 8002
+EXPOSE 8001
 ENTRYPOINT ["uv", "run"]
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8002"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8001"]
