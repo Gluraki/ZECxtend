@@ -1,8 +1,7 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import Boolean, Column, DateTime, Float, Integer
-
 from app.database.session import Base
+from sqlalchemy import Boolean, Column, DateTime, Float, Integer
 
 
 class Attempt(Base):

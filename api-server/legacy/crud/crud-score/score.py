@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta, timezone
 
 import requests
-
 from app.core.config import settings
 from app.crud.penalty import get_penalties_by_attempt
 from app.database.dependency import SessionDep

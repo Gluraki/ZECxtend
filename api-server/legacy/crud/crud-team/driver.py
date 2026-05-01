@@ -1,6 +1,4 @@
 import requests
-from fastapi import Request
-
 from app.core.config import settings
 from app.crud.team import get_team
 from app.database.dependency import SessionDep
@@ -12,6 +10,7 @@ from app.exceptions.exceptions import (
 )
 from app.models.driver import Driver
 from app.schemas.driver import DriverCreate, DriverUpdate
+from fastapi import Request
 
 ATTEMPT_URL = settings.ATTEMPT_SERVICE_URL
 

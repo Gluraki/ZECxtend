@@ -110,7 +110,7 @@ services:
       - internal
 
   authentik_db:
-    image: docker.io/library/postgres:16-alpine
+    image: docker.io/library/postgres:18-alpine
     container_name: authentik_db
     restart: unless-stopped
     environment:
@@ -124,7 +124,7 @@ services:
       retries: 5
       timeout: 5s
     volumes:
-      - authentik_db_data:/var/lib/postgresql/data
+      - authentik_db_data:/var/lib/postgresql
     networks:
       - internal
 

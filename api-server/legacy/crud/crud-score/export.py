@@ -1,5 +1,4 @@
 import pandas as pd
-
 from app.crud import leaderboard as crud
 from app.database.dependency import SessionDep
 

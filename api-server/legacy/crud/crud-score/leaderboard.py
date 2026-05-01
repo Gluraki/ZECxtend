@@ -1,5 +1,4 @@
 import requests
-
 from app.core.config import settings
 from app.database.dependency import SessionDep
 from app.exceptions.exceptions import (

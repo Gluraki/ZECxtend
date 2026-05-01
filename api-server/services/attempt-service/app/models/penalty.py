@@ -1,9 +1,8 @@
 from datetime import datetime, timezone
 
+from app.database.session import Base
 from sqlalchemy import Column, DateTime, ForeignKey, Integer
 from sqlalchemy.orm import relationship
-
-from app.database.session import Base
 
 
 class Penalty(Base):

@@ -2,7 +2,6 @@ from datetime import datetime, timedelta, timezone
 from unittest.mock import Mock
 
 import pytest
-
 from app.crud import export as crud
 from app.exceptions.exceptions import EntityDoesNotExistError
 from app.models.attempt import Attempt

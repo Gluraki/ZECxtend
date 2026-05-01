@@ -1,11 +1,10 @@
 from datetime import datetime, timezone
 from enum import Enum
 
+from app.database.session import Base
 from sqlalchemy import Column, DateTime, Float, Integer, String
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import relationship
-
-from app.database.session import Base
 
 
 class TeamCategory(Enum):

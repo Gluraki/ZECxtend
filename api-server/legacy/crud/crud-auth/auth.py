@@ -1,13 +1,12 @@
 import time
 from functools import lru_cache
 
+import app.exceptions.exceptions as exception
 import requests
+from app.core.config import settings
 from fastapi import Depends
 from fastapi.security import HTTPBearer
 from jose import jwk, jwt
-
-import app.exceptions.exceptions as exception
-from app.core.config import settings
 
 KC_URL = settings.KEYCLOAK_URL
 KC_ADMIN_CLIENT_ID = settings.KEYCLOAK_ADMIN_CLIENT_ID

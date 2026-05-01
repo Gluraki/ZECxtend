@@ -452,8 +452,8 @@ def team_db():
 
 @pytest.fixture(scope="function")
 def seeded_team_data(team_db):
-    from app.models.team import Team, team_category
     from app.models.driver import Driver
+    from app.models.team import Team, team_category
 
     teams = [
         Team(

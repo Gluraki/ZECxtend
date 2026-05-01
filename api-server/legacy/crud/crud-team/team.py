@@ -1,6 +1,4 @@
 import requests
-from fastapi import Request
-
 from app.core.config import settings
 from app.database.dependency import SessionDep
 from app.exceptions.exceptions import (
@@ -11,6 +9,7 @@ from app.exceptions.exceptions import (
 )
 from app.models.team import Team
 from app.schemas.team import TeamCreate, TeamUpdate
+from fastapi import Request
 
 ATTEMPT_URL = settings.ATTEMPT_SERVICE_URL
 

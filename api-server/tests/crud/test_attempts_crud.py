@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 
 import pytest
-
 from app.crud import attempt as crud
 from app.exceptions.exceptions import AuthenticationFailed, EntityDoesNotExistError, ServiceError
 from app.schemas.attempt import AttemptCreate, AttemptUpdate
