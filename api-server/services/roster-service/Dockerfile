@@ -13,9 +13,9 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
 COPY pyproject.toml .
 COPY shared/ ./shared/
-COPY services/user-service/ ./services/user-service/
+COPY services/roster-service/ ./services/roster-service/
 
-RUN uv sync --package user-service --no-dev
+RUN uv sync --package roster-service --no-dev
 
 EXPOSE 8001
 
