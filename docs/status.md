@@ -28,3 +28,4 @@ Copied over from old repo (zeitnehmerapplikation) without the mqtt part
 - configs for ports etc..
 - native windows app for Timekeeper-App
 - Vite for the website
+- host a simple hmtml login page for the swagger ui docs 
