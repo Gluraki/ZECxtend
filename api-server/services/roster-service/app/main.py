@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from fastapi.routing import APIRoute
 
 from shared.exceptions import register_exception_handlers
+from shared.health import register_health_endpoint
 
 
 def cstm_generate_unique_id(route: APIRoute) -> str:
@@ -18,6 +19,7 @@ app = FastAPI(
     generate_unique_id_function=cstm_generate_unique_id,
 )
 
+register_health_endpoint(app)
 app.include_router(users_router, prefix="/users", tags=["users"])
 app.include_router(driver_router, prefix="/drivers", tags=["drivers"])
 app.include_router(team_router, prefix="/teams", tags=["teams"])

@@ -5,12 +5,86 @@ services:
     ports:
       - "80:80"
     depends_on:
-      - auth-service
-      - challenge-service
-      - attempt-service
-      - roster-service
+      auth-service:
+        condition: service_healthy
+      challenge-service:
+        condition: service_healthy
+      attempt-service:
+        condition: service_healthy
+      roster-service:
+        condition: service_healthy
     networks:
       - public
+      - internal
+
+  attempt-service:
+    build:
+      context: .
+      dockerfile: services/attempt-service/Dockerfile
+    container_name: attempt-service
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PROJECT_NAME: attempt-service
+      POSTGRES_SERVER: db
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      CHALLENGE_SERVICE_URL: http://challenge-service:8003
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - internal
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: services/auth-service/Dockerfile
+    container_name: auth-service
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PROJECT_NAME: auth-service
+      AUTHENTIK_URL: http://authentik:9000
+      ROSTER_SERVICE_URL: http://roster-service:8001
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8002/health')"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - internal
+
+  challenge-service:
+    build:
+      context: .
+      dockerfile: services/challenge-service/Dockerfile
+    container_name: challenge-service
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PROJECT_NAME: challenge-service
+      POSTGRES_SERVER: db
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8003/health')"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
       - internal
 
   roster-service:
@@ -30,58 +104,12 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       AUTH_SERVICE_URL: http://auth-service:8002
       AUTHENTIK_URL: http://authentik:9000
-    networks:
-      - internal
-
-  auth-service:
-    build:
-      context: .
-      dockerfile: services/auth-service/Dockerfile
-    container_name: auth-service
-    depends_on:
-      db:
-        condition: service_healthy
-    environment:
-      PROJECT_NAME: auth-service
-      AUTHENTIK_URL: http://authentik:9000
-      ROSTER_SERVICE_URL: http://roster-service:8001
-    networks:
-      - internal
-
-  challenge-service:
-    build:
-      context: .
-      dockerfile: services/challenge-service/Dockerfile
-    container_name: challenge-service
-    depends_on:
-      db:
-        condition: service_healthy
-    environment:
-      PROJECT_NAME: challenge-service
-      POSTGRES_SERVER: db
-      POSTGRES_PORT: 5432
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-    networks:
-      - internal
-
-  attempt-service:
-    build:
-      context: .
-      dockerfile: services/attempt-service/Dockerfile
-    container_name: attempt-service
-    depends_on:
-      db:
-        condition: service_healthy
-    environment:
-      PROJECT_NAME: attempt-service
-      POSTGRES_SERVER: db
-      POSTGRES_PORT: 5432
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-      CHALLENGE_SERVICE_URL: http://challenge-service:8003
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8004/health')"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     networks:
       - internal
 
