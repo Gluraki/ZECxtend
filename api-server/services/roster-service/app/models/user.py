@@ -1,15 +1,9 @@
 from datetime import datetime, timezone
-from enum import Enum
 
 from sqlalchemy import Column, DateTime, Integer, String
 
 from shared.database import Base
 
-
-class UserRole(Enum):
-    ADMIN = "ADMIN"
-    TEAM_LEAD = "TEAM_LEAD"
-    VIEWER = "VIEWER"
 
 class User(Base):
     __tablename__ = 'users'

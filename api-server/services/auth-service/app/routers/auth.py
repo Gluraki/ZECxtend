@@ -1,3 +1,4 @@
+from app.dependency import AdminUser, TeamLeadUser, ViewerUser
 from fastapi import APIRouter, Form
 
 router = APIRouter()
@@ -11,16 +12,13 @@ def refresh(refresh_token: str = Form(...)):
     pass
 
 @router.get("/internal/verify/admin")
-def verify_admin():
-    #current_user AdminUser
+def verify_admin(current_user: AdminUser):
     pass
 
 @router.get("/internal/verify/teamlead")
-def verify_teamlead():
-    #current_user: TeamLeadUser
+def verify_teamlead(current_user: TeamLeadUser):
     pass
 
 @router.get("/internal/verify/viewer")
-def verify_viewer():
-    #current_user: ViewerUser
+def verify_viewer(current_user: ViewerUser):
     pass
