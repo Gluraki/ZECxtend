@@ -1,7 +1,8 @@
 from datetime import datetime, timezone
 
-from app.database.session import Base
 from sqlalchemy import Column, DateTime, Float, Integer
+
+from shared.database import Base
 
 
 class Score(Base):

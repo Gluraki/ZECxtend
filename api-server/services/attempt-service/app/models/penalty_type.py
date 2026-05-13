@@ -1,6 +1,7 @@
-from app.database.session import Base
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
+
+from shared.database import Base
 
 
 class PenaltyType(Base):

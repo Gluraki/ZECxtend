@@ -1,38 +1,32 @@
-from typing import List
-
-from app.crud import score as crud
-from app.database.dependency import SessionDep
+from app.crud.score import crud_score as crud
 from app.schemas.score import ScoreCreate, ScoreResponse, ScoreUpdate
 from fastapi import APIRouter
+
+from shared.database import SessionDep
 
 router = APIRouter()
 
 @router.post("/", response_model=ScoreResponse)
-def create_score(db: SessionDep, score: ScoreCreate):
-    score = crud.create_score(db=db, score=score)
-    return score
+async def create_score(db: SessionDep, score: ScoreCreate):
+    db_score = await crud.create(db=db, obj_in=score)
+    return db_score
 
 @router.put("/{score_id}", response_model=ScoreResponse)
-def update_score(db: SessionDep, score_id: int, score_update: ScoreUpdate):
-    score = crud.update_score(db=db, score_id=score_id, score_update=score_update)
-    return score
+async def update_score(db: SessionDep, score_id: int, score_update: ScoreUpdate):
+    db_score = await crud.update(db=db, id=score_id, obj_in=score_update)
+    return db_score
 
 @router.delete("/{score_id}", response_model=ScoreResponse)
-def delete_score(db: SessionDep, score_id: int):
-    score = crud.delete_score(db=db, score_id=score_id)
-    return score
-
-@router.delete("/attempt/{attempt_id}", response_model=List[ScoreResponse])
-def delete_scores_for_attempt(db: SessionDep, attempt_id: int):
-    scores = crud.delete_scores_for_attempt(db=db, attempt_id=attempt_id)
-    return scores
+async def delete_score(db: SessionDep, score_id: int):
+    db_score = await crud.delete(db=db, id=score_id)
+    return db_score
 
 @router.get("/{score_id}", response_model=ScoreResponse)
-def get_score(db: SessionDep, score_id: int):
-    score = crud.get_score(db=db, score_id=score_id)
-    return score
+async def get_score(db: SessionDep, score_id: int):
+    db_score = await crud.get(db=db, id=score_id)
+    return db_score
 
-@router.get("/", response_model=List[ScoreResponse])
-def list_scores(db: SessionDep):
-    scores = crud.get_scores(db=db)
-    return scores
+@router.get("/", response_model=list[ScoreResponse])
+async def get_all_scores(db: SessionDep):
+    db_scores = await crud.get_multi(db=db)
+    return db_scores

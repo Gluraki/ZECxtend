@@ -1,11 +1,12 @@
-from app.crud import leaderboard as crud
-from app.database.dependency import SessionDep
+from app.crud.score import crud_score as crud
 from app.schemas.leaderboard import LeaderboardResponse
 from fastapi import APIRouter
+
+from shared.database import SessionDep
 
 router = APIRouter()
 
 @router.get("/{challenge_id}/category/{category}", response_model=list[LeaderboardResponse])
-def get_leaderboard_by_category(challenge_id: int, category: str, db: SessionDep,):
-    leaderboard = crud.get_leaderboard(db, challenge_id, category=category)
+async def get_leaderboard_by_category(db: SessionDep, challenge_id: int, category: str):
+    leaderboard = await crud.get_leaderboard(db=db)
     return leaderboard
