@@ -32,5 +32,5 @@ COPY --from=builder /app /app
 COPY --from=builder /usr/local/lib/python3.12 /usr/local/lib/python3.12
 
 EXPOSE 8003
-ENTRYPOINT ["uv", "run"]
+ENTRYPOINT ["uv", "run", "--no-sync"]
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8003"]
