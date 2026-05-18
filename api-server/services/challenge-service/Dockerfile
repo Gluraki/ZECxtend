@@ -1,8 +1,9 @@
-FROM python:3.12-slim AS builder
+FROM python:3.14-slim AS builder
 
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV UV_SYSTEM_PYTHON=1
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    UV_SYSTEM_PYTHON=0 \
+    UV_PROJECT_ENVIRONMENT=/app/.venv
 
 WORKDIR /app
 
@@ -15,22 +16,22 @@ COPY pyproject.toml .
 COPY shared/ ./shared/
 COPY services/challenge-service/ ./services/challenge-service/
 
-RUN uv sync --package challenge-service --no-dev \
+RUN uv sync --package challenge-service --no-dev --compile-bytecode \
     && uv cache clean
 
-FROM python:3.12-slim AS runtime
+FROM python:3.14-slim
 
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV UV_SYSTEM_PYTHON=1
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PATH="/app/.venv/bin:$PATH"
 
 WORKDIR /app
 
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
-
-COPY --from=builder /app /app
-COPY --from=builder /usr/local/lib/python3.12 /usr/local/lib/python3.12
+COPY --from=builder /app/.venv /app/.venv
+COPY --from=builder /app/shared /app/shared
+COPY --from=builder /app/services/challenge-service /app/services/challenge-service
 
 EXPOSE 8003
-ENTRYPOINT ["uv", "run", "--no-sync"]
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8003"]
+
+ENTRYPOINT ["uvicorn"]
+CMD ["app.main:app", "--host", "0.0.0.0", "--port", "8003"]

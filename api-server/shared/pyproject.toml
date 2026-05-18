@@ -9,7 +9,7 @@ dependencies = [
     "aiosqlite>=0.20",
     "pydantic>=2.0",
     "pydantic-settings>=2.0",
-    "python-jose[cryptography]>=3.3",
+    "PyJWT[crypto]>=2.12",
     "uvicorn[standard]>=0.30",
     "isort>=8.0",
 ]
