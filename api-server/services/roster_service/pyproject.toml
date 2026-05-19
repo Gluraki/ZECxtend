@@ -1,11 +1,11 @@
 [project]
-name = "auth-service"
+name = "roster_service"
 version = "0.1.0"
 requires-python = ">=3.13"
 dependencies = [
     "shared",
     "uvicorn[standard]>=0.47",
-    "python-multipart>=0.0.29",
+    "alembic>=1.13",
 ]
 
 [tool.uv.sources]

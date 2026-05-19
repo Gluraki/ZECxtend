@@ -14,9 +14,9 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
 COPY pyproject.toml .
 COPY shared/ ./shared/
-COPY services/auth-service/ ./services/auth-service/
+COPY services/roster_service/ ./services/roster_service/
 
-RUN uv sync --package auth-service --no-dev --compile-bytecode \
+RUN uv sync --package roster_service --no-dev --compile-bytecode \
     && uv cache clean
 
 FROM python:3.14-slim
@@ -29,9 +29,9 @@ WORKDIR /app
 
 COPY --from=builder /app/.venv /app/.venv
 COPY --from=builder /app/shared /app/shared
-COPY --from=builder /app/services/auth-service /app/services/auth-service
+COPY --from=builder /app/services/roster_service /app/services/roster_service
 
-EXPOSE 8002
+EXPOSE 8004
 
 ENTRYPOINT ["uvicorn"]
-CMD ["app.main:app", "--host", "0.0.0.0", "--port", "8002"]
+CMD ["app.main:app", "--host", "0.0.0.0", "--port", "8004"]

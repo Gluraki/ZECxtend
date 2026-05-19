@@ -7,6 +7,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
+        env_file=".env",
         env_ignore_empty=True,
         extra="ignore",
     )
@@ -23,7 +24,7 @@ class Settings(BaseSettings):
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> str:
         if self.ENVIRONMENT == "testing":
-            return "sqlite:///./test.db"
+            return "sqlite+aiosqlite:///./test.db"
         return str(MultiHostUrl.build(
             scheme="postgresql+psycopg",
             username=self.POSTGRES_USER,

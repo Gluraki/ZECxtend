@@ -14,9 +14,9 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
 COPY pyproject.toml .
 COPY shared/ ./shared/
-COPY services/attempt-service/ ./services/attempt-service/
+COPY services/attempt_service/ ./services/attempt_service/
 
-RUN uv sync --package attempt-service --no-dev --compile-bytecode \
+RUN uv sync --package attempt_service --no-dev --compile-bytecode \
     && uv cache clean
 
 FROM python:3.14-slim
@@ -29,7 +29,7 @@ WORKDIR /app
 
 COPY --from=builder /app/.venv /app/.venv
 COPY --from=builder /app/shared /app/shared
-COPY --from=builder /app/services/attempt-service /app/services/attempt-service
+COPY --from=builder /app/services/attempt_service /app/services/attempt_service
 
 EXPOSE 8001
 

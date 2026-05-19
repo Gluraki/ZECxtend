@@ -6,10 +6,10 @@ requires-python = ">=3.13"
 [tool.uv.workspace]
 members = [
     "shared",
-    "services/attempt-service",
-    "services/auth-service",
-    "services/challenge-service",
-    "services/roster-service",
+    "services/attempt_service",
+    "services/auth_service",
+    "services/challenge_service",
+    "services/roster_service",
 ]
 
 [tool.uv.sources]

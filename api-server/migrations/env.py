@@ -3,6 +3,17 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
+from services.attempt_service.app.models.attempt import Attempt  # noqa: F401
+from services.attempt_service.app.models.penalty import Penalty  # noqa: F401
+from services.attempt_service.app.models.penalty_type import PenaltyType  # noqa: F401
+from services.attempt_service.app.models.score import Score  # noqa: F401
+from services.challenge_service.app.models.challenge import Challenge  # noqa: F401
+from services.roster_service.app.models.driver import Driver  # noqa: F401
+from services.roster_service.app.models.team import Team  # noqa: F401
+from services.roster_service.app.models.user import User  # noqa: F401
+from shared.config import settings
+from shared.database import Base
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
@@ -16,12 +27,12 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = None
+target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
-# ... etc.
+config.set_main_option("sqlalchemy.url", str(settings.SQLALCHEMY_DATABASE_URI))
 
 
 def run_migrations_offline() -> None:

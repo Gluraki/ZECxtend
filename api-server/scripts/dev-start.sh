@@ -18,3 +18,5 @@ export AUTHENTIK_BOOTSTRAP_PASSWORD=changeme
 export AUTHENTIK_BOOTSTRAP_TOKEN=changeme-bootstrap-token
 
 docker compose up -d
+
+docker compose --profile migrate run --rm migrator upgrade head

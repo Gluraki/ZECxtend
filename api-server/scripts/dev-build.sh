@@ -17,4 +17,14 @@ export AUTHENTIK_BOOTSTRAP_EMAIL=admin@localhost
 export AUTHENTIK_BOOTSTRAP_PASSWORD=changeme
 export AUTHENTIK_BOOTSTRAP_TOKEN=changeme-bootstrap-token
 
-docker compose up --build -d
+docker compose up --build -d "$@"
+
+echo "Waiting for postgres..."
+until docker exec db pg_isready -U "$POSTGRES_USER" > /dev/null 2>&1; do
+    sleep 1
+done
+echo "Postgres ready"
+
+docker compose --profile migrate build migrator
+
+docker compose --profile migrate run --rm migrator upgrade head
