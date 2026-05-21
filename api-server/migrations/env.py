@@ -7,10 +7,10 @@ from services.attempt_service.app.models.attempt import Attempt  # noqa: F401
 from services.attempt_service.app.models.penalty import Penalty  # noqa: F401
 from services.attempt_service.app.models.penalty_type import PenaltyType  # noqa: F401
 from services.attempt_service.app.models.score import Score  # noqa: F401
+from services.auth_service.app.models.user import User  # noqa: F401
 from services.challenge_service.app.models.challenge import Challenge  # noqa: F401
 from services.roster_service.app.models.driver import Driver  # noqa: F401
 from services.roster_service.app.models.team import Team  # noqa: F401
-from services.roster_service.app.models.user import User  # noqa: F401
 from shared.config import settings
 from shared.database import Base
 

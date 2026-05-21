@@ -7,9 +7,8 @@ Create Date: 2026-05-19 18:18:19.432267
 """
 from typing import Sequence, Union
 
-from alembic import op
 import sqlalchemy as sa
-
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = 'ec6b889263b5'
@@ -60,7 +59,7 @@ def upgrade() -> None:
     )
     op.create_table('teams',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('category', sa.Enum('close_to_series', 'advanced_class', 'professional_class', name='teamcategory'), nullable=False),
+    sa.Column('category', sa.Enum('close_to_series', 'advanced_class', 'professional_class', name='teamcategory'), nullable=False),  # noqa: E501
     sa.Column('name', sa.String(), nullable=False),
     sa.Column('vehicle_weight', sa.Float(), nullable=True),
     sa.Column('mean_power', sa.Float(), nullable=True),
