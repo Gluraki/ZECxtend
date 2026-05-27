@@ -1,3 +1,4 @@
+from app import models  # noqa: F401
 from app.routers.attempt import router as attempts_router
 from app.routers.export import router as exports_router
 from app.routers.leaderboard import router as leaderboard_router

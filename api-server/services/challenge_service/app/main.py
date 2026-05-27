@@ -1,3 +1,4 @@
+from app import models  # noqa: F401
 from app.routers.challenge import router as challenges_router
 from fastapi import FastAPI
 from fastapi.routing import APIRoute

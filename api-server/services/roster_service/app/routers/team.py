@@ -22,7 +22,7 @@ async def delete_team(db: SessionDep, team_id: int):
     return team
 
 @router.get("/{team_id}", response_model=TeamResponse)
-async def get_team(db: SessionDep, team_id: int):
+async def get_team_by_id(db: SessionDep, team_id: int):
     team = await crud.get(db=db, id=team_id)
     return team
 

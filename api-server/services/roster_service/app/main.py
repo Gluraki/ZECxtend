@@ -1,6 +1,6 @@
+from app import models  # noqa: F401
 from app.routers.driver import router as driver_router
 from app.routers.team import router as team_router
-from app.routers.user import router as users_router
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
 
@@ -14,13 +14,12 @@ def cstm_generate_unique_id(route: APIRoute) -> str:
     return f"untagged-{route.name}"
 
 app = FastAPI(
-    title="User Service API",
+    title="Roster Service API",
     openapi_url="/openapi.json",
     generate_unique_id_function=cstm_generate_unique_id,
 )
 
 register_health_endpoint(app)
-app.include_router(users_router, prefix="/users", tags=["users"])
 app.include_router(driver_router, prefix="/drivers", tags=["drivers"])
 app.include_router(team_router, prefix="/teams", tags=["teams"])
 

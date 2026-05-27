@@ -13,6 +13,7 @@ from services.roster_service.app.models.driver import Driver  # noqa: F401
 from services.roster_service.app.models.team import Team  # noqa: F401
 from shared.config import settings
 from shared.database import Base
+from shared.user_role import UserRole  # noqa: F401
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

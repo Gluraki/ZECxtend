@@ -2,13 +2,12 @@ from collections.abc import AsyncGenerator
 from typing import Annotated
 
 from fastapi import Depends
-from sqlalchemy import Column, Integer
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker,
     create_async_engine,
 )
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.orm import declarative_base
 
 from shared.config import settings
 
@@ -28,9 +27,7 @@ AsyncSessionLocal = async_sessionmaker(
     autoflush=False,
 )
 
-class Base(DeclarativeBase):
-    __abstract__ = True
-    id = Column(Integer, autoincrement=True, primary_key=True, index=True)
+Base = declarative_base()
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     async with AsyncSessionLocal() as session:

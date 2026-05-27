@@ -52,6 +52,11 @@ services:
         condition: service_healthy
     environment:
       PROJECT_NAME: auth-service
+      POSTGRES_SERVER: db
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
       AUTHENTIK_URL: http://authentik:9000
       ROSTER_SERVICE_URL: http://roster-service:8001
     healthcheck:
@@ -129,74 +134,6 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-    networks:
-      - internal
-
-  authentik_db:
-    image: docker.io/library/postgres:18-alpine
-    container_name: authentik_db
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: ${PG_DB:-authentik}
-      POSTGRES_USER: ${PG_USER:-authentik}
-      POSTGRES_PASSWORD: ${PG_PASS:?database password required}
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
-      start_period: 20s
-      interval: 30s
-      retries: 5
-      timeout: 5s
-    volumes:
-      - authentik_db_data:/var/lib/postgresql
-    networks:
-      - internal
-
-  authentik:
-    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2026.2.2}
-    container_name: authentik
-    command: server
-    restart: unless-stopped
-    shm_size: 512mb
-    depends_on:
-      authentik_db:
-        condition: service_healthy
-    environment:
-      AUTHENTIK_POSTGRESQL__HOST: authentik_db
-      AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:-authentik}
-      AUTHENTIK_POSTGRESQL__USER: ${PG_USER:-authentik}
-      AUTHENTIK_POSTGRESQL__PASSWORD: ${PG_PASS:?database password required}
-      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY:?secret key required}
-      AUTHENTIK_BOOTSTRAP_EMAIL: ${AUTHENTIK_BOOTSTRAP_EMAIL}
-      AUTHENTIK_BOOTSTRAP_PASSWORD: ${AUTHENTIK_BOOTSTRAP_PASSWORD}
-      AUTHENTIK_BOOTSTRAP_TOKEN: ${AUTHENTIK_BOOTSTRAP_TOKEN}
-    ports:
-      - "${COMPOSE_PORT_HTTP:-9000}:9000"
-      - "${COMPOSE_PORT_HTTPS:-9443}:9443"
-    networks:
-      - public
-      - internal
-
-  worker:
-    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2026.2.2}
-    container_name: authentik_worker
-    command: worker
-    restart: unless-stopped
-    shm_size: 512mb
-    user: root
-    depends_on:
-      authentik_db:
-        condition: service_healthy
-    environment:
-      AUTHENTIK_POSTGRESQL__HOST: authentik_db
-      AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:-authentik}
-      AUTHENTIK_POSTGRESQL__USER: ${PG_USER:-authentik}
-      AUTHENTIK_POSTGRESQL__PASSWORD: ${PG_PASS:?database password required}
-      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY:?secret key required}
-      AUTHENTIK_BOOTSTRAP_EMAIL: ${AUTHENTIK_BOOTSTRAP_EMAIL}
-      AUTHENTIK_BOOTSTRAP_PASSWORD: ${AUTHENTIK_BOOTSTRAP_PASSWORD}
-      AUTHENTIK_BOOTSTRAP_TOKEN: ${AUTHENTIK_BOOTSTRAP_TOKEN}
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - internal
 

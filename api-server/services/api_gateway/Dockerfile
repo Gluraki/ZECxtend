@@ -1,9 +1,23 @@
-FROM nginx:1.25-alpine
+FROM openresty/openresty:alpine-fat
 
-RUN rm /etc/nginx/conf.d/default.conf
+RUN apk add --no-cache \
+    curl \
+    gcc \
+    musl-dev \
+    make \
+    openssl-dev \
+    perl \
+    git \
+    unzip
 
-COPY nginx.conf /etc/nginx/nginx.conf
+RUN /usr/local/openresty/luajit/bin/luarocks install lua-resty-openidc
+RUN /usr/local/openresty/luajit/bin/luarocks install lua-resty-session
+RUN /usr/local/openresty/luajit/bin/luarocks install lua-resty-http
+
+COPY nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
+
+COPY lua /etc/nginx/lua
 
 EXPOSE 80
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["openresty", "-g", "daemon off;"]

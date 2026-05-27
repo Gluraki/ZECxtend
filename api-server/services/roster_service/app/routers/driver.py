@@ -1,5 +1,3 @@
-from typing import List
-
 from app.crud.driver import crud_driver as crud
 from app.schemas.driver import DriverCreate, DriverResponse, DriverUpdate
 from fastapi import APIRouter
@@ -24,11 +22,11 @@ async def delete_driver(db: SessionDep, driver_id: int):
     return db_driver
 
 @router.get("/{driver_id}", response_model=DriverResponse)
-async def get_driver(db: SessionDep, driver_id: int):
+async def get_driver_by_id(db: SessionDep, driver_id: int):
     db_driver = await crud.get(db=db, id=driver_id)
     return db_driver
 
-@router.get("/", response_model=List[DriverResponse])
+@router.get("/", response_model=list[DriverResponse])
 async def get_all_drivers(db: SessionDep):
     db_drivers = await crud.get_multi(db=db)
     return db_drivers
