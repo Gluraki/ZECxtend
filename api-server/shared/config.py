@@ -1,6 +1,6 @@
 from typing import Literal
 
-from pydantic import computed_field
+from pydantic import Field, computed_field
 from pydantic_core import MultiHostUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -12,7 +12,8 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    ENVIRONMENT: Literal["local", "staging", "production", "testing"] = "local"
+    ENVIRONMENT: Literal["local", "staging", "production"] = "local"
+    DATABASE_URL: str = Field(default="")
 
     POSTGRES_SERVER: str = ""
     POSTGRES_PORT: int = 5432
@@ -23,8 +24,8 @@ class Settings(BaseSettings):
     @computed_field
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> str:
-        if self.ENVIRONMENT == "testing":
-            return "sqlite+aiosqlite:///./test.db"
+        if self.DATABASE_URL:
+            return self.DATABASE_URL
         return str(MultiHostUrl.build(
             scheme="postgresql+psycopg",
             username=self.POSTGRES_USER,
