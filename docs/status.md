@@ -4,8 +4,9 @@
 - switched to uv envs
 - started implementing shared libs
 - swtiched to 1 db
-- implemented authentik into docker-compose
 - merged into 4 services
+- base functions are running
+- implemented a working auth prototype
 
 # Website
 Copied over from old repo (Web-app)
@@ -18,14 +19,12 @@ Copied over from old repo (zeitnehmerapplikation) without the mqtt part
 - Not working
 
 # Todo
-- get services running (remove old functions)
-- rethink setup
 - logic changes (api-server)
 - tests -> api-server
 - docs -> api-server
 
 # Ideas 
 - configs for ports etc..
-- native windows app for Timekeeper-App
-- Vite for the website
+- native app for Timekeeper-App (tauri)
+- Vite and deno for the website
 - host a simple hmtml login page for the swagger ui docs 

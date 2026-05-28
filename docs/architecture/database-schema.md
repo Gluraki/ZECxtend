@@ -2,10 +2,12 @@
 erDiagram
     USERS {
         int id PK
-        string kc_id UNIQUE
-        string username UNIQUE
+        string username
+        string password_hash
         int team_id FK
+        user_role role
         datetime created_at
+        datetime updated_at
     }
 
     TEAMS {
@@ -82,8 +84,8 @@ erDiagram
 
     enum user_role {
         string ADMIN
-        string TEAM_LEAD
-        string VIEWER
+        string TEAMLEAD
+        string USER
     }
 
     enum team_category {
