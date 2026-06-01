@@ -11,12 +11,14 @@ ModelType = TypeVar("ModelType")
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
 UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
 
+
 def _handle_integrity_error(e: IntegrityError, model_name: str, operation: str):
     if "unique" in str(e.orig).lower():
         raise exc.EntityAlreadyExistsError(f"{model_name} with the same unique field already exists")
     if "foreign" in str(e.orig).lower():
         raise exc.ForeignKeyViolationError(f"Foreign key error violated while {operation} {model_name}")
     raise exc.DatabaseError(f"Database error occurred while {operation} {model_name}")
+
 
 class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     def __init__(self, model: Type[ModelType]):
@@ -28,7 +30,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         if obj is None:
             raise exc.EntityDoesNotExistError(f"{self.model.__name__} with id {id} does not exist")
         return obj
-    
+
     async def get_or_none(self, db: AsyncSession, id: int) -> ModelType | None:
         result = await db.execute(select(self.model).where(self.model.id == id))
         obj = result.scalar_one_or_none()
