@@ -8,7 +8,6 @@ members = [
     "shared",
     "services/attempt_service",
     "services/auth_service",
-    "services/challenge_service",
     "services/roster_service",
 ]
 

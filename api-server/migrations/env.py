@@ -1,19 +1,35 @@
+import importlib
+import sys
 from logging.config import fileConfig
+from pathlib import Path
 
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-from services.attempt_service.app.models.attempt import Attempt  # noqa: F401
-from services.attempt_service.app.models.penalty import Penalty  # noqa: F401
-from services.attempt_service.app.models.penalty_type import PenaltyType  # noqa: F401
-from services.attempt_service.app.models.score import Score  # noqa: F401
-from services.auth_service.app.models.user import User  # noqa: F401
-from services.challenge_service.app.models.challenge import Challenge  # noqa: F401
-from services.roster_service.app.models.driver import Driver  # noqa: F401
-from services.roster_service.app.models.team import Team  # noqa: F401
 from shared.config import settings
 from shared.database import Base
-from shared.user_role import UserRole  # noqa: F401
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+
+def _load_service_models(service_name: str) -> None:
+    service_root = ROOT / "services" / service_name
+    service_path = str(service_root)
+
+    for module_name in [name for name in sys.modules if name == "app" or name.startswith("app.")]:
+        sys.modules.pop(module_name, None)
+
+    if service_path in sys.path:
+        sys.path.remove(service_path)
+    sys.path.insert(0, service_path)
+
+    importlib.import_module("app.models")
+
+
+for service in ("attempt_service", "auth_service", "roster_service"):
+    _load_service_models(service)
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -74,9 +90,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()

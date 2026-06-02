@@ -18,6 +18,7 @@ if str(ROOT) not in sys.path:
 
 os.environ.setdefault("DATABASE_URL", TEST_DATABASE_URL)
 
+
 def _load_service_app(service_name: str) -> FastAPI:
     if service_name in _SERVICE_APPS:
         return _SERVICE_APPS[service_name]
@@ -36,16 +37,18 @@ def _load_service_app(service_name: str) -> FastAPI:
     _SERVICE_APPS[service_name] = app
     return app
 
+
 @pytest.fixture(scope="session", autouse=True)
 def import_all_models():
     _load_service_app("attempt_service")
     _load_service_app("auth_service")
-    _load_service_app("challenge_service")
     _load_service_app("roster_service")
+
 
 @pytest_asyncio.fixture(scope="function")
 async def db_engine(import_all_models):
     from shared.database import Base
+
     engine = create_async_engine(TEST_DATABASE_URL, connect_args={"check_same_thread": False})
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
@@ -54,6 +57,7 @@ async def db_engine(import_all_models):
         await conn.run_sync(Base.metadata.drop_all)
     await engine.dispose()
 
+
 @pytest_asyncio.fixture(scope="function")
 async def db(db_engine):
     session_factory = async_sessionmaker(db_engine, expire_on_commit=False)
@@ -61,45 +65,43 @@ async def db(db_engine):
         yield session
         await session.rollback()
 
+
 @pytest_asyncio.fixture(scope="function")
 async def attempt_client(db: AsyncSession):
     app = _load_service_app("attempt_service")
     from shared.database import get_db
+
     async def override_get_db():
         yield db
+
     app.dependency_overrides[get_db] = override_get_db
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         yield ac
     app.dependency_overrides.clear()
+
 
 @pytest_asyncio.fixture(scope="function")
 async def auth_client(db: AsyncSession):
     app = _load_service_app("auth_service")
     from shared.database import get_db
+
     async def override_get_db():
         yield db
+
     app.dependency_overrides[get_db] = override_get_db
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         yield ac
     app.dependency_overrides.clear()
 
-@pytest_asyncio.fixture(scope="function")
-async def challenge_client(db: AsyncSession):
-    app = _load_service_app("challenge_service")
-    from shared.database import get_db
-    async def override_get_db():
-        yield db
-    app.dependency_overrides[get_db] = override_get_db
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        yield ac
-    app.dependency_overrides.clear()
 
 @pytest_asyncio.fixture(scope="function")
 async def roster_client(db: AsyncSession):
     app = _load_service_app("roster_service")
     from shared.database import get_db
+
     async def override_get_db():
         yield db
+
     app.dependency_overrides[get_db] = override_get_db
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         yield ac

@@ -1,18 +1,19 @@
-"""add models
+"""innit migration
 
-Revision ID: ec6b889263b5
-Revises: b4b3961f16fe
-Create Date: 2026-05-19 18:18:19.432267
+Revision ID: 55a43a763f7a
+Revises: 
+Create Date: 2026-06-02 12:54:00.179462
 
 """
 from typing import Sequence, Union
 
-import sqlalchemy as sa
 from alembic import op
+import sqlalchemy as sa
+
 
 # revision identifiers, used by Alembic.
-revision: str = 'ec6b889263b5'
-down_revision: Union[str, Sequence[str], None] = 'b4b3961f16fe'
+revision: str = '55a43a763f7a'
+down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -29,7 +30,7 @@ def upgrade() -> None:
     sa.Column('start_time', sa.DateTime(), nullable=True),
     sa.Column('end_time', sa.DateTime(), nullable=True),
     sa.Column('energy_used', sa.Float(), nullable=True),
-    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('challenges',
@@ -40,7 +41,7 @@ def upgrade() -> None:
     sa.Column('esp_mac_start2', sa.String(), nullable=True),
     sa.Column('esp_mac_finish1', sa.String(), nullable=True),
     sa.Column('esp_mac_finish2', sa.String(), nullable=True),
-    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('penalty_types',
@@ -54,27 +55,28 @@ def upgrade() -> None:
     sa.Column('attempt_id', sa.Integer(), nullable=True),
     sa.Column('challenge_id', sa.Integer(), nullable=True),
     sa.Column('value', sa.Float(), nullable=True),
-    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('teams',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('category', sa.Enum('close_to_series', 'advanced_class', 'professional_class', name='teamcategory'), nullable=False),  # noqa: E501
+    sa.Column('category', sa.Enum('close_to_series', 'advanced_class', 'professional_class', name='teamcategory'), nullable=False),
     sa.Column('name', sa.String(), nullable=False),
     sa.Column('vehicle_weight', sa.Float(), nullable=True),
     sa.Column('mean_power', sa.Float(), nullable=True),
     sa.Column('rfid_identifier', sa.String(), nullable=True),
-    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('users',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('kc_id', sa.String(), nullable=False),
     sa.Column('username', sa.String(), nullable=False),
+    sa.Column('password_hash', sa.String(), nullable=False),
     sa.Column('team_id', sa.Integer(), nullable=True),
-    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('role', sa.Enum('ADMIN', 'TEAMLEAD', 'USER', name='userrole'), nullable=False),
+    sa.Column('created_at', sa.DateTime(), nullable=False),
+    sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('kc_id'),
     sa.UniqueConstraint('username')
     )
     op.create_table('drivers',
@@ -82,7 +84,7 @@ def upgrade() -> None:
     sa.Column('name', sa.String(), nullable=False),
     sa.Column('team_id', sa.Integer(), nullable=True),
     sa.Column('weight', sa.Float(), nullable=True),
-    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.ForeignKeyConstraint(['team_id'], ['teams.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
@@ -91,7 +93,7 @@ def upgrade() -> None:
     sa.Column('attempt_id', sa.Integer(), nullable=True),
     sa.Column('penalty_type_id', sa.Integer(), nullable=True),
     sa.Column('count', sa.Integer(), nullable=True),
-    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.ForeignKeyConstraint(['penalty_type_id'], ['penalty_types.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
