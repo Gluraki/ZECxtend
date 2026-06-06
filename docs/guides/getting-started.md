@@ -1,3 +1,4 @@
+# Legacy
 # Getting Started with API Server
 
 ## Prerequisites
