@@ -42,7 +42,6 @@ def _load_service_app(service_name: str) -> FastAPI:
 def import_all_models():
     _load_service_app("attempt_service")
     _load_service_app("auth_service")
-    _load_service_app("roster_service")
 
 
 @pytest_asyncio.fixture(scope="function")
@@ -83,20 +82,6 @@ async def attempt_client(db: AsyncSession):
 @pytest_asyncio.fixture(scope="function")
 async def auth_client(db: AsyncSession):
     app = _load_service_app("auth_service")
-    from shared.database import get_db
-
-    async def override_get_db():
-        yield db
-
-    app.dependency_overrides[get_db] = override_get_db
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        yield ac
-    app.dependency_overrides.clear()
-
-
-@pytest_asyncio.fixture(scope="function")
-async def roster_client(db: AsyncSession):
-    app = _load_service_app("roster_service")
     from shared.database import get_db
 
     async def override_get_db():

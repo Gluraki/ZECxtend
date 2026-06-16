@@ -18,7 +18,7 @@ COPY services/ ./services/
 COPY migrations/ ./migrations/
 COPY alembic.ini .
 
-RUN uv sync --package roster-service --no-dev --compile-bytecode \
+RUN uv sync --package attempt-service --no-dev --compile-bytecode \
 	&& uv cache clean
 
 FROM python:3.14-slim

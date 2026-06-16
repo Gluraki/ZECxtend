@@ -28,7 +28,7 @@ def _load_service_models(service_name: str) -> None:
     importlib.import_module("app.models")
 
 
-for service in ("attempt_service", "auth_service", "roster_service"):
+for service in ("attempt_service", "auth_service"):
     _load_service_models(service)
 
 # this is the Alembic Config object, which provides

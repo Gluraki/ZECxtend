@@ -1,15 +1,13 @@
 services:
-  nginx:
+  gateway:
     build: ./services/api_gateway
-    container_name: nginx
+    container_name: gateway
     ports:
       - "80:80"
     depends_on:
       auth-service:
         condition: service_healthy
       attempt-service:
-        condition: service_healthy
-      roster-service:
         condition: service_healthy
     networks:
       - public
@@ -62,7 +60,6 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
       AUTHENTIK_URL: http://authentik:9000
-      ROSTER_SERVICE_URL: http://roster-service:8001
     healthcheck:
       test:
         [
@@ -70,38 +67,6 @@ services:
           "python",
           "-c",
           "import urllib.request; urllib.request.urlopen('http://localhost:8002/health')",
-        ]
-      interval: 20s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-    networks:
-      - internal
-
-  roster-service:
-    build:
-      context: .
-      dockerfile: services/roster_service/Dockerfile
-    container_name: roster-service
-    depends_on:
-      db:
-        condition: service_healthy
-    environment:
-      PROJECT_NAME: roster-service
-      POSTGRES_SERVER: db
-      POSTGRES_PORT: 5432
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-      AUTH_SERVICE_URL: http://auth-service:8002
-      AUTHENTIK_URL: http://authentik:9000
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "python",
-          "-c",
-          "import urllib.request; urllib.request.urlopen('http://localhost:8003/health')",
         ]
       interval: 20s
       timeout: 5s
