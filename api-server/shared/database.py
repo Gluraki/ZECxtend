@@ -30,6 +30,11 @@ AsyncSessionLocal = async_sessionmaker(
 Base = declarative_base()
 
 
+async def create_tables() -> None:
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     async with AsyncSessionLocal() as session:
         try:

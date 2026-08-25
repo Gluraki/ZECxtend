@@ -19,6 +19,7 @@ asyncio_mode = "auto"
 
 [dependency-groups]
 dev = [
+    "ruff >=0.16.4",
     "isort>=8.0",
     "aiosqlite>=0.22",
     "httpx>=0.28.1",

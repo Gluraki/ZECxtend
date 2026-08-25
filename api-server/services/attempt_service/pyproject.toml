@@ -5,7 +5,6 @@ requires-python = ">=3.13"
 dependencies = [
     "shared",
     "uvicorn[standard]>=0.47",
-    "alembic",
 ]
 
 [tool.uv.sources]
