@@ -4,13 +4,13 @@
 - switched to uv envs
 - started implementing shared libs
 - swtiched to 1 db
-- merged into 4 services
+- merged into 2 services
 - base functions are running
 - implemented a working auth prototype
 
 # Website
 Copied over from old repo (Web-app)
-- changed docker stuff
+- changed docker image 
 - should work if coupled with the old api-server (not tested)
     - can be found: https://github.com/Niklas-Maderbacher/zec-timing/tree/ZEC-API
 
@@ -25,6 +25,5 @@ Copied over from old repo (zeitnehmerapplikation) without the mqtt part
 
 # Ideas 
 - configs for ports etc..
-- native app for Timekeeper-App (tauri)
 - Vite and deno for the website
-- host a simple hmtml login page for the swagger ui docs 
+- host a simple hmtml login page for the swagger ui docs
