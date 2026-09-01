@@ -41,7 +41,10 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         return list(result.scalars().all())
 
     async def create(self, db: AsyncSession, obj_in: CreateSchemaType) -> ModelType:
-        db_obj = self.model(**obj_in.model_dump())
+        return await self._create_from_data(db, obj_in.model_dump())
+
+    async def _create_from_data(self, db: AsyncSession, data: dict) -> ModelType:
+        db_obj = self.model(**data)
         try:
             db.add(db_obj)
             await db.commit()

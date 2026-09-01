@@ -1,4 +1,5 @@
 from .attempt import Attempt  # noqa: F401
+from .challenge import Challenge  # noqa: F401
 from .driver import Driver  # noqa: F401
 from .penalty import Penalty  # noqa: F401
 from .penalty_type import PenaltyType  # noqa: F401
