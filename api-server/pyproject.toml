@@ -6,7 +6,7 @@ requires-python = ">=3.13"
 [tool.uv.workspace]
 members = [
     "shared",
-    "services/attempt_service",
+    "services/competition_service",
     "services/auth_service",
 ]
 

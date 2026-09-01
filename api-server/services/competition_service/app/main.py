@@ -29,7 +29,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 
 app = FastAPI(
-    title="Attempt Service API",
+    title="Competition Service API",
     openapi_url="/openapi.json",
     generate_unique_id_function=cstm_generate_unique_id,
     lifespan=lifespan,

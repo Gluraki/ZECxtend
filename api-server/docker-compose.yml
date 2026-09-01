@@ -7,22 +7,22 @@ services:
     depends_on:
       auth-service:
         condition: service_healthy
-      attempt-service:
+      competition-service:
         condition: service_healthy
     networks:
       - public
       - internal
 
-  attempt-service:
+  competition-service:
     build:
       context: .
-      dockerfile: services/attempt_service/Dockerfile
-    container_name: attempt-service
+      dockerfile: services/competition_service/Dockerfile
+    container_name: competition-service
     depends_on:
       db:
         condition: service_healthy
     environment:
-      PROJECT_NAME: attempt-service
+      PROJECT_NAME: competition-service
       POSTGRES_SERVER: db
       POSTGRES_PORT: 5432
       POSTGRES_USER: ${POSTGRES_USER}
@@ -37,7 +37,7 @@ services:
           "-c",
           "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')",
         ]
-      interval: 20s
+      interval: 60s
       timeout: 5s
       retries: 5
       start_period: 10s
@@ -68,7 +68,7 @@ services:
           "-c",
           "import urllib.request; urllib.request.urlopen('http://localhost:8002/health')",
         ]
-      interval: 20s
+      interval: 60s
       timeout: 5s
       retries: 5
       start_period: 10s

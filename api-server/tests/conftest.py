@@ -40,7 +40,7 @@ def _load_service_app(service_name: str) -> FastAPI:
 
 @pytest.fixture(scope="session", autouse=True)
 def import_all_models():
-    _load_service_app("attempt_service")
+    _load_service_app("competition_service")
     _load_service_app("auth_service")
 
 
@@ -66,8 +66,8 @@ async def db(db_engine):
 
 
 @pytest_asyncio.fixture(scope="function")
-async def attempt_client(db: AsyncSession):
-    app = _load_service_app("attempt_service")
+async def competition_client(db: AsyncSession):
+    app = _load_service_app("competition_service")
     from shared.database import get_db
 
     async def override_get_db():

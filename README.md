@@ -4,7 +4,7 @@ Fork/Extension of [Niklas-Maderbacher/zec-timing](https://github.com/Niklas-Made
 
 ## The Goal
 
-ZECxtend is an extension of the Zec-timing focused on improving the architecture and fixing limitations of the original implementation while adding some new funtionality.
+ZECxtend is an extension of the original project that also "should" fix the mess made on the original..
 
 # Status
 
@@ -15,8 +15,6 @@ Current focus:
 Detailed progress check out: [docs/status.md](docs/status.md)
 
 # Contents 
-
-ZECxtend consists of two Next.js frontends and one microservice FastAPI backend:
 
 - [website/](website/) - competition management and leaderboard view
 - [timekeeper-app/](timekeeper-app/) - attempt input interface
