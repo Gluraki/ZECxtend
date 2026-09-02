@@ -15,6 +15,10 @@ class Settings(BaseSettings):
     ENVIRONMENT: Literal["local", "staging", "production"] = "local"
     DATABASE_URL: str = Field(default="")
 
+    DOCS_ENABLED: bool = False
+    DOCS_USERNAME: str = "admin"
+    DOCS_PASSWORD: str = ""
+
     POSTGRES_SERVER: str = ""
     POSTGRES_PORT: int = 5432
     POSTGRES_USER: str = ""

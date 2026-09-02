@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>$title &middot; Docs Login</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    background: #f2f2f2; color: #1f2937;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  form {
+    width: 100%; max-width: 22rem; padding: 2rem; border-radius: 1rem;
+    background: #ffffff; border: 1px solid #e5e6e6;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  }
+  h1 { margin: 0 0 0.25rem; font-size: 1.25rem; color: #1f2937; }
+  p.subtitle { margin: 0 0 1.5rem; font-size: 0.85rem; color: #6b7280; }
+  label { display: block; margin-bottom: 0.35rem; font-size: 0.8rem; color: #6b7280; }
+  input {
+    width: 100%; margin-bottom: 1rem; padding: 0.6rem 0.75rem; border-radius: 0.5rem;
+    background: #ffffff; border: 1px solid #e5e6e6; color: #1f2937; font-size: 0.95rem;
+  }
+  input:focus { outline: none; border-color: #570df8; box-shadow: 0 0 0 2px rgba(87, 13, 248, 0.2); }
+  button {
+    width: 100%; padding: 0.65rem; border: 0; border-radius: 0.5rem;
+    background: #570df8; color: #fff; font-size: 0.95rem; font-weight: 600; cursor: pointer;
+  }
+  button:hover { background: #4506d1; }
+  p.error {
+    margin: 0 0 1rem; padding: 0.6rem 0.75rem; border-radius: 0.5rem;
+    background: #fdedee; border: 1px solid #f87272; color: #ae2727; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+  <form method="post" action="$action">
+    <h1>$title</h1>
+    <p class="error"$error_hidden>$error_message</p>
+    <label for="username">Username</label>
+    <input id="username" name="username" autocomplete="username" autofocus required>
+    <label for="password">Password</label>
+    <input id="password" name="password" type="password" autocomplete="current-password" required>
+    <button type="submit">Sign in</button>
+  </form>
+</body>
+</html>
