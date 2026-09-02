@@ -7,6 +7,7 @@
 - merged into 2 services
 - base functions are running
 - implemented a working auth prototype
+- swagger ui docs behind a login page each serviceses own port
 
 # Website
 Copied over from old repo (Web-app)
@@ -24,6 +25,4 @@ Copied over from old repo (zeitnehmerapplikation) without the mqtt part
 - docs -> api-server
 
 # Ideas 
-- configs for ports etc..
 - Vite and deno for the website
-- host a simple hmtml login page for the swagger ui docs
