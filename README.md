@@ -1,21 +1,13 @@
 # ZECxtend
-
 Fork/Extension of [Niklas-Maderbacher/zec-timing](https://github.com/Niklas-Maderbacher/zec-timing).
 
 ## The Goal
-
 ZECxtend is an extension of the original project that also "should" fix the mess made on the original..
 
 # Status
-
-Current focus: 
-- slimming down api-server
-- redoing core features
-
-Detailed progress check out: [docs/status.md](docs/status.md)
+Check out: [docs/status.md](docs/status.md)
 
 # Contents 
-
 - [website/](website/) - competition management and leaderboard view
 - [timekeeper-app/](timekeeper-app/) - attempt input interface
 - [api-server/](api-server/) - business logic for all components
@@ -29,14 +21,4 @@ Detailed progress check out: [docs/status.md](docs/status.md)
 - Run locally as a full containerized stack with Docker Compose
 
 ## Starter Guide
-
-Start here:
-
-- Getting started: [docs/guides/getting-started.md](docs/guides/getting-started.md)
-
-## Documentation
-
-Architecture:
-
-- System design: [docs/architecture/system-design.md](docs/architecture/system-design.md)
-- Database schema: [docs/architecture/database-schema.md](docs/architecture/database-schema.md)
+- Getting started: [docs/getting-started.md](docs/getting-started.md)
