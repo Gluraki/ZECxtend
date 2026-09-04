@@ -2,7 +2,7 @@
 Fork/Extension of [Niklas-Maderbacher/zec-timing](https://github.com/Niklas-Maderbacher/zec-timing).
 
 ## The Goal
-ZECxtend is an extension of the original project that also "should" fix the mess made on the original..
+ZECxtend is an extension of the original project that also "should" fix the mess made on the original.
 
 # Status
 Check out: [docs/status.md](docs/status.md)
