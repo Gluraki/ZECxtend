@@ -6,6 +6,7 @@ services:
       - "80:80"
     environment:
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?JWT_SECRET_KEY must be set}
     depends_on:
       auth-service:
         condition: service_healthy
@@ -64,12 +65,12 @@ services:
         condition: service_healthy
     environment:
       PROJECT_NAME: auth-service
+      SECRET_KEY: ${JWT_SECRET_KEY:?JWT_SECRET_KEY must be set}
       POSTGRES_SERVER: db
       POSTGRES_PORT: 5432
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
-      AUTHENTIK_URL: http://authentik:9000
       DOCS_ENABLED: ${DOCS_ENABLED}
       DOCS_USERNAME: ${DOCS_USERNAME}
       DOCS_PASSWORD: ${DOCS_PASSWORD}
@@ -125,7 +126,6 @@ services:
 
 volumes:
   db_data:
-  authentik_db_data:
 
 networks:
   public:

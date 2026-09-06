@@ -8,6 +8,7 @@
 - base functions are running
 - implemented a working auth prototype
 - swagger ui docs behind a login page each serviceses own port
+- gateway checks jwt and role 
 
 # Website
 Copied over from old repo (Web-app)

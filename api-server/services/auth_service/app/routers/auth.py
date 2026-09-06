@@ -16,13 +16,14 @@ router = APIRouter()
 @router.post("/login", response_model=schemas.Token)
 async def login(db: SessionDep, form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
     user = await crud_user.authenticate_user(db=db, username=form_data.username, password=form_data.password)
-    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES) # pyright: ignore[reportAttributeAccessIssue]
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     token = schemas.Token(
         access_token=auth_crud.create_access_token(
             subject=user.username,
             expires_delta=access_token_expires,
             role=cast(UserRole, user.role),
             user_id=cast(int, user.id),
+            team_id=cast(int | None, user.team_id),
         ),
         token_type="bearer",)
     return token

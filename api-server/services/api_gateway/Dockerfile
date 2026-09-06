@@ -10,8 +10,7 @@ RUN apk add --no-cache \
     git \
     unzip
 
-RUN /usr/local/openresty/luajit/bin/luarocks install lua-resty-openidc
-RUN /usr/local/openresty/luajit/bin/luarocks install lua-resty-session
+RUN /usr/local/openresty/luajit/bin/luarocks install lua-resty-jwt
 RUN /usr/local/openresty/luajit/bin/luarocks install lua-resty-http
 
 COPY nginx.conf /usr/local/openresty/nginx/conf/nginx.conf

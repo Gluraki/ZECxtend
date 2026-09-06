@@ -9,10 +9,20 @@ from shared.user_role import UserRole
 
 ALGORITHM = "HS256"
 
-def create_access_token(subject: str | Any, expires_delta: timedelta, role: UserRole, user_id: int) -> str:
+def create_access_token(
+    subject: str | Any,
+    expires_delta: timedelta,
+    role: UserRole,
+    user_id: int,
+    team_id: int | None = None,
+) -> str:
     expire = datetime.now(timezone.utc) + expires_delta
     to_encode = {"exp": expire, "sub": str(subject), "role": role.value, "id": user_id}
-    encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM) # pyright: ignore[reportAttributeAccessIssue]
+
+    if team_id is not None:
+        to_encode["team_id"] = team_id
+
+    encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
