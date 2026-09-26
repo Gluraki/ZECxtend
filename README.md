@@ -11,7 +11,7 @@ Check out: [docs/status.md](docs/status.md)
 - [website/](website/) - competition management and leaderboard view
 - [timekeeper-app/](timekeeper-app/) - attempt input interface
 - [api-server/](api-server/) - business logic for all components
-- [docs/](docs/) - architecture and project documentation
+- [docs/](docs/) - project documentation
 
 ## Features
 - Manage teams, drivers, and users in one system
