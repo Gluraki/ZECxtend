@@ -5,4 +5,4 @@ cd "$(dirname "${BASH_SOURCE[0]}")"
 source env.sh
 cd ..
 
-docker compose up -d "$@"
+docker compose -f docker-compose.yml up --build -d "$@"
