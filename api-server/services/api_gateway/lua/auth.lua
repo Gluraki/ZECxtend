@@ -9,6 +9,7 @@ local claim_spec = {
     sub = validators.required(),
     role = validators.required(),
     id = validators.required(),
+    typ = validators.equals("access"),
 }
 
 local SAFE_METHODS = {

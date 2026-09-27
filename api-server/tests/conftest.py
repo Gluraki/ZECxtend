@@ -17,6 +17,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 os.environ.setdefault("DATABASE_URL", TEST_DATABASE_URL)
+os.environ.setdefault("SECRET_KEY", "test-only-secret-key-that-is-at-least-32-bytes")
 
 
 def _load_service_app(service_name: str) -> FastAPI:
@@ -91,3 +92,62 @@ async def auth_client(db: AsyncSession):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         yield ac
     app.dependency_overrides.clear()
+
+
+PASSWORD = "password123"
+
+
+@pytest.fixture
+def password() -> str:
+    return PASSWORD
+
+
+@pytest.fixture
+def create_user(auth_client):
+    async def _create_user(username="alice", role="USER", team_id=None, **extra):
+        response = await auth_client.post("/users/", json={
+            "username": username,
+            "password": PASSWORD,
+            "role": role,
+            "team_id": team_id,
+            **extra,
+        })
+        assert response.status_code == 200, response.text
+        return response.json()
+
+    return _create_user
+
+
+@pytest.fixture
+def login(auth_client):
+    async def _login(username="alice", password=PASSWORD):
+        return await auth_client.post("/login", data={"username": username, "password": password})
+
+    return _login
+
+
+@pytest.fixture
+def crud_user(db):
+    _load_service_app("auth_service")
+    from app.crud.user import crud_user
+
+    return crud_user
+
+
+@pytest.fixture
+def auth_crud():
+    _load_service_app("auth_service")
+    import app.crud.auth as auth_crud
+
+    return auth_crud
+
+
+@pytest.fixture
+def claims(auth_crud):
+    import jwt
+    from app.config import settings
+
+    def _claims(token: str) -> dict:
+        return jwt.decode(token, settings.SECRET_KEY, algorithms=[auth_crud.ALGORITHM])
+
+    return _claims
