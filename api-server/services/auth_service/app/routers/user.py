@@ -30,11 +30,3 @@ async def get_user_by_id(db: SessionDep, user_id: int):
 async def get_all_users(db: SessionDep):
     db_users = await crud.get_multi(db=db)
     return db_users
-
-@router.post("/{user_id}/roles")
-async def assign_client_roles_to_user():
-    pass
-
-@router.delete("/{user_id}/roles")
-async def remove_roles_from_user():
-    pass
