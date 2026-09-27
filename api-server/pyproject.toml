@@ -17,6 +17,9 @@ shared = { workspace = true }
 testpaths = ["tests"]
 asyncio_mode = "auto"
 
+[tool.coverage.run]
+concurrency = ["greenlet", "thread"]
+
 [dependency-groups]
 dev = [
     "ruff >=0.16.4",
