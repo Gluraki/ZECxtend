@@ -17,6 +17,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 os.environ.setdefault("DATABASE_URL", TEST_DATABASE_URL)
+os.environ.setdefault("SECRET_KEY", "test-only-secret-key-that-is-at-least-32-bytes")
 
 
 def _load_service_app(service_name: str) -> FastAPI:
