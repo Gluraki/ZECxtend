@@ -85,13 +85,6 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         if (admin_count or 0) <= 1:
             raise exc.InvalidOperationError("Cannot remove the last admin")
 
-    async def get_by_username(self, db: AsyncSession, username: str) -> User:
-        result = await db.execute(select(User).where(User.username == username))
-        db_user = result.scalar_one_or_none()
-        if db_user is None:
-            raise exc.EntityDoesNotExistError(f"User with username {username} does not exist")
-        return db_user
-
     async def authenticate_user(self, db: AsyncSession, username: str, password: str) -> User:
         result = await db.execute(select(User).where(User.username == username))
         db_user = result.scalar_one_or_none()
