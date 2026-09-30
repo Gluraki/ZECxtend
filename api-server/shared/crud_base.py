@@ -36,8 +36,12 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         obj = result.scalar_one_or_none()
         return obj
 
-    async def get_multi(self, db: AsyncSession, skip: int = 0, limit: int = 100) -> list[ModelType]:
-        result = await db.execute(select(self.model).offset(skip).limit(limit).order_by(self.model.id))
+    async def get_multi(self, db: AsyncSession, skip: int = 0, limit: int = 100, **filters: Any) -> list[ModelType]:
+        query = select(self.model)
+        for field, value in filters.items():
+            if value is not None:
+                query = query.where(getattr(self.model, field) == value)
+        result = await db.execute(query.order_by(self.model.id).offset(skip).limit(limit))
         return list(result.scalars().all())
 
     async def create(self, db: AsyncSession, obj_in: CreateSchemaType) -> ModelType:
