@@ -7,6 +7,7 @@ import pytest
 import pytest_asyncio
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy import event
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -50,6 +51,13 @@ async def db_engine(import_all_models):
     from shared.database import Base
 
     engine = create_async_engine(TEST_DATABASE_URL, connect_args={"check_same_thread": False})
+
+    @event.listens_for(engine.sync_engine, "connect")
+    def _enable_sqlite_foreign_keys(dbapi_connection, _):
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.close()
+
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     yield engine
@@ -151,3 +159,107 @@ def claims(auth_crud):
         return jwt.decode(token, settings.SECRET_KEY, algorithms=[auth_crud.ALGORITHM])
 
     return _claims
+
+
+ADMIN_HEADERS = {"X-User-Id": "1", "X-Username": "admin", "X-Role": "ADMIN"}
+
+
+def teamlead_headers(team_id: int) -> dict[str, str]:
+    return {"X-User-Id": "2", "X-Username": "lead", "X-Role": "TEAMLEAD", "X-Team-Id": str(team_id)}
+
+
+def _model(name: str):
+    from shared.database import Base
+
+    return next(m.class_ for m in Base.registry.mappers if m.class_.__name__ == name)
+
+
+START = "2026-06-01T10:00:00.000001"
+END = "2026-06-01T10:01:30.500000"
+
+
+@pytest.fixture
+def make_team(competition_client):
+    async def _make_team(name="Team A", category="close_to_series", **extra):
+        response = await competition_client.post("/teams/", headers=ADMIN_HEADERS, json={
+            "name": name,
+            "category": category,
+            "mean_power": 5.0,
+            "vehicle_weight": 150.0,
+            "rfid_identifier": f"rfid-{name}",
+            **extra,
+        })
+        assert response.status_code == 200, response.text
+        return response.json()
+
+    return _make_team
+
+
+@pytest.fixture
+def make_driver(competition_client):
+    async def _make_driver(team_id, name="Driver", weight=70.0):
+        response = await competition_client.post(
+            "/drivers/", headers=ADMIN_HEADERS, json={"name": name, "team_id": team_id, "weight": weight}
+        )
+        assert response.status_code == 200, response.text
+        return response.json()
+
+    return _make_driver
+
+
+@pytest.fixture
+def make_challenge(db):
+    async def _make_challenge(name="Skidpad", max_attempts=3):
+        challenge = _model("Challenge")(name=name, max_attempts=max_attempts)
+        db.add(challenge)
+        await db.commit()
+        return challenge.id
+
+    return _make_challenge
+
+
+@pytest.fixture
+def make_penalty_type(db):
+    async def _make_penalty_type(type="Strecke verlassen", amount=10):
+        penalty_type = _model("PenaltyType")(type=type, amount=amount)
+        db.add(penalty_type)
+        await db.commit()
+        return penalty_type.id
+
+    return _make_penalty_type
+
+
+@pytest.fixture
+def attempt_body():
+    def _attempt_body(team_id, driver_id, challenge_id, **extra):
+        return {
+            "team_id": team_id,
+            "driver_id": driver_id,
+            "challenge_id": challenge_id,
+            "start_time": START,
+            "end_time": END,
+            "energy_used": 12.5,
+            **extra,
+        }
+
+    return _attempt_body
+
+
+@pytest.fixture
+def make_attempt(competition_client, attempt_body):
+    async def _make_attempt(team_id, driver_id, challenge_id, **extra):
+        response = await competition_client.post(
+            "/attempts/", headers=ADMIN_HEADERS, json=attempt_body(team_id, driver_id, challenge_id, **extra)
+        )
+        assert response.status_code == 200, response.text
+        return response.json()
+
+    return _make_attempt
+
+
+@pytest_asyncio.fixture
+async def setup(make_team, make_driver, make_challenge):
+    team = await make_team()
+    driver = await make_driver(team["id"])
+    challenge_id = await make_challenge()
+    return {"team": team["id"], "driver": driver["id"], "challenge": challenge_id}
