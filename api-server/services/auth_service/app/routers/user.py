@@ -3,6 +3,7 @@ from app.schemas.user import UserCreate, UserResponse, UserUpdate
 from fastapi import APIRouter
 
 from shared.database import SessionDep
+from shared.pagination import PaginationDep
 
 router = APIRouter()
 
@@ -27,6 +28,6 @@ async def get_user_by_id(db: SessionDep, user_id: int):
     return db_user
 
 @router.get("/", response_model=list[UserResponse])
-async def get_all_users(db: SessionDep):
-    db_users = await crud.get_multi(db=db)
+async def get_all_users(db: SessionDep, page: PaginationDep):
+    db_users = await crud.get_multi(db=db, skip=page.skip, limit=page.limit)
     return db_users
