@@ -1,4 +1,5 @@
-from app.crud.score import crud_score as crud
+from app.crud.leaderboard import get_leaderboard
+from app.models.team import TeamCategory
 from app.schemas.leaderboard import LeaderboardResponse
 from fastapi import APIRouter
 
@@ -8,6 +9,6 @@ router = APIRouter()
 
 
 @router.get("/{challenge_id}/category/{category}", response_model=list[LeaderboardResponse])
-async def get_leaderboard_by_category(db: SessionDep, challenge_id: int, category: str):
-    leaderboard = await crud.get_leaderboard(db=db)
+async def get_leaderboard_by_category(db: SessionDep, challenge_id: int, category: TeamCategory):
+    leaderboard = await get_leaderboard(db=db, challenge_id=challenge_id, category=category)
     return leaderboard

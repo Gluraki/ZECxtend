@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 def validate_naive_datetime_with_microseconds(v):
@@ -38,9 +38,14 @@ class AttemptBase(BaseModel):
         return validate_naive_datetime_with_microseconds(v)
 
 class AttemptCreate(AttemptBase):
-    is_valid: Optional[bool] = True
-    penalty_count: Optional[int] = 0
+    penalty_count: Optional[int] = Field(0, ge=0)
     penalty_type: Optional[int] = None
+
+    @model_validator(mode="after")
+    def end_after_start(self):
+        if self.end_time <= self.start_time:
+            raise ValueError("end_time must be after start_time")
+        return self
 
 class AttemptUpdate(BaseModel):
     team_id: Optional[int] = None
@@ -49,12 +54,14 @@ class AttemptUpdate(BaseModel):
     start_time: Optional[datetime] = None
     end_time: Optional[datetime] = None
     energy_used: Optional[float] = None
-    is_valid: Optional[bool] = None
 
     @field_validator("start_time", "end_time", mode="before")
     @classmethod
     def enforce_iso_naive_with_microseconds(cls, v):
         return validate_naive_datetime_with_microseconds(v)
+
+class AttemptValidityUpdate(BaseModel):
+    is_valid: bool
 
 class AttemptResponse(AttemptBase):
     id: int

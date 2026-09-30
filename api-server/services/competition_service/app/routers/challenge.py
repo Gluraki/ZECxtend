@@ -3,11 +3,13 @@ from app.schemas.challenge import ChallengeResponse, ChallengeUpdate
 from fastapi import APIRouter
 
 from shared.database import SessionDep
+from shared.identity import require_roles
+from shared.user_role import UserRole
 
 router = APIRouter()
 
 
-@router.put("/{challenge_id}", response_model=ChallengeResponse)
+@router.put("/{challenge_id}", response_model=ChallengeResponse, dependencies=[require_roles(UserRole.ADMIN)])
 async def update_challenge(db: SessionDep, challenge_id: int, challenge_update: ChallengeUpdate):
     challenge = await crud.update(db=db, id=challenge_id, obj_in=challenge_update)
     return challenge
