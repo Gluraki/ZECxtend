@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 from typing import Any, Literal
 
 import bcrypt
@@ -6,6 +6,7 @@ import jwt
 from app.config import settings
 
 import shared.exceptions as exc
+from shared.database import utcnow
 from shared.user_role import UserRole
 
 ALGORITHM = "HS256"
@@ -17,7 +18,7 @@ _DUMMY_PASSWORD_HASH = bcrypt.hashpw(b"dummy-password", bcrypt.gensalt()).decode
 
 
 def _encode(claims: dict[str, Any], token_type: TokenType, expires_delta: timedelta) -> str:
-    now = datetime.now(timezone.utc)
+    now = utcnow()
     to_encode = {**claims, "typ": token_type, "iat": now, "exp": now + expires_delta}
     return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
 

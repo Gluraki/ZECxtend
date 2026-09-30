@@ -1,11 +1,11 @@
-from datetime import datetime, timezone
+from datetime import datetime
 from enum import Enum
 
 from sqlalchemy import DateTime, Float, String
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from shared.database import Base
+from shared.database import Base, utcnow
 
 
 class TeamCategory(Enum):
@@ -23,6 +23,6 @@ class Team(Base):
     vehicle_weight: Mapped[float | None] = mapped_column(Float)
     mean_power: Mapped[float | None] = mapped_column(Float)
     rfid_identifier: Mapped[str | None] = mapped_column(String)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
     drivers = relationship("Driver", back_populates="team", cascade="all, delete-orphan")

@@ -1,4 +1,5 @@
 from collections.abc import AsyncGenerator
+from datetime import datetime, timezone
 from typing import Annotated
 
 from fastapi import Depends
@@ -28,6 +29,10 @@ AsyncSessionLocal = async_sessionmaker(
 )
 
 Base = declarative_base()
+
+
+def utcnow() -> datetime:
+    return datetime.now(timezone.utc)
 
 
 async def create_tables() -> None:

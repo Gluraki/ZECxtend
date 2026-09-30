@@ -1,9 +1,9 @@
-from datetime import datetime, timezone
+from datetime import datetime
 
 from sqlalchemy import DateTime, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from shared.database import Base
+from shared.database import Base, utcnow
 
 
 class Challenge(Base):
@@ -16,4 +16,4 @@ class Challenge(Base):
     esp_mac_start2: Mapped[str | None] = mapped_column(String)
     esp_mac_finish1: Mapped[str | None] = mapped_column(String)
     esp_mac_finish2: Mapped[str | None] = mapped_column(String)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)

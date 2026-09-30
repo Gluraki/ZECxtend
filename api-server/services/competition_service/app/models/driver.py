@@ -1,9 +1,9 @@
-from datetime import datetime, timezone
+from datetime import datetime
 
 from sqlalchemy import DateTime, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from shared.database import Base
+from shared.database import Base, utcnow
 
 
 class Driver(Base):
@@ -13,6 +13,6 @@ class Driver(Base):
     name: Mapped[str] = mapped_column(String, nullable=False)
     team_id: Mapped[int | None] = mapped_column(ForeignKey('teams.id'))
     weight: Mapped[float | None] = mapped_column(Float)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     
     team = relationship("Team", back_populates="drivers")
