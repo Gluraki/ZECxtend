@@ -1,7 +1,3 @@
-from app.models.attempt import Attempt
-from app.models.challenge import Challenge
-from app.models.driver import Driver
-from app.models.penalty import Penalty
 from app.schemas.attempt import AttemptCreate, AttemptUpdate
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
@@ -9,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 import shared.exceptions as exc
 from shared.crud_base import CRUDBase, _handle_integrity_error
+from shared.models import Attempt, Challenge, Driver, Penalty
 
 NON_NULLABLE_FIELDS = {"team_id", "driver_id", "challenge_id"}
 

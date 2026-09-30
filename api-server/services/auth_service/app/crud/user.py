@@ -1,5 +1,4 @@
 from app.crud.auth import burn_password_check, get_password_hash, verify_password
-from app.models.user import User
 from app.schemas.user import UserCreate, UserUpdate
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
@@ -7,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 import shared.exceptions as exc
 from shared.crud_base import CRUDBase
+from shared.models import User
 from shared.user_role import UserRole
 
 TOKEN_RELEVANT_FIELDS = {"password", "role", "team_id"}
@@ -71,6 +71,8 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
             await db.rollback()
             if "unique" in str(e.orig).lower():
                 raise exc.EntityAlreadyExistsError("User with this username already exists")
+            if "foreign" in str(e.orig).lower():
+                raise exc.ForeignKeyViolationError("Team with the specified id does not exist")
             raise exc.DatabaseError("Database error occurred while updating User")
         return db_user
 

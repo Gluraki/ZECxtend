@@ -14,11 +14,10 @@ ROOT = Path(__file__).resolve().parents[1]
 TEST_DATABASE_URL = "sqlite+aiosqlite:///./test.db"
 _SERVICE_APPS: dict[str, FastAPI] = {}
 
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
-
 os.environ.setdefault("DATABASE_URL", TEST_DATABASE_URL)
 os.environ.setdefault("SECRET_KEY", "test-only-secret-key-that-is-at-least-32-bytes")
+
+from shared.models import Challenge, PenaltyType, Team, TeamCategory  # noqa: E402
 
 
 def _load_service_app(service_name: str) -> FastAPI:
@@ -126,6 +125,14 @@ def create_user(auth_client):
     return _create_user
 
 
+@pytest_asyncio.fixture
+async def team_id(db) -> int:
+    team = Team(name="Team", category=TeamCategory.close_to_series)
+    db.add(team)
+    await db.commit()
+    return team.id
+
+
 @pytest.fixture
 def login(auth_client):
     async def _login(username="alice", password=PASSWORD):
@@ -168,12 +175,6 @@ def teamlead_headers(team_id: int) -> dict[str, str]:
     return {"X-User-Id": "2", "X-Username": "lead", "X-Role": "TEAMLEAD", "X-Team-Id": str(team_id)}
 
 
-def _model(name: str):
-    from shared.database import Base
-
-    return next(m.class_ for m in Base.registry.mappers if m.class_.__name__ == name)
-
-
 START = "2026-06-01T10:00:00.000001"
 END = "2026-06-01T10:01:30.500000"
 
@@ -210,7 +211,7 @@ def make_driver(competition_client):
 @pytest.fixture
 def make_challenge(db):
     async def _make_challenge(name="Skidpad", max_attempts=3):
-        challenge = _model("Challenge")(name=name, max_attempts=max_attempts)
+        challenge = Challenge(name=name, max_attempts=max_attempts)
         db.add(challenge)
         await db.commit()
         return challenge.id
@@ -221,7 +222,7 @@ def make_challenge(db):
 @pytest.fixture
 def make_penalty_type(db):
     async def _make_penalty_type(type="Strecke verlassen", amount=10):
-        penalty_type = _model("PenaltyType")(type=type, amount=amount)
+        penalty_type = PenaltyType(type=type, amount=amount)
         db.add(penalty_type)
         await db.commit()
         return penalty_type.id

@@ -8,7 +8,6 @@ from shared.identity import CurrentUserDep, require_roles
 from shared.pagination import PaginationDep
 from shared.user_role import UserRole
 
-# category decides which leaderboard a team competes in, so only an admin moves teams between them
 TEAMLEAD_EDITABLE_FIELDS = {"name", "vehicle_weight", "mean_power", "rfid_identifier"}
 
 router = APIRouter()

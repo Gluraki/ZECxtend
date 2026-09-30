@@ -16,14 +16,31 @@ services:
       - public
       - internal
 
+  migrate:
+    build:
+      context: .
+      dockerfile: migrations/Dockerfile
+    container_name: migrate
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      POSTGRES_SERVER: db
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    networks:
+      - internal
+
   competition-service:
     build:
       context: .
       dockerfile: services/competition_service/Dockerfile
     container_name: competition-service
     depends_on:
-      db:
-        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     environment:
       PROJECT_NAME: competition-service
       POSTGRES_SERVER: db
@@ -55,8 +72,8 @@ services:
       dockerfile: services/auth_service/Dockerfile
     container_name: auth-service
     depends_on:
-      db:
-        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     environment:
       PROJECT_NAME: auth-service
       SECRET_KEY: ${JWT_SECRET_KEY:?JWT_SECRET_KEY must be set}

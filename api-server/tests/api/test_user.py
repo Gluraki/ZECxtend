@@ -2,24 +2,25 @@ import pytest
 
 
 @pytest.mark.asyncio
-async def test_role_can_be_set_on_create_and_update(auth_client, create_user):
+async def test_role_can_be_set_on_create_and_update(auth_client, create_user, team_id):
     user = await create_user("bob")
     assert user["role"] == "USER"
 
-    response = await auth_client.put(f"/users/{user['id']}", json={"role": "TEAMLEAD", "team_id": 1})
+    response = await auth_client.put(f"/users/{user['id']}", json={"role": "TEAMLEAD", "team_id": team_id})
 
     assert response.status_code == 200
     assert response.json()["role"] == "TEAMLEAD"
 
 
 @pytest.mark.asyncio
-async def test_team_can_be_cleared_but_role_cannot_be_null(auth_client, create_user):
+async def test_team_can_be_cleared_but_role_cannot_be_null(auth_client, create_user, team_id):
     user = await create_user("bob")
-    await auth_client.put(f"/users/{user['id']}", json={"team_id": 3})
+    assigned = await auth_client.put(f"/users/{user['id']}", json={"team_id": team_id})
 
     cleared = await auth_client.put(f"/users/{user['id']}", json={"team_id": None})
     null_role = await auth_client.put(f"/users/{user['id']}", json={"role": None})
 
+    assert assigned.json()["team_id"] == team_id
     assert cleared.status_code == 200
     assert cleared.json()["team_id"] is None
     assert null_role.status_code == 400
@@ -65,22 +66,22 @@ async def test_role_sub_resource_is_gone(auth_client, create_user):
 
 
 @pytest.mark.asyncio
-async def test_teamlead_requires_team_on_create(auth_client, password):
+async def test_teamlead_requires_team_on_create(auth_client, password, team_id):
     body = {"username": "lead", "password": password, "role": "TEAMLEAD"}
 
     without_team = await auth_client.post("/users/", json=body)
-    with_team = await auth_client.post("/users/", json={**body, "team_id": 1})
+    with_team = await auth_client.post("/users/", json={**body, "team_id": team_id})
 
     assert without_team.status_code == 400
     assert with_team.status_code == 200
 
 
 @pytest.mark.asyncio
-async def test_teamlead_requires_team_on_update(auth_client, create_user):
+async def test_teamlead_requires_team_on_update(auth_client, create_user, team_id):
     user = await create_user("bob")
 
     promote_without_team = await auth_client.put(f"/users/{user['id']}", json={"role": "TEAMLEAD"})
-    await auth_client.put(f"/users/{user['id']}", json={"role": "TEAMLEAD", "team_id": 1})
+    await auth_client.put(f"/users/{user['id']}", json={"role": "TEAMLEAD", "team_id": team_id})
     clear_team = await auth_client.put(f"/users/{user['id']}", json={"team_id": None})
     demote_and_clear = await auth_client.put(f"/users/{user['id']}", json={"role": "USER", "team_id": None})
 
@@ -158,3 +159,14 @@ async def test_duplicate_username_is_409(auth_client, create_user, password):
 
     assert duplicate_create.status_code == 409
     assert duplicate_rename.status_code == 409
+
+
+@pytest.mark.asyncio
+async def test_unknown_team_is_rejected_on_create_and_update(auth_client, create_user, password):
+    user = await create_user("bob")
+
+    created = await auth_client.post("/users/", json={"username": "lead", "password": password, "team_id": 999})
+    updated = await auth_client.put(f"/users/{user['id']}", json={"team_id": 999})
+
+    assert created.status_code == 400
+    assert updated.status_code == 400

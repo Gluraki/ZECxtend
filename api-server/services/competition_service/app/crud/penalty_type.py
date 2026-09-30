@@ -1,6 +1,7 @@
-from app.models.penalty_type import PenaltyType
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from shared.models import PenaltyType
 
 
 async def get_penalty_types(db: AsyncSession) -> list[PenaltyType]:

@@ -1,8 +1,9 @@
 from datetime import datetime
 from typing import Optional
 
-from app.models.team import TeamCategory
 from pydantic import BaseModel, ConfigDict
+
+from shared.models import TeamCategory
 
 
 class TeamBase(BaseModel):

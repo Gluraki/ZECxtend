@@ -18,8 +18,8 @@ async def refresh(client, token: str | None):
 
 
 @pytest.mark.asyncio
-async def test_login_returns_short_lived_access_token_and_refresh_cookie(create_user, login, claims):
-    user = await create_user(role="TEAMLEAD", team_id=7)
+async def test_login_returns_short_lived_access_token_and_refresh_cookie(create_user, login, claims, team_id):
+    user = await create_user(role="TEAMLEAD", team_id=team_id)
 
     response = await login()
 
@@ -32,7 +32,7 @@ async def test_login_returns_short_lived_access_token_and_refresh_cookie(create_
     assert access["sub"] == "alice"
     assert access["id"] == user["id"]
     assert access["role"] == "TEAMLEAD"
-    assert access["team_id"] == 7
+    assert access["team_id"] == team_id
     assert claims(refresh_cookie(response))["typ"] == "refresh"
 
 
@@ -59,11 +59,11 @@ async def test_refresh_issues_new_access_token(auth_client, create_user, login, 
 
 
 @pytest.mark.asyncio
-async def test_refresh_picks_up_role_change_but_old_token_is_revoked(auth_client, create_user, login, claims):
+async def test_refresh_picks_up_role_change_but_old_token_is_revoked(auth_client, create_user, login, claims, team_id):
     user = await create_user()
     token = refresh_cookie(await login())
 
-    await auth_client.put(f"/users/{user['id']}", json={"role": "TEAMLEAD", "team_id": 1})
+    await auth_client.put(f"/users/{user['id']}", json={"role": "TEAMLEAD", "team_id": team_id})
 
     assert (await refresh(auth_client, token)).status_code == 401
     relogin = await login()

@@ -1,9 +1,9 @@
 from app.crud.leaderboard import get_leaderboard
-from app.models.team import TeamCategory
 from app.schemas.leaderboard import LeaderboardResponse
 from fastapi import APIRouter
 
 from shared.database import SessionDep
+from shared.models import TeamCategory
 
 router = APIRouter()
 

@@ -78,3 +78,13 @@ async def test_team_without_attempts_deletes_with_its_drivers(competition_client
 
     assert response.status_code == 200
     assert (await competition_client.get("/drivers/")).json() == []
+
+
+@pytest.mark.asyncio
+async def test_team_with_users_cannot_be_deleted(competition_client, create_user, make_team):
+    team = await make_team()
+    await create_user("lead", role="TEAMLEAD", team_id=team["id"])
+
+    response = await competition_client.delete(f"/teams/{team['id']}", headers=ADMIN_HEADERS)
+
+    assert response.status_code == 400

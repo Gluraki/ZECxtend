@@ -4,13 +4,13 @@ from typing import Annotated
 import app.crud.auth as auth_crud
 from app.config import REFRESH_COOKIE_NAME, REFRESH_COOKIE_OPTIONS, settings
 from app.crud.user import crud_user
-from app.models.user import User
 from app.schemas import token as schemas
 from fastapi import APIRouter, Cookie, Depends, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 import shared.exceptions as exc
 from shared.database import SessionDep
+from shared.models import User
 
 router = APIRouter()
 

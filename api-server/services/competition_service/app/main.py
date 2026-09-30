@@ -1,7 +1,3 @@
-from collections.abc import AsyncIterator
-from contextlib import asynccontextmanager
-
-from app import models  # noqa: F401
 from app.routers.attempt import router as attempts_router
 from app.routers.challenge import router as challenge_router
 from app.routers.driver import router as driver_router
@@ -12,7 +8,6 @@ from app.routers.team import router as team_router
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
 
-from shared.database import create_tables
 from shared.docs_auth import register_docs_auth
 from shared.exceptions import register_exception_handlers
 from shared.health import register_health_endpoint
@@ -24,19 +19,12 @@ def cstm_generate_unique_id(route: APIRoute) -> str:
     return f"untagged-{route.name}"
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    await create_tables()
-    yield
-
-
 app = FastAPI(
     title="Competition Service API",
     docs_url=None,
     redoc_url=None,
     openapi_url=None,
     generate_unique_id_function=cstm_generate_unique_id,
-    lifespan=lifespan,
 )
 register_docs_auth(app)
 register_health_endpoint(app)

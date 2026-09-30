@@ -39,11 +39,11 @@ async def test_create_hashes_password_and_sets_defaults(make_user, password):
 
 
 @pytest.mark.asyncio
-async def test_create_sets_role_team_and_must_change(make_user):
-    user = await make_user(role=UserRole.TEAMLEAD, team_id=3, must_change_password=True)
+async def test_create_sets_role_team_and_must_change(make_user, team_id):
+    user = await make_user(role=UserRole.TEAMLEAD, team_id=team_id, must_change_password=True)
 
     assert user.role == UserRole.TEAMLEAD
-    assert user.team_id == 3
+    assert user.team_id == team_id
     assert user.must_change_password is True
 
 
@@ -99,11 +99,12 @@ async def test_update_password_rehashes_clears_must_change_and_bumps_version(db,
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("fields", [{"role": UserRole.ADMIN}, {"team_id": 5}])
-async def test_update_role_or_team_bumps_version(db, crud_user, schemas, make_user, fields):
+@pytest.mark.parametrize("field", ["role", "team_id"])
+async def test_update_role_or_team_bumps_version(db, crud_user, schemas, make_user, team_id, field):
     user = await make_user()
+    value = {"role": UserRole.ADMIN, "team_id": team_id}[field]
 
-    updated = await crud_user.update(db=db, id=user.id, obj_in=schemas.UserUpdate(**fields))
+    updated = await crud_user.update(db=db, id=user.id, obj_in=schemas.UserUpdate(**{field: value}))
 
     assert updated.token_version == 1
 
@@ -128,8 +129,8 @@ async def test_update_rejects_null_for_required_fields(db, crud_user, schemas, m
 
 
 @pytest.mark.asyncio
-async def test_update_can_clear_team(db, crud_user, schemas, make_user):
-    user = await make_user(team_id=3)
+async def test_update_can_clear_team(db, crud_user, schemas, make_user, team_id):
+    user = await make_user(team_id=team_id)
 
     updated = await crud_user.update(db=db, id=user.id, obj_in=schemas.UserUpdate(team_id=None))
 
@@ -154,9 +155,11 @@ async def test_update_unknown(db, crud_user, schemas):
 @pytest.mark.asyncio
 @pytest.mark.parametrize("initial, fields", [
     ({}, {"role": UserRole.TEAMLEAD}),
-    ({"role": UserRole.TEAMLEAD, "team_id": 1}, {"team_id": None}),
+    ({"role": UserRole.TEAMLEAD, "team_id": "existing"}, {"team_id": None}),
 ])
-async def test_update_teamlead_without_team(db, crud_user, schemas, make_user, initial, fields):
+async def test_update_teamlead_without_team(db, crud_user, schemas, make_user, team_id, initial, fields):
+    if initial.get("team_id") == "existing":
+        initial = {**initial, "team_id": team_id}
     user = await make_user(**initial)
 
     with pytest.raises(exc.InvalidOperationError):

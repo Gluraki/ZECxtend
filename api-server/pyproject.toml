@@ -8,6 +8,7 @@ members = [
     "shared",
     "services/competition_service",
     "services/auth_service",
+    "migrations",
 ]
 
 [tool.uv.sources]
