@@ -18,6 +18,11 @@ class CurrentUser:
     def is_admin(self) -> bool:
         return self.role == UserRole.ADMIN
 
+    def can_manage_team(self, team_id: int | None) -> bool:
+        if self.is_admin:
+            return True
+        return self.role == UserRole.TEAMLEAD and team_id is not None and team_id == self.team_id
+
 
 def get_current_user(
     x_user_id: Annotated[str | None, Header()] = None,
