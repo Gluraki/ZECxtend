@@ -8,7 +8,6 @@ from app.routers.driver import router as driver_router
 from app.routers.export import router as exports_router
 from app.routers.leaderboard import router as leaderboard_router
 from app.routers.penalty import router as penalty_router
-from app.routers.score import router as score_router
 from app.routers.team import router as team_router
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
@@ -45,7 +44,6 @@ app.include_router(exports_router, prefix="/export", tags=["export"])
 app.include_router(attempts_router, prefix="/attempts", tags=["attempts"])
 app.include_router(leaderboard_router, prefix="/leaderboard", tags=["leaderboard"])
 app.include_router(penalty_router, prefix="/penalties", tags=["penalties"])
-app.include_router(score_router, prefix="/scores", tags=["scores"])
 app.include_router(challenge_router, prefix="/challenges", tags=["challenges"])
 app.include_router(driver_router, prefix="/drivers", tags=["drivers"])
 app.include_router(team_router, prefix="/teams", tags=["teams"])
