@@ -56,7 +56,7 @@ async def test_scores_resource_is_gone(competition_client):
 
 
 @pytest.mark.asyncio
-async def test_leaderboard_stub_returns_empty_list(competition_client, make_challenge):
+async def test_leaderboard_without_attempts_is_empty(competition_client, make_challenge):
     challenge_id = await make_challenge()
 
     ok = await competition_client.get(f"/leaderboard/{challenge_id}/category/close_to_series")
