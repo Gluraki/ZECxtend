@@ -1,29 +1,23 @@
 # API-Server
-- Copied over from old repo (zec_api)
-- started moving folders for the planned structure
-- switched to uv envs
-- started implementing shared libs
-- swtiched to 1 db
-- merged into 2 services
-- base functions are running
-- implemented a working auth prototype
-- swagger ui docs behind a login page each serviceses own port
-- gateway checks jwt and role 
+## Numbers
+- 6 services -> 2 Total now
+- 6 DBs -> 1 Total now
+- 1,3 GB Dockerfile per Service -> 1,5 GB Total now
+## Explanation
+- shared functions mean less boilerplate code
+- Setup easier with different dev and prod scripts
+  - no more change this in KEYCLOAK or half the services crash
+- FKs are now handled by the DB, not the API
+- Swagger docs behind a login are now reachable
+- Seed data now runs on it own not via the services
+- Score table has been dropped and leaderboard is now calculated
+- Tests are now unified and not split into 6 different folders
+- Migrations now use Alembic and not *create_all*
 
 # Website
-Copied over from old repo (Web-app)
-- changed docker image 
-- should work if coupled with the old api-server (not tested)
-    - can be found: https://github.com/Niklas-Maderbacher/zec-timing/tree/ZEC-API
+- WIP
 
 # Timekeeper-App
-Copied over from old repo (zeitnehmerapplikation) without the mqtt part
-- Not working
-
-# Todo
-- logic changes (api-server)
-- tests -> api-server
-- docs -> api-server
-
-# Ideas 
-- Vite and deno for the website
+- NOT WORKING
+- Attempts can be input via the API this would use however
+- API-Key is also implemented for this
