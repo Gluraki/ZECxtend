@@ -57,12 +57,20 @@ async def attempt_rows(db: AsyncSession, challenge_id: int, category: TeamCatego
         ])
     return result
 
+CSV_FORMULA_PREFIXES = ("=", "+", "-", "@", "\t", "\r")
+
+
+def _csv_cell(value: Any) -> Any:
+    if isinstance(value, str) and value.startswith(CSV_FORMULA_PREFIXES):
+        return "'" + value
+    return value
+
 
 def _csv(columns: list[str], rows: list[list[Any]]) -> bytes:
     buffer = io.StringIO()
     writer = csv.writer(buffer)
     writer.writerow(columns)
-    writer.writerows(rows)
+    writer.writerows([_csv_cell(value) for value in row] for row in rows)
     return buffer.getvalue().encode("utf-8-sig")
 
 

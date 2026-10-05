@@ -4,7 +4,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import shared.exceptions as exc
-from shared.crud_base import CRUDBase, _handle_integrity_error
+from shared.crud_base import CRUDBase, handle_integrity_error
 from shared.models import Attempt, Challenge, Driver, Penalty
 
 NON_NULLABLE_FIELDS = {"team_id", "driver_id", "challenge_id"}
@@ -58,7 +58,7 @@ class CRUDAttempt(CRUDBase[Attempt, AttemptCreate, AttemptUpdate]):
             await db.refresh(db_attempt)
         except IntegrityError as e:
             await db.rollback()
-            _handle_integrity_error(e, "Attempt", "updating")
+            handle_integrity_error(e, "Attempt", "updating")
         return db_attempt
 
     async def _check_references(self, db: AsyncSession, team_id: int, driver_id: int, challenge_id: int) -> Challenge:

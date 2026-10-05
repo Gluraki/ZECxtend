@@ -36,4 +36,4 @@ app.include_router(challenge_router, prefix="/challenges", tags=["challenges"])
 app.include_router(driver_router, prefix="/drivers", tags=["drivers"])
 app.include_router(team_router, prefix="/teams", tags=["teams"])
 
-register_exception_handlers(app)
+register_exception_handlers(app, "Competition-Service")

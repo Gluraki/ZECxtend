@@ -23,7 +23,7 @@ def read_xlsx(response):
 async def scenario(make_team, make_driver, make_challenge, make_penalty_type, make_attempt, competition_client):
     challenge = await make_challenge()
     penalty_type = await make_penalty_type(amount=10)
-    a = await make_team("=1+1")  # must stay text in exports
+    a = await make_team("=1+1")
     b = await make_team("B", category="professional_class")
     driver_a = await make_driver(a["id"], name="Ä driver")
     driver_b = await make_driver(b["id"])
@@ -47,7 +47,7 @@ async def test_leaderboard_csv_has_the_leaderboard_rows(competition_client, scen
     assert response.headers["content-disposition"] == disposition
     header, *rows = read_csv(response)
     assert header == ["rank", "team", "category", "score", "attempt_id", "time_s", "energy_used"]
-    assert [row[:5] for row in rows] == [["1", "=1+1", "close_to_series", "100.0", str(scenario["fast"])]]
+    assert [row[:5] for row in rows] == [["1", "'=1+1", "close_to_series", "100.0", str(scenario["fast"])]]
 
 
 @pytest.mark.asyncio
@@ -93,3 +93,19 @@ async def test_attempts_export_category_filter_and_xlsx(competition_client, scen
 async def test_export_unknown_challenge_is_404(competition_client):
     assert (await competition_client.get("/export/attempts/999")).status_code == 404
     assert (await competition_client.get("/export/leaderboard/999/category/close_to_series")).status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_csv_escapes_formula_prefixes_but_not_numbers(competition_client, make_team, make_driver, make_challenge,
+                                                           make_attempt):
+    challenge = await make_challenge()
+    for name in ["+cmd", "-x", "@SUM(A1)", "Plain"]:
+        team = await make_team(name)
+        driver = await make_driver(team["id"])
+        await make_attempt(team["id"], driver["id"], challenge, end_time=end_after(60))
+
+    response = await competition_client.get(f"/export/attempts/{challenge}")
+
+    header, *rows = read_csv(response)
+    assert sorted(row[1] for row in rows) == sorted(["'+cmd", "'-x", "'@SUM(A1)", "Plain"])
+    assert all(not row[6].startswith("'") for row in rows)  # time_s stays a number

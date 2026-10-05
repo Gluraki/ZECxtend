@@ -12,7 +12,7 @@ CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
 UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
 
 
-def _handle_integrity_error(e: IntegrityError, model_name: str, operation: str):
+def handle_integrity_error(e: IntegrityError, model_name: str, operation: str):
     if "unique" in str(e.orig).lower():
         raise exc.EntityAlreadyExistsError(f"{model_name} with the same unique field already exists")
     if "foreign" in str(e.orig).lower():
@@ -55,7 +55,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             await db.refresh(db_obj)
         except IntegrityError as e:
             await db.rollback()
-            _handle_integrity_error(e, self.model.__name__, "creating")
+            handle_integrity_error(e, self.model.__name__, "creating")
         return db_obj
 
     async def update(self, db: AsyncSession, id: int, obj_in: UpdateSchemaType) -> ModelType:
@@ -67,7 +67,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             await db.refresh(db_obj)
         except IntegrityError as e:
             await db.rollback()
-            _handle_integrity_error(e, self.model.__name__, "updating")
+            handle_integrity_error(e, self.model.__name__, "updating")
         return db_obj
 
     async def delete(self, db: AsyncSession, id: int) -> ModelType:
@@ -77,5 +77,5 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             await db.commit()
         except IntegrityError as e:
             await db.rollback()
-            _handle_integrity_error(e, self.model.__name__, "deleting")
+            handle_integrity_error(e, self.model.__name__, "deleting")
         return obj

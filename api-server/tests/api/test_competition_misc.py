@@ -65,3 +65,11 @@ async def test_leaderboard_without_attempts_is_empty(competition_client, make_ch
     assert ok.status_code == 200
     assert ok.json() == []
     assert bad_category.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_error_detail_names_the_service(competition_client):
+    response = await competition_client.get("/teams/999")
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Team with id 999 does not exist - Competition-Service"

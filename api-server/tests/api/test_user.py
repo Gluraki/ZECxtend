@@ -170,3 +170,11 @@ async def test_unknown_team_is_rejected_on_create_and_update(auth_client, create
 
     assert created.status_code == 400
     assert updated.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_error_detail_names_the_service(auth_client):
+    response = await auth_client.get("/users/999")
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "User with id 999 does not exist - Auth-Service"

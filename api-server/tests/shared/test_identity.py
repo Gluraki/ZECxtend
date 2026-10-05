@@ -10,7 +10,7 @@ from shared.user_role import UserRole
 @pytest.fixture
 def identity_client():
     app = FastAPI()
-    register_exception_handlers(app)
+    register_exception_handlers(app, "Test-Service")
 
     @app.get("/me")
     async def me(user: CurrentUserDep):

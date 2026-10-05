@@ -26,4 +26,4 @@ register_health_endpoint(app)
 app.include_router(auth_router, tags=["auth"])
 app.include_router(user_router, prefix="/users", tags=["users"])
 
-register_exception_handlers(app)
+register_exception_handlers(app, "Auth-Service")
