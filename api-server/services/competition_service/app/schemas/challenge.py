@@ -3,10 +3,13 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
 
+from shared.models import ScoringType
+
 
 class ChallengeBase(BaseModel):
     name: str
     max_attempts: Optional[int] = None
+    scoring_type: Optional[ScoringType] = None
     esp_mac_start1: Optional[str] = None
     esp_mac_start2: Optional[str] = None
     esp_mac_finish1: Optional[str] = None
@@ -18,6 +21,7 @@ class ChallengeCreate(ChallengeBase):
 class ChallengeUpdate(BaseModel):
     name: Optional[str] = None
     max_attempts: Optional[int] = None
+    scoring_type: Optional[ScoringType] = None
     esp_mac_start1: Optional[str] = None
     esp_mac_start2: Optional[str] = None
     esp_mac_finish1: Optional[str] = None

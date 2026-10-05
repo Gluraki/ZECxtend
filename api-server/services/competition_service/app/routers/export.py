@@ -1,26 +1,33 @@
-from fastapi import APIRouter, Query
+from app.crud.export import (
+    ATTEMPT_COLUMNS,
+    LEADERBOARD_COLUMNS,
+    ExportFormat,
+    attempt_rows,
+    file_response,
+    leaderboard_rows,
+)
+from app.crud.leaderboard import get_leaderboard
+from fastapi import APIRouter
 
 from shared.database import SessionDep
+from shared.models import TeamCategory
 
 router = APIRouter()
 
 
-# TODO Implement actual logic
-@router.get("/attempts")
-def export_attempts(
-    db: SessionDep,
-    challenge_id: int = Query(...),
-    category: str = Query(None),
-    format: str = Query("csv", enum=["csv", "xlsx"]),
+@router.get("/leaderboard/{challenge_id}/category/{category}")
+async def export_leaderboard(
+    db: SessionDep, challenge_id: int, category: TeamCategory, format: ExportFormat = ExportFormat.csv
 ):
-    return {"challenge_id": challenge_id, "category": category, "format": format}
+    entries = await get_leaderboard(db=db, challenge_id=challenge_id, category=category)
+    filename = f"leaderboard_challenge{challenge_id}_{category.value}"
+    return file_response(LEADERBOARD_COLUMNS, leaderboard_rows(entries), format, filename)
 
 
-@router.get("/leaderboard")
-def export_leaderboard(
-    db: SessionDep,
-    challenge_id: int = Query(...),
-    category: str = Query(None),
-    format: str = Query("csv", enum=["csv", "xlsx"]),
+@router.get("/attempts/{challenge_id}")
+async def export_attempts(
+    db: SessionDep, challenge_id: int, category: TeamCategory | None = None, format: ExportFormat = ExportFormat.csv
 ):
-    return {"challenge_id": challenge_id, "category": category, "format": format}
+    rows = await attempt_rows(db=db, challenge_id=challenge_id, category=category)
+    filename = f"attempts_challenge{challenge_id}" + (f"_{category.value}" if category else "")
+    return file_response(ATTEMPT_COLUMNS, rows, format, filename)
