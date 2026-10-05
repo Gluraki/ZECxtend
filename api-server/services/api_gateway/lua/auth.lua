@@ -19,6 +19,8 @@ local SAFE_METHODS = {
 }
 
 local secret = os.getenv("JWT_SECRET_KEY")
+local api_key = os.getenv("API_KEY")
+local api_key_digest = api_key and api_key ~= "" and ngx.sha1_bin(api_key) or nil
 
 local M = {}
 
@@ -73,29 +75,50 @@ local function role_allowed(role, allowed)
     return false
 end
 
+local function enforce_api_key(opts, method, provided)
+    if not api_key_digest or ngx.sha1_bin(provided) ~= api_key_digest then
+        return deny(401, "Invalid API-Key - Gateway")
+    end
+
+    if not (opts.api_key_methods and opts.api_key_methods[method]) then
+        return deny(403, "API-Key not allowed here - Gateway")
+    end
+
+    ngx.var.auth_user_id = "0"
+    ngx.var.auth_username = "api-key"
+    ngx.var.auth_role = "ADMIN"
+    ngx.var.auth_team_id = ""
+end
+
 function M.enforce(opts)
     opts = opts or {}
 
     if not secret or secret == "" then
         ngx.log(ngx.ERR, "JWT_SECRET_KEY is unset, cannot verify tokens")
-        return deny(500, "gateway is misconfigured")
+        return deny(500, "Gateway is misconfigured - Gateway")
     end
 
     local method = ngx.req.get_method()
     local token = bearer_token()
 
     if not token then
+        local provided_key = ngx.var.http_x_api_key
+
+        if provided_key then
+            return enforce_api_key(opts, method, provided_key)
+        end
+
         if opts.anonymous_methods and opts.anonymous_methods[method] then
             return
         end
 
-        return deny(401, "missing bearer token")
+        return deny(401, "Missing bearer token - Gateway")
     end
 
     local verified = jwt:verify(secret, token, claim_spec)
 
     if not verified.verified then
-        return deny(401, verified.reason or "invalid token")
+        return deny(401, verified.reason or "Invalid token - Gateway")
     end
 
     local claims = verified.payload
@@ -108,7 +131,7 @@ function M.enforce(opts)
     end
 
     if not role_allowed(claims.role, allowed) then
-        return deny(403, "insufficient role")
+        return deny(403, "Insufficient role - Gateway")
     end
 
     local user_id = header_safe(claims.id)
@@ -116,7 +139,7 @@ function M.enforce(opts)
     local role = header_safe(claims.role)
 
     if not user_id or not username or not role then
-        return deny(401, "malformed claims")
+        return deny(401, "Malformed claims - Gateway")
     end
 
     ngx.var.auth_user_id = user_id

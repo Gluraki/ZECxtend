@@ -7,6 +7,7 @@ services:
     environment:
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:?JWT_SECRET_KEY must be set}
+      API_KEY: ${API_KEY:-}
     depends_on:
       auth-service:
         condition: service_healthy

@@ -10,6 +10,9 @@ export CORS_ALLOWED_ORIGINS=
 # needs to be 32 bytes
 export JWT_SECRET_KEY=dev-only-insecure-jwt-secret-change-me-0123456789
 
+# X-API-Key header
+export API_KEY=lustig123
+
 # only created if no admin exists yet
 export ADMIN_USERNAME=admin
 # needs at least 10 characters
