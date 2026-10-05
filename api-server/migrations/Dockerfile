@@ -15,6 +15,7 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 COPY pyproject.toml .
 COPY shared/ ./shared/
 COPY migrations/ ./migrations/
+COPY seed/ ./seed/
 
 RUN uv sync --package migrations --no-dev --compile-bytecode \
     && uv cache clean
@@ -30,6 +31,6 @@ WORKDIR /app
 COPY --from=builder /app/.venv /app/.venv
 COPY --from=builder /app/shared /app/shared
 COPY --from=builder /app/migrations /app/migrations
+COPY --from=builder /app/seed /app/seed
 
-ENTRYPOINT ["alembic", "-c", "migrations/alembic.ini"]
-CMD ["upgrade", "head"]
+CMD ["sh", "-c", "alembic -c migrations/alembic.ini upgrade head && python -m seed"]

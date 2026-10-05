@@ -5,6 +5,7 @@ requires-python = ">=3.13"
 dependencies = [
     "shared",
     "alembic>=1.16",
+    "bcrypt>=3.2.0",
 ]
 
 [tool.uv]

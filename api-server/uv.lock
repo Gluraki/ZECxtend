@@ -500,12 +500,14 @@ version = "0.1.0"
 source = { virtual = "migrations" }
 dependencies = [
     { name = "alembic" },
+    { name = "bcrypt" },
     { name = "shared" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "alembic", specifier = ">=1.16" },
+    { name = "bcrypt", specifier = ">=3.2.0" },
     { name = "shared", editable = "shared" },
 ]
 

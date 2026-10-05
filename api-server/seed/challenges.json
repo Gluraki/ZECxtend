@@ -1,0 +1,6 @@
+[
+  { "name": "Skidpad", "max_attempts": 3, "scoring_type": "time" },
+  { "name": "Slalom", "max_attempts": 3, "scoring_type": "time" },
+  { "name": "Endurance", "max_attempts": 3, "scoring_type": "endurance" },
+  { "name": "Acceleration", "max_attempts": 3, "scoring_type": "acceleration" }
+]
