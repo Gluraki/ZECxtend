@@ -1,16 +1,9 @@
-"""initial schema
-
-Revision ID: c12de48f333c
-Revises: 
-Create Date: 2026-09-30 12:10:41.846844
-
-"""
 from typing import Sequence, Union
 
 import sqlalchemy as sa
 from alembic import op
 
-revision: str = 'c12de48f333c'
+revision: str = '2c47a6163936'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -26,6 +19,7 @@ def upgrade() -> None:
     sa.Column('esp_mac_finish1', sa.String(), nullable=True),
     sa.Column('esp_mac_finish2', sa.String(), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=False),
+    sa.Column('scoring_type', sa.Enum('time', 'acceleration', 'endurance', name='scoringtype'), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('penalty_types',
@@ -112,3 +106,4 @@ def downgrade() -> None:
     op.drop_table('challenges')
     sa.Enum(name='userrole').drop(op.get_bind(), checkfirst=True)
     sa.Enum(name='teamcategory').drop(op.get_bind(), checkfirst=True)
+    sa.Enum(name='scoringtype').drop(op.get_bind(), checkfirst=True)
