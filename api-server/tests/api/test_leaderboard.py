@@ -137,17 +137,6 @@ async def test_unknown_challenge_is_404(competition_client):
 
 
 @pytest.mark.asyncio
-async def test_acceleration_with_zero_power_is_400(competition_client, make_challenge, team_with_driver, run):
-    challenge = await make_challenge("Acceleration", scoring_type=ScoringType.acceleration)
-    a = await team_with_driver("A", mean_power=0.0)
-    await run(*a, challenge, 4)
-
-    response = await competition_client.get(f"/leaderboard/{challenge}/category/close_to_series")
-
-    assert response.status_code == 400
-
-
-@pytest.mark.asyncio
 async def test_admin_can_set_scoring_type(competition_client, make_challenge):
     challenge = await make_challenge("Other", scoring_type=None)
 

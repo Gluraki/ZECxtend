@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from alembic import command
@@ -18,19 +19,24 @@ def _config(connection) -> Config:
     return config
 
 
+def _engine(tmp_path):
+    return create_engine(os.environ.get("TEST_DATABASE_URL") or f"sqlite:///{tmp_path / 'migrations.db'}")
+
+
 def test_migrations_match_models(tmp_path):
-    engine = create_engine(f"sqlite:///{tmp_path / 'migrations.db'}")
+    engine = _engine(tmp_path)
 
     with engine.begin() as connection:
         command.upgrade(_config(connection), "head")
         diff = compare_metadata(MigrationContext.configure(connection), Base.metadata)
+        command.downgrade(_config(connection), "base")
 
     engine.dispose()
     assert diff == [], "models changed without a migration, run: alembic revision --autogenerate"
 
 
 def test_downgrade_to_base_removes_everything(tmp_path):
-    engine = create_engine(f"sqlite:///{tmp_path / 'migrations.db'}")
+    engine = _engine(tmp_path)
 
     with engine.begin() as connection:
         command.upgrade(_config(connection), "head")

@@ -2,6 +2,7 @@ from datetime import timedelta
 
 import jwt
 import pytest
+from conftest import ADMIN_HEADERS
 
 
 def refresh_cookie(response) -> str:
@@ -63,7 +64,7 @@ async def test_refresh_picks_up_role_change_but_old_token_is_revoked(auth_client
     user = await create_user()
     token = refresh_cookie(await login())
 
-    await auth_client.put(f"/users/{user['id']}", json={"role": "TEAMLEAD", "team_id": team_id})
+    await auth_client.put(f"/users/{user['id']}", headers=ADMIN_HEADERS, json={"role": "TEAMLEAD", "team_id": team_id})
 
     assert (await refresh(auth_client, token)).status_code == 401
     relogin = await login()
@@ -75,7 +76,9 @@ async def test_refresh_rejected_after_password_change(auth_client, create_user, 
     user = await create_user()
     token = refresh_cookie(await login())
 
-    response = await auth_client.put(f"/users/{user['id']}", json={"password": "new-password-456"})
+    response = await auth_client.put(
+        f"/users/{user['id']}", headers=ADMIN_HEADERS, json={"password": "new-password-456"}
+    )
     assert response.status_code == 200
 
     assert (await refresh(auth_client, token)).status_code == 401
@@ -88,7 +91,7 @@ async def test_username_change_keeps_refresh_token_valid(auth_client, create_use
     user = await create_user()
     token = refresh_cookie(await login())
 
-    await auth_client.put(f"/users/{user['id']}", json={"username": "alice2"})
+    await auth_client.put(f"/users/{user['id']}", headers=ADMIN_HEADERS, json={"username": "alice2"})
 
     response = await refresh(auth_client, token)
     assert response.status_code == 200
@@ -100,7 +103,7 @@ async def test_refresh_rejected_for_deleted_user(auth_client, create_user, login
     user = await create_user()
     token = refresh_cookie(await login())
 
-    await auth_client.delete(f"/users/{user['id']}")
+    await auth_client.delete(f"/users/{user['id']}", headers=ADMIN_HEADERS)
 
     assert (await refresh(auth_client, token)).status_code == 401
 
@@ -146,7 +149,9 @@ async def test_pwd_change_claim_until_password_is_changed(auth_client, create_us
     assert user["must_change_password"] is True
     assert claims((await login("root")).json()["access_token"])["pwd_change"] is True
 
-    updated = await auth_client.put(f"/users/{user['id']}", json={"password": "new-password-456"})
+    updated = await auth_client.put(
+        f"/users/{user['id']}", headers=ADMIN_HEADERS, json={"password": "new-password-456"}
+    )
 
     assert updated.json()["must_change_password"] is False
     relogin = await login("root", "new-password-456")

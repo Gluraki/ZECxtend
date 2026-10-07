@@ -39,7 +39,9 @@ async def scenario(make_team, make_driver, make_challenge, make_penalty_type, ma
 
 @pytest.mark.asyncio
 async def test_leaderboard_csv_has_the_leaderboard_rows(competition_client, scenario):
-    response = await competition_client.get(f"/export/leaderboard/{scenario['challenge']}/category/close_to_series")
+    response = await competition_client.get(
+        f"/export/leaderboard/{scenario['challenge']}/category/close_to_series", headers=ADMIN_HEADERS
+    )
 
     assert response.status_code == 200
     assert response.headers["content-type"].startswith("text/csv")
@@ -53,7 +55,7 @@ async def test_leaderboard_csv_has_the_leaderboard_rows(competition_client, scen
 @pytest.mark.asyncio
 async def test_leaderboard_xlsx_keeps_text_as_text(competition_client, scenario):
     response = await competition_client.get(
-        f"/export/leaderboard/{scenario['challenge']}/category/close_to_series?format=xlsx"
+        f"/export/leaderboard/{scenario['challenge']}/category/close_to_series?format=xlsx", headers=ADMIN_HEADERS
     )
 
     sheet = read_xlsx(response)
@@ -65,7 +67,7 @@ async def test_leaderboard_xlsx_keeps_text_as_text(competition_client, scenario)
 
 @pytest.mark.asyncio
 async def test_attempts_export_has_all_attempts_with_penalties(competition_client, scenario):
-    response = await competition_client.get(f"/export/attempts/{scenario['challenge']}")
+    response = await competition_client.get(f"/export/attempts/{scenario['challenge']}", headers=ADMIN_HEADERS)
 
     header, *rows = read_csv(response)
     by_id = {int(row[0]): dict(zip(header, row)) for row in rows}
@@ -79,7 +81,7 @@ async def test_attempts_export_has_all_attempts_with_penalties(competition_clien
 @pytest.mark.asyncio
 async def test_attempts_export_category_filter_and_xlsx(competition_client, scenario):
     response = await competition_client.get(
-        f"/export/attempts/{scenario['challenge']}?category=professional_class&format=xlsx"
+        f"/export/attempts/{scenario['challenge']}?category=professional_class&format=xlsx", headers=ADMIN_HEADERS
     )
 
     sheet = read_xlsx(response)
@@ -91,20 +93,23 @@ async def test_attempts_export_category_filter_and_xlsx(competition_client, scen
 
 @pytest.mark.asyncio
 async def test_export_unknown_challenge_is_404(competition_client):
-    assert (await competition_client.get("/export/attempts/999")).status_code == 404
-    assert (await competition_client.get("/export/leaderboard/999/category/close_to_series")).status_code == 404
+    assert (await competition_client.get("/export/attempts/999", headers=ADMIN_HEADERS)).status_code == 404
+    assert (
+        await competition_client.get("/export/leaderboard/999/category/close_to_series", headers=ADMIN_HEADERS)
+    ).status_code == 404
 
 
 @pytest.mark.asyncio
-async def test_csv_escapes_formula_prefixes_but_not_numbers(competition_client, make_team, make_driver, make_challenge,
-                                                           make_attempt):
+async def test_csv_escapes_formula_prefixes_but_not_numbers(
+    competition_client, make_team, make_driver, make_challenge, make_attempt
+):
     challenge = await make_challenge()
     for name in ["+cmd", "-x", "@SUM(A1)", "Plain"]:
         team = await make_team(name)
         driver = await make_driver(team["id"])
         await make_attempt(team["id"], driver["id"], challenge, end_time=end_after(60))
 
-    response = await competition_client.get(f"/export/attempts/{challenge}")
+    response = await competition_client.get(f"/export/attempts/{challenge}", headers=ADMIN_HEADERS)
 
     header, *rows = read_csv(response)
     assert sorted(row[1] for row in rows) == sorted(["'+cmd", "'-x", "'@SUM(A1)", "Plain"])

@@ -1,3 +1,4 @@
+import asyncio
 import importlib
 import os
 import sys
@@ -12,7 +13,7 @@ from sqlalchemy import event
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 ROOT = Path(__file__).resolve().parents[1]
-TEST_DATABASE_URL = "sqlite+aiosqlite:///./test.db"
+TEST_DATABASE_URL = os.environ.get("TEST_DATABASE_URL", "sqlite+aiosqlite:///./test.db")
 _SERVICE_APPS: dict[str, FastAPI] = {}
 _SERVICE_MODULES: dict[str, dict[str, ModuleType]] = {}
 
@@ -46,6 +47,13 @@ def _load_service_app(service_name: str) -> FastAPI:
     return app
 
 
+@pytest.fixture(scope="session")
+def event_loop_policy():
+    if sys.platform == "win32":
+        return asyncio.WindowsSelectorEventLoopPolicy()
+    return asyncio.DefaultEventLoopPolicy()
+
+
 @pytest.fixture(scope="session", autouse=True)
 def import_all_models():
     _load_service_app("competition_service")
@@ -56,13 +64,16 @@ def import_all_models():
 async def db_engine(import_all_models):
     from shared.database import Base
 
-    engine = create_async_engine(TEST_DATABASE_URL, connect_args={"check_same_thread": False})
+    if not TEST_DATABASE_URL.startswith("sqlite"):
+        engine = create_async_engine(TEST_DATABASE_URL)
+    else:
+        engine = create_async_engine(TEST_DATABASE_URL, connect_args={"check_same_thread": False})
 
-    @event.listens_for(engine.sync_engine, "connect")
-    def _enable_sqlite_foreign_keys(dbapi_connection, _):
-        cursor = dbapi_connection.cursor()
-        cursor.execute("PRAGMA foreign_keys=ON")
-        cursor.close()
+        @event.listens_for(engine.sync_engine, "connect")
+        def _enable_sqlite_foreign_keys(dbapi_connection, _):
+            cursor = dbapi_connection.cursor()
+            cursor.execute("PRAGMA foreign_keys=ON")
+            cursor.close()
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
@@ -108,6 +119,9 @@ async def auth_client(db: AsyncSession):
     app.dependency_overrides.clear()
 
 
+ADMIN_HEADERS = {"X-User-Id": "1", "X-Username": "admin", "X-Role": "ADMIN"}
+
+
 PASSWORD = "password123"
 
 
@@ -119,7 +133,7 @@ def password() -> str:
 @pytest.fixture
 def create_user(auth_client):
     async def _create_user(username="alice", role="USER", team_id=None, **extra):
-        response = await auth_client.post("/users/", json={
+        response = await auth_client.post("/users/", headers=ADMIN_HEADERS, json={
             "username": username,
             "password": PASSWORD,
             "role": role,
@@ -134,7 +148,9 @@ def create_user(auth_client):
 
 @pytest_asyncio.fixture
 async def team_id(db) -> int:
-    team = Team(name="Team", category=TeamCategory.close_to_series)
+    team = Team(
+        name="Team", category=TeamCategory.close_to_series, vehicle_weight=150.0, mean_power=5.0, rfid_identifier="rfid"
+    )
     db.add(team)
     await db.commit()
     return team.id
@@ -173,9 +189,6 @@ def claims(auth_crud):
         return jwt.decode(token, settings.SECRET_KEY, algorithms=[auth_crud.ALGORITHM])
 
     return _claims
-
-
-ADMIN_HEADERS = {"X-User-Id": "1", "X-Username": "admin", "X-Role": "ADMIN"}
 
 
 def teamlead_headers(team_id: int) -> dict[str, str]:
