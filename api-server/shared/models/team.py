@@ -20,9 +20,9 @@ class Team(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     category: Mapped[TeamCategory] = mapped_column(SQLEnum(TeamCategory), nullable=False)
     name: Mapped[str] = mapped_column(String, nullable=False)
-    vehicle_weight: Mapped[float | None] = mapped_column(Float)
-    mean_power: Mapped[float | None] = mapped_column(Float)
-    rfid_identifier: Mapped[str | None] = mapped_column(String)
+    vehicle_weight: Mapped[float] = mapped_column(Float, nullable=False)
+    mean_power: Mapped[float] = mapped_column(Float, nullable=False)
+    rfid_identifier: Mapped[str] = mapped_column(String, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
     drivers = relationship("Driver", back_populates="team", cascade="all, delete-orphan")

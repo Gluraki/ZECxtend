@@ -15,9 +15,9 @@ class Attempt(Base):
     driver_id: Mapped[int] = mapped_column(ForeignKey('drivers.id', ondelete='RESTRICT'), nullable=False)
     challenge_id: Mapped[int] = mapped_column(ForeignKey('challenges.id', ondelete='RESTRICT'), nullable=False)
     is_valid: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
-    start_time: Mapped[datetime | None] = mapped_column(DateTime)
-    end_time: Mapped[datetime | None] = mapped_column(DateTime)
-    energy_used: Mapped[float | None] = mapped_column(Float)
+    start_time: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    end_time: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    energy_used: Mapped[float] = mapped_column(Float, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
     penalties = relationship('Penalty', back_populates='attempt', cascade='all, delete-orphan', passive_deletes=True)

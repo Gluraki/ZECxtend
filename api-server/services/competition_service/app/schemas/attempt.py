@@ -30,7 +30,7 @@ class AttemptBase(BaseModel):
     challenge_id: int
     start_time: datetime
     end_time: datetime
-    energy_used: float
+    energy_used: float = Field(..., gt=0)
 
     @field_validator("start_time", "end_time", mode="before")
     @classmethod
@@ -47,13 +47,19 @@ class AttemptCreate(AttemptBase):
             raise ValueError("end_time must be after start_time")
         return self
 
+    @model_validator(mode="after")
+    def penalty_count_needs_type(self):
+        if self.penalty_count and self.penalty_type is None:
+            raise ValueError("penalty_count requires penalty_type")
+        return self
+
 class AttemptUpdate(BaseModel):
     team_id: Optional[int] = None
     driver_id: Optional[int] = None
     challenge_id: Optional[int] = None
     start_time: Optional[datetime] = None
     end_time: Optional[datetime] = None
-    energy_used: Optional[float] = None
+    energy_used: Optional[float] = Field(None, gt=0)
 
     @field_validator("start_time", "end_time", mode="before")
     @classmethod

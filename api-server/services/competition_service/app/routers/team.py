@@ -9,6 +9,7 @@ from shared.pagination import PaginationDep
 from shared.user_role import UserRole
 
 TEAMLEAD_EDITABLE_FIELDS = {"name", "vehicle_weight", "mean_power", "rfid_identifier"}
+SCORING_FIELDS = {"vehicle_weight", "mean_power"}
 
 router = APIRouter()
 
@@ -25,6 +26,11 @@ async def update_team(db: SessionDep, user: CurrentUserDep, team_id: int, team_u
         forbidden = team_update.model_fields_set - TEAMLEAD_EDITABLE_FIELDS
         if forbidden:
             raise exc.NotEnoughPermissionsError(f"Only an admin can change: {', '.join(sorted(forbidden))}")
+        locked = team_update.model_fields_set & SCORING_FIELDS
+        if locked and await crud.has_attempts(db=db, id=team_id):
+            raise exc.NotEnoughPermissionsError(
+                f"Only an admin can change {', '.join(sorted(locked))} once the team has attempts"
+            )
     team = await crud.update(db=db, id=team_id, obj_in=team_update)
     return team
 

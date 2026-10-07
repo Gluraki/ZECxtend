@@ -26,6 +26,12 @@ async def update_driver(db: SessionDep, user: CurrentUserDep, driver_id: int, dr
     _ensure_can_manage(user, db_driver.team_id)
     if "team_id" in driver_update.model_fields_set:
         _ensure_can_manage(user, driver_update.team_id)
+    if (
+        not user.is_admin
+        and "weight" in driver_update.model_fields_set
+        and await crud.has_attempts(db=db, id=driver_id)
+    ):
+        raise exc.NotEnoughPermissionsError("Only an admin can change weight once the driver has attempts")
     db_driver = await crud.update(db=db, id=driver_id, obj_in=driver_update)
     return db_driver
 

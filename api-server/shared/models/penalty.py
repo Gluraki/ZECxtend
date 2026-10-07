@@ -11,8 +11,8 @@ class Penalty(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     attempt_id: Mapped[int] = mapped_column(ForeignKey('attempts.id', ondelete='CASCADE'), nullable=False, index=True)
-    penalty_type_id: Mapped[int | None] = mapped_column(ForeignKey('penalty_types.id'))
-    count: Mapped[int | None] = mapped_column(Integer)
+    penalty_type_id: Mapped[int] = mapped_column(ForeignKey('penalty_types.id'), nullable=False)
+    count: Mapped[int] = mapped_column(Integer, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
     attempt = relationship('Attempt', back_populates='penalties')

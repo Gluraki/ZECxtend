@@ -69,14 +69,18 @@ async def get_leaderboard(db: AsyncSession, challenge_id: int, category: TeamCat
         best.setdefault(team.id, (attempt, team))
 
     show_energy = scoring_type == ScoringType.endurance
-    return [
-        LeaderboardResponse(
+    entries = []
+    rank, previous_score = 0, None
+    for position, (attempt, team) in enumerate(best.values(), start=1):
+        score = round(points[attempt.id], 2)
+        if score != previous_score:
+            rank, previous_score = position, score
+        entries.append(LeaderboardResponse(
             rank=rank,
-            score=round(points[attempt.id], 2),
+            score=score,
             team=TeamResponse.model_validate(team),
             attempt_id=attempt.id,
             time=runs[attempt.id].time,
             energy_used=attempt.energy_used if show_energy else None,
-        )
-        for rank, (attempt, team) in enumerate(best.values(), start=1)
-    ]
+        ))
+    return entries

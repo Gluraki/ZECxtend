@@ -10,9 +10,11 @@ from app.crud.leaderboard import get_leaderboard
 from fastapi import APIRouter
 
 from shared.database import SessionDep
+from shared.identity import require_roles
 from shared.models import TeamCategory
+from shared.user_role import UserRole
 
-router = APIRouter()
+router = APIRouter(dependencies=[require_roles(UserRole.ADMIN)])
 
 
 @router.get("/leaderboard/{challenge_id}/category/{category}")

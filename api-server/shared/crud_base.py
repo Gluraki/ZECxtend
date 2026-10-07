@@ -58,9 +58,17 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             handle_integrity_error(e, self.model.__name__, "creating")
         return db_obj
 
+    def reject_nulls(self, data: dict[str, Any]) -> None:
+        columns = self.model.__table__.columns
+        for field, value in data.items():
+            if value is None and field in columns and not columns[field].nullable:
+                raise exc.InvalidOperationError(f"{field} cannot be null")
+
     async def update(self, db: AsyncSession, id: int, obj_in: UpdateSchemaType) -> ModelType:
         db_obj = await self.get(db, id)
-        for field, value in obj_in.model_dump(exclude_unset=True).items():
+        data = obj_in.model_dump(exclude_unset=True)
+        self.reject_nulls(data)
+        for field, value in data.items():
             setattr(db_obj, field, value)
         try:
             await db.commit()
