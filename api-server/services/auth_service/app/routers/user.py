@@ -3,9 +3,11 @@ from app.schemas.user import UserCreate, UserResponse, UserUpdate
 from fastapi import APIRouter
 
 from shared.database import SessionDep
+from shared.identity import require_roles
 from shared.pagination import PaginationDep
+from shared.user_role import UserRole
 
-router = APIRouter()
+router = APIRouter(dependencies=[require_roles(UserRole.ADMIN)])
 
 @router.post("/", response_model=UserResponse)
 async def create_user(db: SessionDep, user: UserCreate):

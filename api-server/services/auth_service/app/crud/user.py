@@ -82,6 +82,21 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
             await self._ensure_not_last_admin(db)
         return await super().delete(db=db, id=id)
 
+    async def change_own_password(self, db: AsyncSession, id: int, current_password: str, new_password: str) -> User:
+        db_user = await self.get(db, id)
+        if not verify_password(current_password, db_user.password_hash):
+            raise exc.InvalidOperationError("Current password is incorrect")
+        if current_password == new_password:
+            raise exc.InvalidOperationError("New password must differ from the current one")
+        return await self.update(db=db, id=id, obj_in=UserUpdate(password=new_password))
+
+    async def revoke_tokens(self, db: AsyncSession, id: int) -> None:
+        db_user = await self.get_or_none(db, id)
+        if db_user is None:
+            return
+        db_user.token_version += 1
+        await db.commit()
+
     async def _ensure_not_last_admin(self, db: AsyncSession) -> None:
         admin_count = await db.scalar(select(func.count()).select_from(User).where(User.role == UserRole.ADMIN))
         if (admin_count or 0) <= 1:

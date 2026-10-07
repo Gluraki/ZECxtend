@@ -35,6 +35,12 @@ class UserUpdate(BaseModel):
 
     _password_bytes = field_validator("password")(_check_password_bytes)
 
+class PasswordChange(BaseModel):
+    current_password: str
+    new_password: str = Field(..., min_length=PASSWORD_MIN_LENGTH)
+
+    _password_bytes = field_validator("new_password")(_check_password_bytes)
+
 class UserResponse(UserBase):
     id: int
     team_id: int | None = None

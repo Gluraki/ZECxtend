@@ -5,11 +5,13 @@ import app.crud.auth as auth_crud
 from app.config import REFRESH_COOKIE_NAME, REFRESH_COOKIE_OPTIONS, settings
 from app.crud.user import crud_user
 from app.schemas import token as schemas
+from app.schemas.user import PasswordChange
 from fastapi import APIRouter, Cookie, Depends, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 import shared.exceptions as exc
 from shared.database import SessionDep
+from shared.identity import CurrentUserDep, OptionalUserDep
 from shared.models import User
 
 router = APIRouter()
@@ -68,6 +70,17 @@ async def refresh(
     return _issue_access_token(user)
 
 
+@router.post("/password", response_model=schemas.Token)
+async def change_password(db: SessionDep, response: Response, current: CurrentUserDep, body: PasswordChange):
+    user = await crud_user.change_own_password(
+        db=db, id=current.id, current_password=body.current_password, new_password=body.new_password
+    )
+    _set_refresh_cookie(response, user)
+    return _issue_access_token(user)
+
+
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
-async def logout(response: Response):
+async def logout(db: SessionDep, response: Response, current: OptionalUserDep):
+    if current is not None:
+        await crud_user.revoke_tokens(db=db, id=current.id)
     response.delete_cookie(key=REFRESH_COOKIE_NAME, **REFRESH_COOKIE_OPTIONS)
