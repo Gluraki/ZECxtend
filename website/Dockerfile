@@ -1,42 +1,14 @@
-FROM node:20-alpine AS deps
-
-RUN apk add --no-cache libc6-compat
-
+FROM node:22-alpine AS build
 WORKDIR /app
-
-COPY package.json package-lock.json* ./
-RUN npm ci --silent
-
-FROM node:20-alpine AS builder
-
-WORKDIR /app
-
-ARG NEXT_PUBLIC_API_URL
-ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
-
-COPY --from=deps /app/node_modules ./node_modules
+RUN corepack enable
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
 COPY . .
+ARG VITE_API_URL=http://localhost
+ENV VITE_API_URL=$VITE_API_URL
+RUN pnpm build
 
-RUN npm run build
-FROM node:20-alpine AS runner
-
-WORKDIR /app
-
-ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
-
-RUN addgroup --system --gid 1001 nodejs \
- && adduser  --system --uid 1001 nextjs
-
-COPY --from=builder /app/public ./public
-
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
-USER nextjs
-
+FROM nginx:alpine
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/dist /usr/share/nginx/html
 EXPOSE 3000
-ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
-
-CMD ["node", "server.js"]

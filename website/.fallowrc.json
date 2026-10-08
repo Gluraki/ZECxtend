@@ -1,0 +1,32 @@
+{
+  "$schema": "https://fallow.tools/schema.json",
+  "ignoreExports": [
+    { "file": "src/components/ui/**", "exports": ["*"] }
+  ],
+  "boundaries": {
+    "zones": [
+      { "name": "app", "patterns": ["src/main.tsx", "src/app.tsx", "src/app-shell.tsx"] },
+      { "name": "feature", "autoDiscover": ["src/features"] },
+      { "name": "components", "patterns": ["src/components/**"] },
+      { "name": "auth", "patterns": ["src/auth/**"] },
+      { "name": "api", "patterns": ["src/api/**"] },
+      { "name": "hooks", "patterns": ["src/hooks/**"] },
+      { "name": "lib", "patterns": ["src/lib/**"] },
+      { "name": "types", "patterns": ["src/types/**"] }
+    ],
+    "rules": [
+      { "from": "app", "allow": ["feature", "components", "auth", "api", "hooks", "lib", "types"] },
+      { "from": "feature", "allow": ["components", "auth", "api", "hooks", "lib", "types"] },
+      { "from": "components", "allow": ["auth", "hooks", "lib", "types"] },
+      { "from": "auth", "allow": ["api", "lib", "types"] },
+      { "from": "api", "allow": ["lib", "types"] },
+      { "from": "hooks", "allow": ["api", "lib", "types"] },
+      { "from": "lib", "allow": ["types"] },
+      { "from": "types", "allow": [] }
+    ],
+    "coverage": {
+      "requireAllFiles": true,
+      "allowUnmatched": ["vite.config.ts", "index.html", "src/index.css", "src/vite-env.d.ts"]
+    }
+  }
+}
