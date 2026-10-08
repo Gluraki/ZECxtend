@@ -15,7 +15,11 @@
 - Migrations now use Alembic and not *create_all*
 
 # Website
-- WIP
+## Explanation
+- Rebuilt with Vite
+- Adjusted to the new API
+- No more localStorage tokens, httpOnly refresh cookie is used
+- Penalties and scoring types added 
 
 # Timekeeper-App
 - NOT WORKING

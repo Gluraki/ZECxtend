@@ -27,3 +27,15 @@ Log in with `DOCS_USERNAME` / `DOCS_PASSWORD`.
 Needs uv. Run uv sync --all-packages from [api-server](../api-server).
   - after just activate the venv for your session
 To run tests just run pytest from [api-server](../api-server) or a specific test folder
+
+## Website
+### Setup Instructions
+1. Requires the [API Server](#api-server) first
+2. Navigate to the [website](../website) directory
+3. Copy `.env.example` to `.env` and set `VITE_API_URL` to the gateway url (default `http://localhost`)
+  - If the website is not served from `http://localhost:3000`, add its url to `CORS_ALLOWED_ORIGINS` in [env.sh](../api-server/scripts/env.sh)
+4. Run `docker compose up -d --build`; the website is reachable at http://localhost:3000
+  - `VITE_API_URL` is baked in at build time, rebuild after changing it
+
+### Local Development
+Needs pnpm. Run `pnpm install` and `pnpm run dev` from [website](../website)
