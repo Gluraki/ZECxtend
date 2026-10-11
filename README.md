@@ -1,7 +1,7 @@
 # ZECxtend
 Fork/Extension of [Niklas-Maderbacher/zec-timing](https://github.com/Niklas-Maderbacher/zec-timing).
 
-## The Goal
+## The Point
 ZECxtend is an extension of the original project that also "should" fix the mess made on the original.
 
 # Status
@@ -9,7 +9,7 @@ Check out: [docs/status.md](docs/status.md)
 
 # Contents 
 - [website/](website/) - competition management and leaderboard view
-- [timekeeper-app/](timekeeper-app/) - attempt input interface
+- [zectime/](zectime/) - Tauri app for timing and entering attempts
 - [api-server/](api-server/) - business logic for all components
 - [docs/](docs/) - project documentation
 
