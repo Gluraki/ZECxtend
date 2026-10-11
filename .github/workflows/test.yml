@@ -10,6 +10,8 @@ jobs:
   test-python:
     name: Pytest
     runs-on: ubuntu-latest
+    env:
+      UV_PYTHON: "3.14"
 
     steps:
       - name: Checkout
@@ -21,7 +23,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.14"
 
       - name: Install dependencies
         working-directory: api-server
