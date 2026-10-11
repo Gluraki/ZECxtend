@@ -1,0 +1,10 @@
+node_modules
+dist
+*.tsbuildinfo
+.fallow/cache.bin
+.fallow/churn.bin
+.fallow/graph-cache.bin
+
+# rust / tauri
+src-tauri/target
+src-tauri/gen/schemas

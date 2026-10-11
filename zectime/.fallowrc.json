@@ -1,0 +1,6 @@
+{
+  "$schema": "https://fallow.tools/schema.json",
+  "ignoreExports": [
+    { "file": "src/components/ui/**", "exports": ["*"] }
+  ]
+}
