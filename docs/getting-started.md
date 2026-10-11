@@ -39,3 +39,18 @@ To run tests just run pytest from [api-server](../api-server) or a specific test
 
 ### Local Development
 Needs pnpm. Run `pnpm install` and `pnpm run dev` from [website](../website)
+
+## ZECtime
+### Installing
+The builds are not signed, so Windows SmartScreen will warn on first start.
+
+### Usage
+1. Requires the [API Server](#api-server) and an MQTT broker the ESPs publish to
+2. On start enter the API url (gateway, default `http://localhost`), the `API_KEY` from
+   [env.sh](../api-server/scripts/env.sh) and the broker host/port/topic
+  - The values are saved locally and prefilled on the next start
+3. ESP messages must look like `{"esp_id": "<prefix>-<mac>", "timestamp": "<ISO datetime>"}`
+  - The mac is matched against the challenge's ESP macs (`:` or `-` separated both work)
+4. Press Activate to start collecting timestamps, pick start/end timestamps (the median of
+   the selected ones is used) and submit the attempt
+5. The Pairing card updates the ESP macs of the selected challenge in the API

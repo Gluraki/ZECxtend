@@ -21,7 +21,9 @@
 - No more localStorage tokens, httpOnly refresh cookie is used
 - Penalties and scoring types added 
 
-# Timekeeper-App
-- NOT WORKING
-- Attempts can be input via the API this would use however
-- API-Key is also implemented for this
+# ZECtime
+## Explanation
+- Redone as a Tauri app, same UI and functionality as before
+- MQTT is in the app now no extra worker
+- Added a start menu so values can be changed after build
+- Installers are built by CI on every push to main
