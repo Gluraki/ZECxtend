@@ -6,8 +6,6 @@ export interface Settings {
     mqttHost: string
     mqttPort: number
     mqttTopic: string
-    mqttUsername: string
-    mqttPassword: string
 }
 
 const DEFAULT_SETTINGS: Settings = {
@@ -16,8 +14,6 @@ const DEFAULT_SETTINGS: Settings = {
     mqttHost: "localhost",
     mqttPort: 1883,
     mqttTopic: "#",
-    mqttUsername: "",
-    mqttPassword: "",
 }
 
 const SETTINGS_KEY = "settings"

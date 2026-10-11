@@ -18,8 +18,6 @@ export const connectMqtt = (settings: Settings) =>
             host: settings.mqttHost,
             port: settings.mqttPort,
             topic: settings.mqttTopic,
-            username: settings.mqttUsername || null,
-            password: settings.mqttPassword || null,
         },
     })
 

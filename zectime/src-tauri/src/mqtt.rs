@@ -24,8 +24,6 @@ pub struct MqttConfig {
     host: String,
     port: u16,
     topic: String,
-    username: Option<String>,
-    password: Option<String>,
 }
 
 /// Message sent by the ESPs: `{"esp_id": "<prefix>-<mac>", "timestamp": "<ISO datetime>"}`.
@@ -126,9 +124,6 @@ pub async fn mqtt_connect(app: AppHandle, state: State<'_, MqttState>, config: M
 
     let mut options = MqttOptions::new(client_id(), config.host, config.port);
     options.set_keep_alive(Duration::from_secs(10));
-    if let Some(username) = config.username.filter(|u| !u.is_empty()) {
-        options.set_credentials(username, config.password.unwrap_or_default());
-    }
 
     let (client, mut eventloop) = AsyncClient::new(options, 64);
 

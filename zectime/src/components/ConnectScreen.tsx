@@ -97,10 +97,6 @@ export function ConnectScreen({ initialSettings, onConnected }: ConnectScreenPro
                                 </div>
                             </div>
                             {field("mqttTopic", "Topic")}
-                            <div className="grid grid-cols-2 gap-4">
-                                {field("mqttUsername", "Username (optional)")}
-                                {field("mqttPassword", "Password (optional)", "password")}
-                            </div>
                         </div>
 
                         {error && <p className="text-sm text-red-600">{error}</p>}
